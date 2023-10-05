@@ -25,6 +25,15 @@ from .orm.object_designator import (ObjectDesignator as ORMObjectDesignator)
 from .orm.base import Quaternion, Position, Base, RobotState, MetaData
 from .task import with_tree
 
+SPECIAL_KNOWLEDGE = {
+    'bigknife':
+        [("top", [-0.08, 0, 0])],
+    'whisk':
+        [("top", [-0.08, 0, 0])],
+    'bowl':
+        [("front", [1.0, 2.0, 3.0]),
+         ("key2", [4.0, 5.0, 6.0])]
+}
 
 class DesignatorError(Exception):
     """Implementation of designator errors."""
@@ -673,6 +682,25 @@ class ObjectDesignatorDescription(DesignatorDescription):
             :param value: A callable that returns a pose.
             """
             self._pose = value
+
+        def special_knowledge_adjustment_pose(self, grasp, pose):
+            """
+            Returns the adjusted target pose based on special knowledge for "grasp front".
+            """
+
+            special_knowledge = []  # Initialize as an empty list
+            if self.type in SPECIAL_KNOWLEDGE:
+                special_knowledge = SPECIAL_KNOWLEDGE[self.type]
+
+            for key, value in special_knowledge:
+                if key == grasp:
+                    # Adjust target pose based on special knowledge
+                    pose.pose.position.x += value[0]
+                    pose.pose.position.y += value[1]
+                    pose.pose.position.z += value[2]
+                    print("Adjusted target pose based on special knowledge for grasp: ", grasp)
+                    return pose
+            return pose
 
         def __repr__(self):
             return self.__class__.__qualname__ + f"(" + ', '.join(
