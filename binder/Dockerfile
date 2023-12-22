@@ -30,10 +30,12 @@ RUN cd ${PYCRAM_WS}/src/giskard_ws/src                                      # go
 #RUN wstool init                                 # init rosinstall
 RUN wstool merge https://raw.githubusercontent.com/SemRoCo/giskardpy/master/rosinstall/noetic.rosinstall
                                             # update rosinstall file
-RUN wstool update                               # pull source repositories
-RUN rosdep install --ignore-src --from-paths .  # install dependencies available through apt
+RUN wstool update       # pull source repositories
+USER root                        
+RUN rosdep install -y --ignore-src --from-paths ./ -r \  # install dependencies available through apt
 RUN pip3 install -r giskardpy/requirements.txt  # install python deps
 RUN cd ..                                       # go to workspace directory
+USER ${NB_USER}
 RUN catkin build                                # build packages
 RUN source ~/giskardpy_ws/devel/setup.bash      # source new overlay
 #############################################
