@@ -37,7 +37,7 @@ RUN rosdep install -y --ignore-src --from-paths .  # install dependencies availa
 RUN pip3 install -r giskardpy/requirements.txt  # install python deps
 RUN cd ..                                       # go to workspace directory
 RUN catkin build                                # build packages
-RUN source ~/giskardpy_ws/devel/setup.bash      # source new overlay
+#RUN source ~/giskardpy_ws/devel/setup.bash      # source new overlay
 #############################################
 
 RUN pip uninstall numpy -y
