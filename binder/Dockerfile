@@ -26,7 +26,7 @@ RUN source /opt/ros/noetic/setup.bash           # source ROS
 RUN mkdir -p ${PYCRAM_WS}/src/giskard_ws/src                 # create directory for workspace
 RUN cd ${PYCRAM_WS}/src/giskard_ws                         # go to workspace directory
 RUN catkin init                                 # init workspace, you might have to pip install catkin-tools
-RUN cd src                                      # go to source directory of workspace
+RUN cd ${PYCRAM_WS}/src/giskard_ws/src                                      # go to source directory of workspace
 RUN wstool init                                 # init rosinstall
 RUN wstool merge https://raw.githubusercontent.com/SemRoCo/giskardpy/master/rosinstall/noetic.rosinstall
                                             # update rosinstall file
