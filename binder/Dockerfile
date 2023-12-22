@@ -32,7 +32,7 @@ RUN wstool merge https://raw.githubusercontent.com/SemRoCo/giskardpy/master/rosi
                                             # update rosinstall file
 RUN wstool update       # pull source repositories
 USER root                        
-RUN rosdep install -y --ignore-src --from-paths ./ -r \  # install dependencies available through apt
+RUN rosdep install -y --ignore-src --from-paths .  # install dependencies available through apt
 RUN pip3 install -r giskardpy/requirements.txt  # install python deps
 RUN cd ..                                       # go to workspace directory
 USER ${NB_USER}
