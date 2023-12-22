@@ -21,6 +21,23 @@ RUN pip install --requirement ${PYCRAM_WS}/src/pycram/requirements.txt --user
 RUN pip install --requirement ${PYCRAM_WS}/src/pycram/src/neem_interface_python/requirements.txt --user \
   && pip cache purge
 
+#############################################
+RUN source /opt/ros/noetic/setup.bash           # source ROS
+RUN mkdir -p ${PYCRAM_WS}/src/giskard_ws/src                 # create directory for workspace
+RUN cd -p ${PYCRAM_WS}/src/giskard_ws/src                         # go to workspace directory
+RUN catkin init                                 # init workspace, you might have to pip install catkin-tools
+RUN cd src                                      # go to source directory of workspace
+RUN wstool init                                 # init rosinstall
+RUN wstool merge https://raw.githubusercontent.com/SemRoCo/giskardpy/master/rosinstall/noetic.rosinstall
+                                            # update rosinstall file
+RUN wstool update                               # pull source repositories
+RUN rosdep install --ignore-src --from-paths .  # install dependencies available through apt
+RUN pip3 install -r giskardpy/requirements.txt  # install python deps
+RUN cd ..                                       # go to workspace directory
+RUN catkin build                                # build packages
+RUN source ~/giskardpy_ws/devel/setup.bash      # source new overlay
+#############################################
+
 RUN pip uninstall numpy -y
 RUN pip install --upgrade pip
 
