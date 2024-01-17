@@ -19,7 +19,9 @@ RUN sudo sh -c '/bin/echo -e "Package: ros-noetic-laser-ortho-projector\nPin: ve
 RUN apt-get update
 RUN apt-get install -y ros-noetic-tmc-desktop-full
 
+
 # === Following step should be replace to ===
+USER ${NB_USER}
 RUN cd pycram \
   && git submodule update --init \
   && git clone https://github.com/Tigul/neem_interface_python.git src/neem_interface_python \
