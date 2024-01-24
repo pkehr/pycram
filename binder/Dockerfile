@@ -1,13 +1,11 @@
 FROM intel4coro/base-notebook:20.04-noetic-full-xpra
 
+# Set environment
 ENV PATH=$PATH:/home/user/.local/bin
 ENV PYCRAM_WS=/home/${NB_USER}/workspace/ros
 WORKDIR ${PYCRAM_WS}/src/
 COPY --chown=${NB_USER}:users . pycram/
 RUN vcs import --input pycram/binder/pycram-http.rosinstall --recursive
-
-COPY --chown=${NB_USER}:users binder/giskard.rosinstall /home/${NB_USER}/giskard.rosinstall
-RUN vcs import --input /home/${NB_USER}/giskard.rosinstall --recursive
 
 # === Following step should be replace to ===
 USER ${NB_USER}
@@ -25,11 +23,17 @@ RUN pip install --requirement ${PYCRAM_WS}/src/pycram/requirements.txt --user
 RUN pip install --requirement ${PYCRAM_WS}/src/pycram/src/neem_interface_python/requirements.txt --user \
   && pip cache purge
 
-RUN pip install --requirement ${PYCRAM_WS}/src/giskardpy/requirements.txt
 
+# Giskard rosinstall
+COPY --chown=${NB_USER}:users binder/giskard.rosinstall /home/${NB_USER}/giskard.rosinstall
+RUN vcs import --input /home/${NB_USER}/giskard.rosinstall --recursive
+
+# Giskard: requirements + missing packages
+RUN pip install --requirement ${PYCRAM_WS}/src/giskardpy/requirements.txt
 RUN pip install termcolor pydot
 
-WORKDIR /home/${NB_USER}
+# Giskard: Pybind + betterpybullet
+WORKDIR /home/${NB_USER} 
 RUN git clone https://github.com/pybind/pybind11.git \
   && cd pybind11 \
   && mkdir build \
@@ -44,23 +48,7 @@ COPY --chown=${NB_USER}:users binder/build_cmake_pybullet_3.10_double.sh /home/$
 RUN cd bullet3 && ./build_cmake_pybullet_3.10_double.sh
 ENV PYTHONPATH=${PYTHONPATH}:/home/${NB_USER}/bullet3/build_cmake/better_python:/home/${NB_USER}/bullet3/examples/pybullet
 
-#############################################
-#RUN source /opt/ros/noetic/setup.bash           # source ROS
-#RUN mkdir -p ${PYCRAM_WS}/src/giskard_ws/src                 # create directory for workspace
-#RUN cd ${PYCRAM_WS}/src/giskard_ws                         # go to workspace directory
-#RUN catkin init                                 # init workspace, you might have to pip install catkin-tools
-#RUN cd ${PYCRAM_WS}/src/giskard_ws/src                                      # go to source directory of workspace
-#RUN wstool merge https://raw.githubusercontent.com/SemRoCo/giskardpy/master/rosinstall/noetic.rosinstall
-                                           # update rosinstall file
-#RUN wstool update       # pull source repositories
-#USER root
-#RUN apt-get update
-#RUN rosdep install -y --ignore-src --from-paths .  # install dependencies available through apt
-#RUN pip3 install -r giskardpy/requirements.txt  # install python deps
-#RUN cd ..                                       # go to workspace directory
-#RUN catkin build                                # build packages
-#############################################
-
+# Remove double numpy version 
 RUN pip uninstall numpy -y
 RUN pip install --upgrade pip
 
