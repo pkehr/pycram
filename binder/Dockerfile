@@ -6,8 +6,8 @@ WORKDIR ${PYCRAM_WS}/src/
 COPY --chown=${NB_USER}:users . pycram/
 RUN vcs import --input pycram/binder/pycram-http.rosinstall --recursive
 
-COPY --chown=${NB_USER}:users binder/noetic.rosinstall /home/${NB_USER}/noetic.rosinstall
-RUN vcs import --input /home/${NB_USER}/noetic.rosinstall --recursive
+COPY --chown=${NB_USER}:users binder/giskard.rosinstall /home/${NB_USER}/giskard.rosinstall
+RUN vcs import --input /home/${NB_USER}/giskard.rosinstall --recursive
 
 # === Following step should be replace to ===
 USER ${NB_USER}
