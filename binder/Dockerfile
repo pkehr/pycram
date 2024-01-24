@@ -25,7 +25,7 @@ RUN pip install --requirement ${PYCRAM_WS}/src/pycram/requirements.txt --user
 RUN pip install --requirement ${PYCRAM_WS}/src/pycram/src/neem_interface_python/requirements.txt --user \
   && pip cache purge
 
-RUN pip install -requirement ${PYCRAM_WS}/src/giskardpy/requirements.txt
+RUN pip install --requirement ${PYCRAM_WS}/src/giskardpy/requirements.txt
 
 RUN pip install termcolor pydot
 
