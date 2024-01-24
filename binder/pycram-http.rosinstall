@@ -7,10 +7,6 @@ repositories:
     type: git
     url: http://github.com/code-iai/iai_robots.git
     version: master
-  pycram:
-    type: git
-    url: https://github.com/cram2/pycram.git
-    version: binder-giskard
   pr2_common:
     type: git
     url: https://github.com/PR2/pr2_common.git
