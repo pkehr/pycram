@@ -4,7 +4,7 @@ source ${PYCRAM_WS}/devel/setup.bash
 roscore &
 roslaunch --wait rvizweb rvizweb.launch config_file:=${PYCRAM_WS}/src/pycram/binder/rvizweb_config.json &
 roslaunch --wait pycram ik_and_description.launch &
-roslaunch --wait giskardpy giskardpy_pr2_iai.launch &
+roslaunch --wait giskardpy giskardpy_pr2_standalone.launch &
 cp ${PYCRAM_WS}/src/pycram/binder/webapps.json ${PYCRAM_WS}/src/rvizweb/webapps/app.json 
 
 xvfb-run exec "$@"
