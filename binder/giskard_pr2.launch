@@ -1,5 +1,5 @@
 <launch>
-    <arg name="web" default="true"/>
+    <arg name="web" default="false"/>
     <arg name="gui" default="false"/>
 
     <include file="$(find pr2_description)/robots/upload_pr2.launch"/>
