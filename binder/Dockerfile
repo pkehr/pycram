@@ -37,7 +37,7 @@ RUN apt-get update
 RUN apt-get install -y ros-noetic-tmc-desktop-full
 
 # Giskard rosinstall
-COPY --chown=${NB_USER}:users binder/giskard.rosinstall /home/${NB_USER}/giskard/giskard.rosinstall
+COPY --chown=${NB_USER}:users binder/giskard/giskard.rosinstall /home/${NB_USER}/giskard/giskard.rosinstall
 RUN vcs import --input /home/${NB_USER}/giskard/giskard.rosinstall --recursive
 
 # Giskard: requirements + missing packages
