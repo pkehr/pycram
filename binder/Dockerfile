@@ -82,7 +82,7 @@ RUN catkin build
 COPY --chown=${NB_USER}:users binder/giskard_decomposed_obj ${ROS_WS}/src/giskardpy/tmp
 
 # Jupyter Config
-COPY --chown=${NB_USER}:users binder/jupyter-settings.json /opt/conda/share/jupyter/lab/settings/overrides.json
+COPY --chown=${NB_USER}:users binder/jupyter-config.json /opt/conda/share/jupyter/lab/settings/overrides.json
 
 WORKDIR ${PYCRAM_WS}/src/pycram
 RUN git config --global --add safe.directory ${PWD}
