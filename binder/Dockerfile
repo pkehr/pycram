@@ -81,6 +81,9 @@ RUN catkin build
 # Copy the giskard tmp meshes to skip the converting step
 COPY --chown=${NB_USER}:users binder/giskard_decomposed_obj ${ROS_WS}/src/giskardpy/tmp
 
+# Jupyter Config
+COPY --chown=${NB_USER}:users binder/jupyter-settings.json /opt/conda/share/jupyter/lab/settings/overrides.json
+
 WORKDIR ${PYCRAM_WS}/src/pycram
 RUN git config --global --add safe.directory ${PWD}
 COPY --chown=${NB_USER}:users binder/entrypoint.sh /
