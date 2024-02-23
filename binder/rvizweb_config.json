@@ -17,11 +17,12 @@
     },
     {
       "isShown": true,
-      "name": "Marker array",
+      "name": "Robot model",
       "options": {
-        "topic": "/giskard/visualization_marker_array"
+        "param": "robot_description",
+        "tfPrefix": "simulated/hsrb_1"
       },
-      "type": "markerArray"
+      "type": "urdf"
     }
   ]
 }
