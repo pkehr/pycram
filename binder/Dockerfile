@@ -15,6 +15,9 @@ WORKDIR ${PYCRAM_WS}/src/pycram
 RUN pip install --requirement src/neem_interface_python/requirements.txt \
   && pip install --requirement requirements.txt
 
+RUN pip uninstall numpy -y
+RUN pip install --upgrade pip
+
 # Install ROS dependencies
 WORKDIR  ${PYCRAM_WS}
 USER root
