@@ -17,6 +17,7 @@ RUN pip install --requirement src/neem_interface_python/requirements.txt \
 
 RUN pip uninstall numpy -y
 RUN pip install --upgrade pip
+RUN pip install numpy
 
 # Install ROS dependencies
 WORKDIR  ${PYCRAM_WS}
