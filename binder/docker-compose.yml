@@ -1,7 +1,7 @@
 version: '3'
 services:
   pycram:
-    image: pycram:binder-xpra
+    image: pycram:binder
     build:
       context: ../
       dockerfile: ./binder/Dockerfile
@@ -10,21 +10,20 @@ services:
     ports: 
       - 8888:8888
     privileged: true
-    # user: root
-    working_dir: /home/jovyan/
+    user: root
     command: jupyter lab --allow-root --NotebookApp.token='' --no-browser --ip=0.0.0.0
-    entrypoint: ["/home/jovyan/work/binder/entrypoint.sh"]
+    entrypoint: ["/home/jovyan/workspace/ros/src/pycram/binder/entrypoint.sh"]
     volumes:
-      - ../:/home/jovyan/work
+      - ../:/home/jovyan/workspace/src/pycram:rw
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
     environment:
       - DISPLAY
       - QT_X11_NO_MITSHM=1
-      - NVIDIA_DRIVER_CAPABILITIES=all
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all
-              capabilities: [gpu]
+    #   - NVIDIA_DRIVER_CAPABILITIES=all
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
