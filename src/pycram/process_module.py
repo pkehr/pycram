@@ -7,7 +7,6 @@ ProcessModule -- implementation of process modules.
 from __future__ import annotations
 import inspect
 import threading
-import time
 from abc import ABC
 from typing_extensions import Callable, Type, Any, Union
 
@@ -61,7 +60,7 @@ class ProcessModule:
         with self._lock:
             ret = self._execute(designator)
             if ProcessModule.execution_delay:
-                time.sleep(0.5)
+                rospy.sleep(0.5)
 
         return ret
 

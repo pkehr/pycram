@@ -1,7 +1,7 @@
 # used for delayed evaluation of typing until python 3.11 becomes mainstream
 from __future__ import annotations
 
-import time
+import rospy
 from typing_extensions import Iterable, Optional, Callable, Dict, Any, List, Union
 from anytree import NodeMixin, Node, PreOrderIter
 
@@ -276,7 +276,7 @@ class Monitor(Language):
         """
         def check_condition():
             while not self.condition.get_value() and not self.kill_event.is_set():
-                time.sleep(0.1)
+                rospy.sleep(0.1)
             if self.kill_event.is_set():
                 return
             for child in self.children:

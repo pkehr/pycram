@@ -1,4 +1,3 @@
-import time
 import rospy
 import threading
 import atexit
@@ -93,7 +92,7 @@ class TFBroadcaster:
         """
         while not self.kill_event.is_set():
             self.update()
-            time.sleep(self.interval)
+            rospy.sleep(self.interval)
 
     def _stop_publishing(self) -> None:
         """

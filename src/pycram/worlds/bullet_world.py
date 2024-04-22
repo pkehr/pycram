@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import threading
-import time
 
 import numpy as np
 import pybullet as p
@@ -53,7 +52,7 @@ class BulletWorld(World):
         p.setPhysicsEngineParameter(enableFileCaching=0)
 
         # Needed to let the other thread start the simulation, before Objects are spawned.
-        time.sleep(0.1)
+        rospy.sleep(0.1)
         self.vis_axis: List[int] = []
 
         # Some default settings
@@ -66,7 +65,7 @@ class BulletWorld(World):
     def _init_world(self, mode: WorldMode):
         self._gui_thread: Gui = Gui(self, mode)
         self._gui_thread.start()
-        time.sleep(0.1)
+        rospy.sleep(0.1)
 
     def load_object_and_get_id(self, path: Optional[str] = None, pose: Optional[Pose] = None) -> int:
         if pose is None:
@@ -548,4 +547,4 @@ class Gui(threading.Thread):
                 if visible == 0:
                     camera_target_position = (0.0, -50, 50)
                 p.resetBasePositionAndOrientation(sphere_uid, camera_target_position, [0, 0, 0, 1], physicsClientId=self.world.id)
-                time.sleep(1. / 80.)
+                rospy.sleep(1. / 80.)

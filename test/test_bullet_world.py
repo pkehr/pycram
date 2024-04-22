@@ -1,4 +1,5 @@
 import time
+import rospy
 import unittest
 import xml.etree.ElementTree as ET
 
@@ -132,11 +133,11 @@ class BulletWorldTest(BulletWorldTestCase):
         self.assertTrue(self.collision_called)
 
     def test_equal_world_states(self):
-        time.sleep(2)
+        rospy.sleep(2)
         self.robot.set_pose(Pose([1, 0, 0], [0, 0, 0, 1]))
         self.assertFalse(self.world.world_sync.check_for_equal())
         self.world.prospection_world.object_states = self.world.current_state.object_states
-        time.sleep(0.05)
+        rospy.sleep(0.05)
         self.assertTrue(self.world.world_sync.check_for_equal())
 
     def test_add_resource_path(self):
@@ -145,11 +146,11 @@ class BulletWorldTest(BulletWorldTestCase):
 
     def test_no_prospection_object_found_for_given_object(self):
         milk_2 = Object("milk", ObjectType.MILK, "milk.stl", pose=Pose([1.3, 1, 0.9]))
-        time.sleep(0.05)
+        rospy.sleep(0.05)
         try:
             prospection_milk_2 = self.world.get_prospection_object_for_object(milk_2)
             self.world.remove_object(milk_2)
-            time.sleep(0.1)
+            rospy.sleep(0.1)
             self.world.get_prospection_object_for_object(milk_2)
             self.assertFalse(True)
         except ValueError as e:
@@ -157,17 +158,17 @@ class BulletWorldTest(BulletWorldTestCase):
 
     def test_no_object_found_for_given_prospection_object(self):
         milk_2 = Object("milk", ObjectType.MILK, "milk.stl", pose=Pose([1.3, 1, 0.9]))
-        time.sleep(0.05)
+        rospy.sleep(0.05)
         prospection_milk = self.world.get_prospection_object_for_object(milk_2)
         self.assertTrue(self.world.get_object_for_prospection_object(prospection_milk) == milk_2)
         try:
             self.world.remove_object(milk_2)
             self.world.get_object_for_prospection_object(prospection_milk)
-            time.sleep(0.1)
+            rospy.sleep(0.1)
             self.assertFalse(True)
         except ValueError as e:
             self.assertTrue(True)
-        time.sleep(0.05)
+        rospy.sleep(0.05)
 
     def test_add_vis_axis(self):
         self.world.add_vis_axis(self.robot.get_link_pose(robot_description.get_camera_frame()))
@@ -180,7 +181,7 @@ class BulletWorldTest(BulletWorldTestCase):
         text_id = self.world.add_text("test", link.position_as_list, link.orientation_as_list, 1,
                                       Color(1, 0, 0, 1), 3, link.object_id, link.id)
         if self.world.mode == WorldMode.GUI:
-            time.sleep(4)
+            rospy.sleep(4)
 
     def test_remove_text(self):
         link: ObjectDescription.Link = self.robot.get_link(robot_description.get_camera_frame())
@@ -190,10 +191,10 @@ class BulletWorldTest(BulletWorldTestCase):
                                       Color(0, 1, 0, 1), 0, link.object_id, link.id)
 
         if self.world.mode == WorldMode.GUI:
-            time.sleep(2)
+            rospy.sleep(2)
         self.world.remove_text(text_id_1)
         if self.world.mode == WorldMode.GUI:
-            time.sleep(3)
+            rospy.sleep(3)
 
     def test_remove_all_text(self):
         link: ObjectDescription.Link = self.robot.get_link(robot_description.get_camera_frame())
@@ -202,16 +203,16 @@ class BulletWorldTest(BulletWorldTestCase):
         text_id = self.world.add_text("test 2", link.pose.position_as_list(), link.pose.orientation_as_list(), 1,
                                       Color(0, 1, 0, 1), 0, link.object_id, link.id)
         if self.world.mode == WorldMode.GUI:
-            time.sleep(2)
+            rospy.sleep(2)
         self.world.remove_text()
         if self.world.mode == WorldMode.GUI:
-            time.sleep(3)
+            rospy.sleep(3)
 
 
 @unittest.skip("Not working in CI")
 class BulletWorldTestGUI(BulletWorldGUITestCase):
     def test_add_vis_axis(self):
-        time.sleep(10)
+        rospy.sleep(10)
         self.world.add_vis_axis(self.robot.get_link_pose(robot_description.get_camera_frame()))
         self.assertTrue(len(self.world.vis_axis) == 1)
         self.world.remove_vis_axis()

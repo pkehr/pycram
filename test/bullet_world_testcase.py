@@ -1,4 +1,4 @@
-import time
+import rospy
 import unittest
 
 import pycram.task
@@ -39,7 +39,7 @@ class BulletWorldTestCase(unittest.TestCase):
 
     def tearDown(self):
         pycram.task.reset_tree()
-        time.sleep(0.05)
+        rospy.sleep(0.05)
         self.world.reset_world()
 
     @classmethod

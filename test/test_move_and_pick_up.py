@@ -1,6 +1,5 @@
 import random
 import unittest
-import time
 
 import numpy as np
 from random_events.events import Event

@@ -1,6 +1,5 @@
 import atexit
 import threading
-import time
 
 from geometry_msgs.msg import Vector3
 from std_msgs.msg import ColorRGBA
@@ -46,7 +45,7 @@ class VizMarkerPublisher:
             marker_array = self._make_marker_array()
 
             self.pub.publish(marker_array)
-            time.sleep(self.interval)
+            rospy.sleep(self.interval)
 
     def _make_marker_array(self) -> MarkerArray:
         """

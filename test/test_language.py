@@ -1,5 +1,5 @@
 import threading
-import time
+import rospy
 import unittest
 from pycram.designators.action_designator import *
 from pycram.designators.object_designator import BelieveObject
@@ -100,7 +100,7 @@ class LanguageTestCase(BulletWorldTestCase):
         act2 = MoveTorsoAction([0.3])
 
         def monitor_func():
-            time.sleep(1)
+            rospy.sleep(1)
             return True
 
         plan = act + act2 >> Monitor(monitor_func)
@@ -110,7 +110,7 @@ class LanguageTestCase(BulletWorldTestCase):
     def test_monitor_construction_error(self):
 
         def monitor_func():
-            time.sleep(1)
+            rospy.sleep(1)
             return True
 
         self.assertRaises(AttributeError, lambda: Monitor(monitor_func) >> Monitor(monitor_func))

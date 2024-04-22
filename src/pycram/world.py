@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import os
 import threading
-import time
 from abc import ABC, abstractmethod
 from copy import copy
 from queue import Queue
@@ -425,7 +424,7 @@ class World(StateEntity, ABC):
             if real_time:
                 loop_time = rospy.Time.now() - curr_time
                 time_diff = self.simulation_time_step - loop_time.to_sec()
-                time.sleep(max(0, time_diff))
+                rospy.sleep(max(0, time_diff))
         self.update_all_objects_poses()
 
     def update_all_objects_poses(self) -> None:
@@ -1058,7 +1057,7 @@ class UseProspectionWorld:
         This method is called when entering the with block, it will set the current world to the prospection world
         """
         if not World.current_world.is_prospection_world:
-            time.sleep(self.WAIT_TIME_FOR_ADDING_QUEUE * World.current_world.simulation_time_step)
+            rospy.sleep(self.WAIT_TIME_FOR_ADDING_QUEUE * World.current_world.simulation_time_step)
             # blocks until the adding queue is ready
             World.current_world.world_sync.add_obj_queue.join()
 
@@ -1132,7 +1131,7 @@ class WorldSync(threading.Thread):
 
             self.check_for_pause()
             # self.check_for_equal()
-            time.sleep(wait_time_as_n_simulation_steps * self.world.simulation_time_step)
+            rospy.sleep(wait_time_as_n_simulation_steps * self.world.simulation_time_step)
 
         self.add_obj_queue.join()
         self.remove_obj_queue.join()
@@ -1142,7 +1141,7 @@ class WorldSync(threading.Thread):
         Checks if :py:attr:`~self.pause_sync` is true and sleeps this thread until it isn't anymore.
         """
         while self.pause_sync:
-            time.sleep(0.1)
+            rospy.sleep(0.1)
 
     def check_for_equal(self) -> bool:
         """
