@@ -1,0 +1,5 @@
+<launch>
+
+<node pkg="rviz" type="rviz" name="rviz" args="-d $(find pycram)/rviz_configs/default_config.rviz" />
+
+</launch>
