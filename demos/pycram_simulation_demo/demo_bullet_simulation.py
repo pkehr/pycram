@@ -30,7 +30,7 @@ def set_robot(robot: ROBOTS):
 
     # Not working, flying randomly around
     elif robot == ROBOTS.PR2:
-        return Object("pr2", ObjectType.ROBOT, "pr2_new.urdf", pose=Pose([0, 1, 0]))
+        return Object("pr2", ObjectType.ROBOT, "pr2.urdf", pose=Pose([0, 1, 0]), ignoreCachedFiles=True)
 
     # Not able to launch yet
     elif robot == ROBOTS.HSRB:
@@ -92,7 +92,7 @@ print("now running simulation")
 world.set_gravity([0, 0, -9.8])
 world.set_realtime(True)
 
-rospy.sleep(10)
+rospy.sleep(5)
 
 simulating()
 
