@@ -10,7 +10,8 @@ from typing_extensions import Type, Optional, Dict, Tuple, List, Union
 
 from ..description import ObjectDescription, LinkDescription
 from ..object_descriptors.urdf import ObjectDescription as URDFObject
-from ..robot_descriptions import robot_description
+from ..robot_descriptions import robot_description, InitializedRobotDescription, update_robot_description
+from ..robot_manager import RobotManager
 from ..world import WorldEntity, World
 from ..world_concepts.constraints import Attachment
 from ..datastructures.dataclasses import (Color, ObjectState, LinkState, JointState,
@@ -93,6 +94,10 @@ class Object(WorldEntity):
             self._add_to_world_sync_obj_queue()
 
         self.world.objects.append(self)
+
+        if self.obj_type == ObjectType.ROBOT:
+            RobotManager.add_robot(robot_name=self.name, robot=self)
+            RobotManager.set_active_robot(self.name)
 
     @property
     def pose(self):

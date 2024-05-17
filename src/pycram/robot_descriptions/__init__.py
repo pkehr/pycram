@@ -31,13 +31,13 @@ class InitializedRobotDescription():
             logger.info("(robot-description) (Re)Loaded Description of robot %s.", self.i.name)
 
 
-def update_robot_description(robot_name=None, from_ros=None):
+def update_robot_description(robot_name=None, from_ros=None, topic='robot_description'):
     # Get robot name
     if robot_name:
         robot = robot_name
     elif from_ros:
         try:
-            urdf = rospy.get_param('robot_description')
+            urdf = rospy.get_param(topic)
         except Exception as e:
             logger.error("(robot-description) Could not get robot name from parameter server. Try again.")
             return None

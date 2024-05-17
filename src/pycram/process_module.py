@@ -17,6 +17,9 @@ from .language import Language
 from .robot_descriptions import robot_description
 from typing_extensions import TYPE_CHECKING
 
+from .robot_manager import RobotManager
+from .world_concepts.world_object import Object
+
 if TYPE_CHECKING:
     from .designators.motion_designator import BaseMotion
 
@@ -120,6 +123,7 @@ class SimulatedRobot:
 
     def __init__(self):
         self.pre: str = ""
+        self.robot = None
 
     def __enter__(self):
         """
@@ -129,14 +133,21 @@ class SimulatedRobot:
         self.pre = ProcessModuleManager.execution_type
         ProcessModuleManager.execution_type = "simulated"
 
+        if self.robot is not None:
+            print(f'Set robot: {self.robot.name}')
+            RobotManager.set_active_robot(self.robot.name)
+
     def __exit__(self, _type, value, traceback):
         """
         Exit method for the 'with' scope, sets the :py:attr:`~ProcessModuleManager.execution_type` to the previously
         used one.
         """
         ProcessModuleManager.execution_type = self.pre
+        self.robot = None
 
-    def __call__(self):
+    def __call__(self, robot=None):
+        if robot is not None:
+            self.robot = robot
         return self
 
 

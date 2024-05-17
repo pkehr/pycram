@@ -8,6 +8,7 @@ from ...designator import ActionDesignatorDescription
 from ..motion_designator import *
 from ...datastructures.pose import Pose
 from ...datastructures.enums import Arms, Grasp
+from ...robot_manager import RobotManager
 from ...task import with_tree
 from dataclasses import dataclass, field
 from ..location_designator import CostmapLocation
@@ -196,6 +197,7 @@ class ParkArmsActionPerformable(ActionAbstract):
         # add park left arm if wanted
         if self.arm in [Arms.LEFT, Arms.BOTH]:
             kwargs["left_arm_config"] = "park"
+            # TODO(?): Change description into active_robot_description (inherits from robotManager)
             left_poses = robot_description.get_static_joint_chain("left", kwargs["left_arm_config"])
 
         # add park right arm if wanted
