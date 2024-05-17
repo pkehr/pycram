@@ -1,0 +1,17 @@
+<launch>
+  <group ns="tiago">
+  <arg name="use_knowrob" default="false"/>
+
+  <node pkg="kdl_ik_service" type="start_ros_server.py" name="tiago_kdl" output="screen" />
+
+  <param name="robot_description"
+         textfile="$(find pycram)/resources/tiago_dual.urdf"/>
+
+  <!-- Use Knowrob -->
+  <group if="$(eval use_knowrob)">
+      <include file="$(find knowrob)/launch/knowrob.launch"/>
+  </group>
+
+  </group>
+
+</launch>

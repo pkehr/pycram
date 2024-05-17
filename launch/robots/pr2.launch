@@ -1,0 +1,21 @@
+<launch>
+<group ns="pr2">
+  <arg name="use_knowrob" default="false"/>
+  <!--remap from="robot_description" to="multirobot_description/pr2"/-->
+  
+  <param name="robot_description"
+         textfile="$(find pycram)/resources/pr2.urdf"/>
+  <node pkg="kdl_ik_service" type="start_ros_server.py" name="pr2_kdl" output="screen" />
+
+  <include file="$(find pr2_arm_kinematics)/launch/pr2_ik_larm_node.launch"/>
+  <include file="$(find pr2_arm_kinematics)/launch/pr2_ik_rarm_node.launch"/>
+  <param name="robot_description"
+         textfile="$(find pycram)/resources/pr2.urdf"/>
+  
+  <!-- Use Knowrob -->
+  <group if="$(eval use_knowrob)">
+      <include file="$(find knowrob)/launch/knowrob.launch"/>
+  </group>
+</group>
+
+</launch>
