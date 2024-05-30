@@ -1,5 +1,5 @@
 <launch>
-  <group ns="tiago">
+  <group ns="tiago_dual">
   <arg name="use_knowrob" default="false"/>
 
   <node pkg="kdl_ik_service" type="start_ros_server.py" name="tiago_kdl" output="screen" />
