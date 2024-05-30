@@ -6,7 +6,6 @@ import sys
 import rosnode
 
 from pycram.datastructures.pose import Pose
-from ..robot_descriptions import robot_description
 from pycram.world import World
 from pycram.datastructures.dataclasses import MeshVisualShape
 from pycram.world_concepts.world_object import Object
@@ -15,6 +14,8 @@ from ..robot_description import ManipulatorDescription
 from typing_extensions import List, Dict, Callable, Optional
 from geometry_msgs.msg import PoseStamped, PointStamped, QuaternionStamped, Vector3Stamped
 from threading import Lock, RLock
+
+from ..robot_manager import get_robot_description
 
 try:
     from giskardpy.python_interface import GiskardWrapper
@@ -127,11 +128,11 @@ def sync_worlds() -> None:
     add_gripper_groups()
     world_object_names = set()
     for obj in World.current_world.objects:
-        if obj.name != robot_description.name and len(obj.link_name_to_id) != 1:
+        if obj.name != get_robot_description().name and len(obj.link_name_to_id) != 1:
             world_object_names.add(obj.name + "_" + str(obj.id))
 
     giskard_object_names = set(giskard_wrapper.get_group_names())
-    robot_name = {robot_description.name}
+    robot_name = {get_robot_description().name}
     if not world_object_names.union(robot_name).issubset(giskard_object_names):
         giskard_wrapper.clear_world()
     initial_adding_objects()
@@ -235,20 +236,22 @@ def _manage_par_motion_goals(goal_func, *args) -> Optional['MoveResult']:
                 for con in cmd.constraints:
                     par_value_pair = json.loads(con.parameter_value_pair)
                     if "tip_link" in par_value_pair.keys() and "root_link" in par_value_pair.keys():
-                        if par_value_pair["tip_link"] == robot_description.base_link:
+                        if par_value_pair["tip_link"] == get_robot_description().base_link:
                             continue
                         chain = World.robot.description.get_chain(par_value_pair["root_link"],
                                                                   par_value_pair["tip_link"])
                         if set(chain).intersection(used_joints) != set():
                             giskard_wrapper.cmd_seq = tmp
-                            raise AttributeError(f"The joint(s) {set(chain).intersection(used_joints)} is used by multiple Designators")
+                            raise AttributeError(
+                                f"The joint(s) {set(chain).intersection(used_joints)} is used by multiple Designators")
                         else:
                             [used_joints.add(joint) for joint in chain]
 
                     elif "goal_state" in par_value_pair.keys():
                         if set(par_value_pair["goal_state"].keys()).intersection(used_joints) != set():
                             giskard_wrapper.cmd_seq = tmp
-                            raise AttributeError(f"The joint(s) {set(par_value_pair['goal_state'].keys()).intersection(used_joints)} is used by multiple Designators")
+                            raise AttributeError(
+                                f"The joint(s) {set(par_value_pair['goal_state'].keys()).intersection(used_joints)} is used by multiple Designators")
                         else:
                             [used_joints.add(joint) for joint in par_value_pair["goal_state"].keys()]
 
@@ -500,10 +503,10 @@ def add_gripper_groups() -> None:
             if "gripper" in name:
                 return
 
-        for name, description in robot_description.chains.items():
+        for name, description in get_robot_description().chains.items():
             if isinstance(description, ManipulatorDescription):
-                root_link = robot_description.chains[name].gripper.links[-1]
-                giskard_wrapper.register_group(name + "_gripper", root_link, robot_description.name)
+                root_link = get_robot_description().chains[name].gripper.links[-1]
+                giskard_wrapper.register_group(name + "_gripper", root_link, get_robot_description().name)
 
 
 @init_giskard_interface

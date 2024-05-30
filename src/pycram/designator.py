@@ -8,6 +8,7 @@ from inspect import isgenerator, isgeneratorfunction
 from sqlalchemy.orm.session import Session
 import rospy
 
+from .robot_manager import get_robot_description
 from .world import World
 from .world_concepts.world_object import Object as WorldObject
 from .helper import GeneratorList, bcolors
@@ -18,7 +19,6 @@ from typing_extensions import List, Dict, Any, Optional, Union, Callable, Iterab
 from .local_transformer import LocalTransformer
 from .language import Language
 from .datastructures.pose import Pose
-from .robot_descriptions import robot_description
 from .datastructures.enums import ObjectType
 
 import logging
@@ -65,7 +65,6 @@ class Designator(ABC):
 
     :ivar timestamp: The timestamp of creation of reference or None if still not referencing an object.
     """
-
 
     resolvers = {}
     """
@@ -390,7 +389,7 @@ class ActionDesignatorDescription(DesignatorDescription, Language):
 
         def __post_init__(self):
             self.robot_position = World.robot.get_pose()
-            self.robot_torso_height = World.robot.get_joint_position(robot_description.torso_joint)
+            self.robot_torso_height = World.robot.get_joint_position(get_robot_description().torso_joint)
             self.robot_type = World.robot.obj_type
 
         @with_tree

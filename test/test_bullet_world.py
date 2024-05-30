@@ -7,9 +7,9 @@ import rospkg
 from bullet_world_testcase import BulletWorldTestCase, BulletWorldGUITestCase
 from pycram.datastructures.enums import ObjectType, WorldMode
 from pycram.datastructures.pose import Pose
-from pycram.robot_descriptions import robot_description
 from pycram.object_descriptors.urdf import ObjectDescription
 from pycram.datastructures.dataclasses import Color
+from pycram.robot_manager import get_robot_description
 from pycram.world_concepts.world_object import Object
 
 fix_missing_inertial = ObjectDescription.fix_missing_inertial
@@ -60,8 +60,8 @@ class BulletWorldTest(BulletWorldTestCase):
         self.assertTrue(robot_id in [obj.id for obj in self.world.objects])
         self.world.remove_object(self.robot)
         self.assertTrue(robot_id not in [obj.id for obj in self.world.objects])
-        BulletWorldTest.robot = Object(robot_description.name, ObjectType.ROBOT,
-                                       robot_description.name + self.extension)
+        BulletWorldTest.robot = Object(get_robot_description().name, ObjectType.ROBOT,
+                                       get_robot_description().name + self.extension)
 
     def test_get_joint_position(self):
         self.assertEqual(self.robot.get_joint_position("head_pan_joint"), 0.0)
@@ -170,20 +170,20 @@ class BulletWorldTest(BulletWorldTestCase):
         time.sleep(0.05)
 
     def test_add_vis_axis(self):
-        self.world.add_vis_axis(self.robot.get_link_pose(robot_description.get_camera_frame()))
+        self.world.add_vis_axis(self.robot.get_link_pose(get_robot_description().get_camera_frame()))
         self.assertTrue(len(self.world.vis_axis) == 1)
         self.world.remove_vis_axis()
         self.assertTrue(len(self.world.vis_axis) == 0)
 
     def test_add_text(self):
-        link: ObjectDescription.Link = self.robot.get_link(robot_description.get_camera_frame())
+        link: ObjectDescription.Link = self.robot.get_link(get_robot_description().get_camera_frame())
         text_id = self.world.add_text("test", link.position_as_list, link.orientation_as_list, 1,
                                       Color(1, 0, 0, 1), 3, link.object_id, link.id)
         if self.world.mode == WorldMode.GUI:
             time.sleep(4)
 
     def test_remove_text(self):
-        link: ObjectDescription.Link = self.robot.get_link(robot_description.get_camera_frame())
+        link: ObjectDescription.Link = self.robot.get_link(get_robot_description().get_camera_frame())
         text_id_1 = self.world.add_text("test 1", link.pose.position_as_list(), link.pose.orientation_as_list(), 1,
                                         Color(1, 0, 0, 1), 0, link.object_id, link.id)
         text_id = self.world.add_text("test 2", link.pose.position_as_list(), link.pose.orientation_as_list(), 1,
@@ -196,7 +196,7 @@ class BulletWorldTest(BulletWorldTestCase):
             time.sleep(3)
 
     def test_remove_all_text(self):
-        link: ObjectDescription.Link = self.robot.get_link(robot_description.get_camera_frame())
+        link: ObjectDescription.Link = self.robot.get_link(get_robot_description().get_camera_frame())
         text_id_1 = self.world.add_text("test 1", link.pose.position_as_list(), link.pose.orientation_as_list(), 1,
                                         Color(1, 0, 0, 1), 0, link.object_id, link.id)
         text_id = self.world.add_text("test 2", link.pose.position_as_list(), link.pose.orientation_as_list(), 1,
@@ -212,7 +212,7 @@ class BulletWorldTest(BulletWorldTestCase):
 class BulletWorldTestGUI(BulletWorldGUITestCase):
     def test_add_vis_axis(self):
         time.sleep(10)
-        self.world.add_vis_axis(self.robot.get_link_pose(robot_description.get_camera_frame()))
+        self.world.add_vis_axis(self.robot.get_link_pose(get_robot_description().get_camera_frame()))
         self.assertTrue(len(self.world.vis_axis) == 1)
         self.world.remove_vis_axis()
         self.assertTrue(len(self.world.vis_axis) == 0)

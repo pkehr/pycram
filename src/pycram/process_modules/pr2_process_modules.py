@@ -7,7 +7,6 @@ from .. import world_reasoning as btr
 import numpy as np
 import rospy
 
-
 from ..process_module import ProcessModule, ProcessModuleManager
 from ..external_interfaces.ik import request_ik
 from ..helper import _apply_ik
@@ -16,7 +15,7 @@ from ..designators.object_designator import ObjectDesignatorDescription
 from ..designators.motion_designator import MoveMotion, LookingMotion, \
     DetectingMotion, MoveTCPMotion, MoveArmJointsMotion, WorldStateDetectingMotion, MoveJointsMotion, \
     MoveGripperMotion, OpeningMotion, ClosingMotion
-from ..robot_descriptions import robot_description
+from ..robot_manager import get_robot_description
 from ..world import World
 from ..world_concepts.world_object import Object
 from ..datastructures.pose import Pose
@@ -39,10 +38,10 @@ def _park_arms(arm):
 
     robot = World.robot
     if arm == "right":
-        for joint, pose in robot_description.get_static_joint_chain("right", "park").items():
+        for joint, pose in get_robot_description().get_static_joint_chain("right", "park").items():
             robot.set_joint_position(joint, pose)
     if arm == "left":
-        for joint, pose in robot_description.get_static_joint_chain("left", "park").items():
+        for joint, pose in get_robot_description().get_static_joint_chain("left", "park").items():
             robot.set_joint_position(joint, pose)
 
 
@@ -61,6 +60,7 @@ class Pr2MoveHead(ProcessModule):
         This process module moves the head to look at a specific point in the world coordinate frame.
         This point can either be a position or an object.
         """
+
     def _execute(self, desig: LookingMotion):
         target = desig.target
         robot = World.robot
@@ -89,7 +89,7 @@ class Pr2MoveGripper(ProcessModule):
         robot = World.robot
         gripper = desig.gripper
         motion = desig.motion
-        for joint, state in robot_description.get_static_gripper_chain(gripper, motion).items():
+        for joint, state in get_robot_description().get_static_gripper_chain(gripper, motion).items():
             robot.set_joint_position(joint, state)
 
 
@@ -103,9 +103,9 @@ class Pr2Detecting(ProcessModule):
         robot = World.robot
         object_type = desig.object_type
         # Should be "wide_stereo_optical_frame"
-        cam_frame_name = robot_description.get_camera_frame()
+        cam_frame_name = get_robot_description().get_camera_frame()
         # should be [0, 0, 1]
-        front_facing_axis = robot_description.front_facing_axis
+        front_facing_axis = get_robot_description().front_facing_axis
 
         objects = World.current_world.get_object_by_type(object_type)
         for obj in objects:
@@ -144,6 +144,7 @@ class PR2MoveJoints(ProcessModule):
     """
     Process Module for generic joint movements, is not confined to the arms but can move any joint of the robot
     """
+
     def _execute(self, desig: MoveJointsMotion):
         robot = World.robot
         robot.set_joint_positions(dict(zip(desig.names, desig.positions)))
@@ -176,7 +177,7 @@ class Pr2Open(ProcessModule):
 
         desig.object_part.world_object.set_joint_position(container_joint,
                                                           part_of_object.get_joint_limits(
-                                                                  container_joint)[1] - 0.05)
+                                                              container_joint)[1] - 0.05)
 
 
 class Pr2Close(ProcessModule):
@@ -196,13 +197,13 @@ class Pr2Close(ProcessModule):
 
         desig.object_part.world_object.set_joint_position(container_joint,
                                                           part_of_object.get_joint_limits(
-                                                                  container_joint)[0])
+                                                              container_joint)[0])
 
 
 def _move_arm_tcp(target: Pose, robot: Object, arm: str) -> None:
-    gripper = robot_description.get_tool_frame(arm)
+    gripper = get_robot_description().get_tool_frame(arm)
 
-    joints = robot_description.chains[arm].joints
+    joints = get_robot_description().chains[arm].joints
 
     inv = request_ik(target, robot, joints, gripper)
     _apply_ik(robot, inv, joints)
@@ -220,7 +221,7 @@ class Pr2NavigationReal(ProcessModule):
 
     def _execute(self, designator: MoveMotion) -> Any:
         rospy.logdebug(f"Sending goal to giskard to Move the robot")
-        giskard.achieve_cartesian_goal(designator.target, robot_description.base_link, "map")
+        giskard.achieve_cartesian_goal(designator.target, get_robot_description().base_link, "map")
 
 
 class Pr2MoveHeadReal(ProcessModule):
@@ -277,6 +278,7 @@ class Pr2DetectingReal(ProcessModule):
 
         return world_obj[0]
 
+
 class Pr2MoveTCPReal(ProcessModule):
     """
     Moves the tool center point of the real PR2 while avoiding all collisions
@@ -288,9 +290,9 @@ class Pr2MoveTCPReal(ProcessModule):
 
         if designator.allow_gripper_collision:
             giskard.allow_gripper_collision(designator.arm)
-        giskard.achieve_cartesian_goal(pose_in_map, robot_description.get_tool_frame(designator.arm),
+        giskard.achieve_cartesian_goal(pose_in_map, get_robot_description().get_tool_frame(designator.arm),
                                        "torso_lift_link")
-                                       #robot_description.base_link)
+        # get_robot_description().base_link)
 
 
 class Pr2MoveArmJointsReal(ProcessModule):
@@ -354,7 +356,7 @@ class Pr2OpenReal(ProcessModule):
     """
 
     def _execute(self, designator: OpeningMotion) -> Any:
-        giskard.achieve_open_container_goal(robot_description.get_tool_frame(designator.arm),
+        giskard.achieve_open_container_goal(get_robot_description().get_tool_frame(designator.arm),
                                             designator.object_part.name)
 
 
@@ -364,7 +366,7 @@ class Pr2CloseReal(ProcessModule):
     """
 
     def _execute(self, designator: ClosingMotion) -> Any:
-        giskard.achieve_close_container_goal(robot_description.get_tool_frame(designator.arm),
+        giskard.achieve_close_container_goal(get_robot_description().get_tool_frame(designator.arm),
                                              designator.object_part.name)
 
 

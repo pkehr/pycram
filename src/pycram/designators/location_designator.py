@@ -2,11 +2,11 @@ import dataclasses
 from typing_extensions import List, Union, Iterable, Optional, Callable
 
 from .object_designator import ObjectDesignatorDescription, ObjectPart
+from ..robot_manager import get_robot_description
 from ..world import World, UseProspectionWorld
 from ..world_reasoning import link_pose_for_joint_config
 from ..designator import DesignatorError, LocationDesignatorDescription
 from ..costmaps import OccupancyCostmap, VisibilityCostmap, SemanticCostmap, GaussianCostmap
-from ..robot_descriptions import robot_description
 from ..datastructures.enums import JointType
 from ..helper import transform
 from ..pose_generator_and_validator import PoseGenerator, visibility_validator, reachability_validator
@@ -153,8 +153,8 @@ class CostmapLocation(LocationDesignatorDescription):
 
            :yield: An instance of CostmapLocation.Location with a valid position that satisfies the given constraints
            """
-        min_height = list(robot_description.cameras.values())[0].min_height
-        max_height = list(robot_description.cameras.values())[0].max_height
+        min_height = list(get_robot_description().cameras.values())[0].min_height
+        max_height = list(get_robot_description().cameras.values())[0].max_height
         # This ensures that the costmaps always get a position as their origin.
         if isinstance(self.target, ObjectDesignatorDescription.Object):
             target_pose = self.target.world_object.get_pose()
@@ -188,7 +188,7 @@ class CostmapLocation(LocationDesignatorDescription):
                                                        World.current_world)
                 if self.reachable_for:
                     hand_links = []
-                    for name, chain in robot_description.chains.items():
+                    for name, chain in get_robot_description().chains.items():
                         if isinstance(chain, ManipulatorDescription):
                             hand_links += chain.gripper.links
                     valid, arms = reachability_validator(maybe_pose, test_robot, target_pose,
@@ -273,10 +273,11 @@ class AccessingLocation(LocationDesignatorDescription):
 
         with UseProspectionWorld():
             for maybe_pose in PoseGenerator(final_map, number_of_samples=600,
-                                             orientation_generator=lambda p, o: PoseGenerator.generate_orientation(p, half_pose)):
+                                            orientation_generator=lambda p, o: PoseGenerator.generate_orientation(p,
+                                                                                                                  half_pose)):
 
                 hand_links = []
-                for name, chain in robot_description.chains.items():
+                for name, chain in get_robot_description().chains.items():
                     if isinstance(chain, ManipulatorDescription):
                         hand_links += chain.gripper.links
 

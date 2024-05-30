@@ -1,12 +1,14 @@
 import rospy
 import atexit
 import tf
-import time 
+import time
 
 from geometry_msgs.msg import TransformStamped
 from sensor_msgs.msg import JointState
+
+from pycram.robot_manager import get_robot_description
 from pycram.world import World
-from ..robot_descriptions import robot_description
+
 from pycram.datastructures.pose import Pose
 
 
@@ -42,7 +44,7 @@ class RobotStateUpdater:
 
         :param msg: TransformStamped message published to the topic
         """
-        trans, rot = self.tf_listener.lookupTransform("/map", robot_description.base_frame, rospy.Time(0))
+        trans, rot = self.tf_listener.lookupTransform("/map", get_robot_description().base_frame, rospy.Time(0))
         World.robot.set_pose(Pose(trans, rot))
 
     def _subscribe_joint_state(self, msg: JointState) -> None:

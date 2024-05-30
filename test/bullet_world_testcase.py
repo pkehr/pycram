@@ -2,10 +2,10 @@ import time
 import unittest
 
 import pycram.task
+from pycram.robot_manager import get_robot_description
 from pycram.worlds.bullet_world import BulletWorld
 from pycram.world_concepts.world_object import Object
 from pycram.datastructures.pose import Pose
-from pycram.robot_descriptions import robot_description
 from pycram.process_module import ProcessModule
 from pycram.datastructures.enums import ObjectType, WorldMode
 from pycram.object_descriptors.urdf import ObjectDescription
@@ -22,8 +22,8 @@ class BulletWorldTestCase(unittest.TestCase):
     def setUpClass(cls):
         cls.world = BulletWorld(mode=WorldMode.DIRECT)
         cls.milk = Object("milk", ObjectType.MILK, "milk.stl", pose=Pose([1.3, 1, 0.9]))
-        cls.robot = Object(robot_description.name, ObjectType.ROBOT,
-                           robot_description.name + cls.extension)
+        cls.robot = Object(get_robot_description().name, ObjectType.ROBOT,
+                           get_robot_description().name + cls.extension)
         cls.kitchen = Object("kitchen", ObjectType.ENVIRONMENT, "kitchen" + cls.extension)
         cls.cereal = Object("cereal", ObjectType.BREAKFAST_CEREAL, "breakfast_cereal.stl",
                             ObjectDescription, pose=Pose([1.3, 0.7, 0.95]))
@@ -57,8 +57,8 @@ class BulletWorldGUITestCase(unittest.TestCase):
     def setUpClass(cls):
         cls.world = BulletWorld(mode=WorldMode.GUI)
         cls.milk = Object("milk", ObjectType.MILK, "milk.stl", pose=Pose([1.3, 1, 0.9]))
-        cls.robot = Object(robot_description.name, ObjectType.ROBOT,
-                           robot_description.name + cls.extension)
+        cls.robot = Object(get_robot_description().name, ObjectType.ROBOT,
+                           get_robot_description().name + cls.extension)
         cls.kitchen = Object("kitchen", ObjectType.ENVIRONMENT, "kitchen" + cls.extension)
         cls.cereal = Object("cereal", ObjectType.BREAKFAST_CEREAL, "breakfast_cereal.stl",
                             ObjectDescription, pose=Pose([1.3, 0.7, 0.95]))

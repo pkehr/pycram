@@ -2,11 +2,11 @@ from threading import Lock
 
 import numpy as np
 
+from ..robot_manager import get_robot_description
 from ..worlds.bullet_world import World
 from ..designators.motion_designator import MoveArmJointsMotion, WorldStateDetectingMotion
 from ..local_transformer import LocalTransformer
 from ..process_module import ProcessModule, ProcessModuleManager
-from ..robot_descriptions import robot_description
 from ..process_modules.pr2_process_modules import Pr2Detecting as DonbotDetecting, _move_arm_tcp
 
 
@@ -19,7 +19,7 @@ def _park_arms(arm):
 
     robot = World.robot
     if arm == "left":
-        for joint, pose in robot_description.get_static_joint_chain("left", "park").items():
+        for joint, pose in get_robot_description().get_static_joint_chain("left", "park").items():
             robot.set_joint_position(joint, pose)
 
 
@@ -46,7 +46,7 @@ class DonbotPlace(ProcessModule):
         object_pose = obj.get_pose()
         local_tf = LocalTransformer()
         tcp_to_object = local_tf.transform_pose(object_pose,
-                                                robot.get_link_tf_frame(robot_description.get_tool_frame("left")))
+                                                robot.get_link_tf_frame(get_robot_description().get_tool_frame("left")))
         target_diff = desig.target.to_transform("target").inverse_times(tcp_to_object.to_transform("object")).to_pose()
 
         _move_arm_tcp(target_diff, robot, "left")
@@ -68,13 +68,13 @@ class DonbotMoveHead(ProcessModule):
         pose_in_shoulder = local_transformer.transform_pose(target, robot.get_link_tf_frame("ur5_shoulder_link"))
 
         if pose_in_shoulder.position.x >= 0 and pose_in_shoulder.position.x >= abs(pose_in_shoulder.position.y):
-            robot.set_joint_positions(robot_description.get_static_joint_chain("left", "front"))
+            robot.set_joint_positions(get_robot_description().get_static_joint_chain("left", "front"))
         if pose_in_shoulder.position.y >= 0 and pose_in_shoulder.position.y >= abs(pose_in_shoulder.position.x):
-            robot.set_joint_positions(robot_description.get_static_joint_chain("left", "arm_right"))
+            robot.set_joint_positions(get_robot_description().get_static_joint_chain("left", "arm_right"))
         if pose_in_shoulder.position.x <= 0 and abs(pose_in_shoulder.position.x) > abs(pose_in_shoulder.position.y):
-            robot.set_joint_positions(robot_description.get_static_joint_chain("left", "back"))
+            robot.set_joint_positions(get_robot_description().get_static_joint_chain("left", "back"))
         if pose_in_shoulder.position.y <= 0 and abs(pose_in_shoulder.position.y) > abs(pose_in_shoulder.position.x):
-            robot.set_joint_positions(robot_description.get_static_joint_chain("left", "arm_left"))
+            robot.set_joint_positions(get_robot_description().get_static_joint_chain("left", "arm_left"))
 
         pose_in_shoulder = local_transformer.transform_pose(target, robot.get_link_tf_frame("ur5_shoulder_link"))
 
@@ -93,7 +93,7 @@ class DonbotMoveGripper(ProcessModule):
         robot = World.robot
         gripper = desig.gripper
         motion = desig.motion
-        robot.set_joint_positions(robot_description.get_static_gripper_chain(gripper, motion))
+        robot.set_joint_positions(get_robot_description().get_static_gripper_chain(gripper, motion))
 
 
 class DonbotMoveTCP(ProcessModule):

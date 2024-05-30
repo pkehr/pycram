@@ -10,12 +10,11 @@ from typing_extensions import Type, Optional, Dict, Tuple, List, Union
 
 from ..description import ObjectDescription, LinkDescription
 from ..object_descriptors.urdf import ObjectDescription as URDFObject
-from ..robot_descriptions import robot_description, InitializedRobotDescription, update_robot_description
-from ..robot_manager import RobotManager
+from ..robot_manager import RobotManager, get_robot_description
 from ..world import WorldEntity, World
 from ..world_concepts.constraints import Attachment
 from ..datastructures.dataclasses import (Color, ObjectState, LinkState, JointState,
-                                               AxisAlignedBoundingBox, VisualShape)
+                                          AxisAlignedBoundingBox, VisualShape)
 from ..datastructures.enums import ObjectType, JointType
 from ..local_transformer import LocalTransformer
 from ..datastructures.pose import Pose, Transform
@@ -78,8 +77,8 @@ class Object(WorldEntity):
         self.tf_frame = ((self.prospection_world_prefix if self.world.is_prospection_world else "")
                          + f"{self.name}_{self.id}")
 
-        if robot_description is not None:
-            if self.description.name == robot_description.name:
+        if get_robot_description() is not None:
+            if self.description.name == get_robot_description().name:
                 self.world.set_robot_if_not_set(self)
 
         self._init_joint_name_and_id_map()

@@ -2,11 +2,12 @@ from ...external_interfaces.giskard import achieve_cartesian_goal
 from ...designators.location_designator import CostmapLocation
 from pycram.world import UseProspectionWorld, World
 from pycram.datastructures.pose import Pose
-from ...robot_descriptions import robot_description
 from pycram.pose_generator_and_validator import reachability_validator
 from typing_extensions import Tuple, Dict
 
 import tf
+
+from ...robot_manager import get_robot_description
 
 
 class GiskardLocation(CostmapLocation):
@@ -22,9 +23,9 @@ class GiskardLocation(CostmapLocation):
         """
         if self.reachable_for:
             pose_right, end_config_right = self._get_reachable_pose_for_arm(self.target,
-                                                                            robot_description.get_tool_frame("right"))
+                                                                            get_robot_description().get_tool_frame("right"))
             pose_left, end_config_left = self._get_reachable_pose_for_arm(self.target,
-                                                                          robot_description.get_tool_frame("left"))
+                                                                          get_robot_description().get_tool_frame("left"))
 
             test_robot = World.current_world.get_prospection_object_for_object(World.robot)
             with UseProspectionWorld():

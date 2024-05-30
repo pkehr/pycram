@@ -8,19 +8,17 @@ from ...designator import ActionDesignatorDescription
 from ..motion_designator import *
 from ...datastructures.pose import Pose
 from ...datastructures.enums import Arms, Grasp
-from ...robot_manager import RobotManager
+from ...robot_manager import get_robot_description
 from ...task import with_tree
 from dataclasses import dataclass, field
 from ..location_designator import CostmapLocation
 from ..object_designator import BelieveObject
-# from ...bullet_world import BulletWorld
 from ...helper import multiply_quaternions
 from ...local_transformer import LocalTransformer
 from ...orm.base import Pose as ORMPose
 from ...orm.object_designator import Object as ORMObject
 from ...orm.action_designator import Action as ORMAction
 from ...plan_failures import ObjectUnfetchable, ReachabilityFailure
-from ...robot_descriptions import robot_description
 from ...orm.action_designator import (ParkArmsAction as ORMParkArmsAction, NavigateAction as ORMNavigateAction,
                                       PickUpAction as ORMPickUpAction, PlaceAction as ORMPlaceAction,
                                       MoveTorsoAction as ORMMoveTorsoAction, SetGripperAction as ORMSetGripperAction,
@@ -118,7 +116,7 @@ class MoveTorsoActionPerformable(ActionAbstract):
 
     @with_tree
     def perform(self) -> None:
-        MoveJointsMotion([robot_description.torso_joint], [self.position]).perform()
+        MoveJointsMotion([get_robot_description().torso_joint], [self.position]).perform()
 
 
 @dataclass
@@ -198,12 +196,12 @@ class ParkArmsActionPerformable(ActionAbstract):
         if self.arm in [Arms.LEFT, Arms.BOTH]:
             kwargs["left_arm_config"] = "park"
             # TODO(?): Change description into active_robot_description (inherits from robotManager)
-            left_poses = robot_description.get_static_joint_chain("left", kwargs["left_arm_config"])
+            left_poses = get_robot_description().get_static_joint_chain("left", kwargs["left_arm_config"])
 
         # add park right arm if wanted
         if self.arm in [Arms.RIGHT, Arms.BOTH]:
             kwargs["right_arm_config"] = "park"
-            right_poses = robot_description.get_static_joint_chain("right", kwargs["right_arm_config"])
+            right_poses = get_robot_description().get_static_joint_chain("right", kwargs["right_arm_config"])
 
         MoveArmJointsMotion(left_poses, right_poses).perform()
 
@@ -244,7 +242,7 @@ class PickUpActionPerformable(ActionAbstract):
         # Retrieve object and robot from designators
         object = self.object_designator.world_object
         # Get grasp orientation and target pose
-        grasp = robot_description.grasps.get_orientation_for_grasp(self.grasp)
+        grasp = get_robot_description().grasps.get_orientation_for_grasp(self.grasp)
         # oTm = Object Pose in Frame map
         oTm = object.get_pose()
         # Transform the object pose to the object frame, basically the origin of the object frame
@@ -266,7 +264,7 @@ class PickUpActionPerformable(ActionAbstract):
 
         # prepose depending on the gripper (its annoying we have to put pr2_1 here tbh
         # gripper_frame = "pr2_1/l_gripper_tool_frame" if self.arm == "left" else "pr2_1/r_gripper_tool_frame"
-        gripper_frame = robot.get_link_tf_frame(robot_description.get_tool_frame(self.arm))
+        gripper_frame = robot.get_link_tf_frame(get_robot_description().get_tool_frame(self.arm))
         # First rotate the gripper, so the further calculations makes sense
         tmp_for_rotate_pose = object.local_transformer.transform_pose(adjusted_oTm, gripper_frame)
         tmp_for_rotate_pose.pose.position.x = 0
@@ -274,12 +272,12 @@ class PickUpActionPerformable(ActionAbstract):
         tmp_for_rotate_pose.pose.position.z = -0.1
         gripper_rotate_pose = object.local_transformer.transform_pose(tmp_for_rotate_pose, "map")
 
-        #Perform Gripper Rotate
+        # Perform Gripper Rotate
         # BulletWorld.current_bullet_world.add_vis_axis(gripper_rotate_pose)
         # MoveTCPMotion(gripper_rotate_pose, self.arm).resolve().perform()
 
         oTg = object.local_transformer.transform_pose(adjusted_oTm, gripper_frame)
-        oTg.pose.position.x -= 0.1 # in x since this is how the gripper is oriented
+        oTg.pose.position.x -= 0.1  # in x since this is how the gripper is oriented
         prepose = object.local_transformer.transform_pose(oTg, "map")
 
         # Perform the motion with the prepose and open gripper
@@ -292,7 +290,7 @@ class PickUpActionPerformable(ActionAbstract):
         MoveTCPMotion(adjusted_oTm, self.arm, allow_gripper_collision=True).perform()
         adjusted_oTm.pose.position.z += 0.03
         MoveGripperMotion(motion="close", gripper=self.arm).perform()
-        tool_frame = robot_description.get_tool_frame(self.arm)
+        tool_frame = get_robot_description().get_tool_frame(self.arm)
         robot.attach(object, tool_frame)
 
         # Lift object
@@ -331,7 +329,7 @@ class PlaceActionPerformable(ActionAbstract):
         # Transformations such that the target position is the position of the object and not the tcp
         tcp_to_object = local_tf.transform_pose(object_pose,
                                                 World.robot.get_link_tf_frame(
-                                                    robot_description.get_tool_frame(self.arm)))
+                                                    get_robot_description().get_tool_frame(self.arm)))
         target_diff = self.target_location.to_transform("target").inverse_times(
             tcp_to_object.to_transform("object")).to_pose()
 
@@ -339,7 +337,7 @@ class PlaceActionPerformable(ActionAbstract):
         MoveGripperMotion("open", self.arm).perform()
         World.robot.detach(self.object_designator.world_object)
         retract_pose = local_tf.transform_pose(target_diff, World.robot.get_link_tf_frame(
-            robot_description.get_tool_frame(self.arm)))
+            get_robot_description().get_tool_frame(self.arm)))
         retract_pose.position.x -= 0.07
         MoveTCPMotion(retract_pose, self.arm).perform()
 
@@ -383,7 +381,7 @@ class TransportActionPerformable(ActionAbstract):
 
     @with_tree
     def perform(self) -> None:
-        robot_desig = BelieveObject(names=[robot_description.name])
+        robot_desig = BelieveObject(names=[get_robot_description().name])
         ParkArmsActionPerformable(Arms.BOTH).perform()
         pickup_loc = CostmapLocation(target=self.object_designator, reachable_for=robot_desig.resolve(),
                                      reachable_arm=self.arm)
@@ -516,7 +514,7 @@ class GraspingActionPerformable(ActionAbstract):
         else:
             object_pose = self.object_desig.world_object.get_pose()
         lt = LocalTransformer()
-        gripper_name = robot_description.get_tool_frame(self.arm)
+        gripper_name = get_robot_description().get_tool_frame(self.arm)
 
         object_pose_in_gripper = lt.transform_pose(object_pose,
                                                    World.robot.get_link_tf_frame(gripper_name))

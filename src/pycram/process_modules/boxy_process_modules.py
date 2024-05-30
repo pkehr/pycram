@@ -5,11 +5,11 @@ import pycram.helper as helper
 from ..designators.motion_designator import *
 from ..datastructures.enums import JointType
 from ..external_interfaces.ik import request_ik
+from ..robot_manager import get_robot_description
 
 from ..world import World
 from ..local_transformer import LocalTransformer
 from ..process_module import ProcessModule, ProcessModuleManager
-from ..robot_descriptions import robot_description
 
 
 def _park_arms(arm):
@@ -21,10 +21,10 @@ def _park_arms(arm):
 
     robot = World.robot
     if arm == "right":
-        for joint, pose in robot_description.get_static_joint_chain("right", "park").items():
+        for joint, pose in get_robot_description().get_static_joint_chain("right", "park").items():
             robot.set_joint_state(joint, pose)
     if arm == "left":
-        for joint, pose in robot_description.get_static_joint_chain("left", "park").items():
+        for joint, pose in get_robot_description().get_static_joint_chain("left", "park").items():
             robot.set_joint_state(joint, pose)
 
 
@@ -62,6 +62,7 @@ class BoxyClose(ProcessModule):
     """
     Low-level implementation that lets the robot close a grasped container, in simulation
     """
+
     def _execute(self, desig: ClosingMotion):
         part_of_object = desig.object_part.bullet_world_object
 
@@ -104,13 +105,13 @@ class BoxyMoveHead(ProcessModule):
         pose_in_shoulder = local_transformer.transform_pose(target, robot.get_link_tf_frame("neck_shoulder_link"))
 
         if pose_in_shoulder.position.x >= 0 and pose_in_shoulder.position.x >= abs(pose_in_shoulder.position.y):
-            robot.set_joint_positions(robot_description.get_static_joint_chain("neck", "front"))
+            robot.set_joint_positions(get_robot_description().get_static_joint_chain("neck", "front"))
         if pose_in_shoulder.position.y >= 0 and pose_in_shoulder.position.y >= abs(pose_in_shoulder.position.x):
-            robot.set_joint_positions(robot_description.get_static_joint_chain("neck", "neck_right"))
+            robot.set_joint_positions(get_robot_description().get_static_joint_chain("neck", "neck_right"))
         if pose_in_shoulder.position.x <= 0 and abs(pose_in_shoulder.position.x) > abs(pose_in_shoulder.position.y):
-            robot.set_joint_positions(robot_description.get_static_joint_chain("neck", "back"))
+            robot.set_joint_positions(get_robot_description().get_static_joint_chain("neck", "back"))
         if pose_in_shoulder.position.y <= 0 and abs(pose_in_shoulder.position.y) > abs(pose_in_shoulder.position.x):
-            robot.set_joint_positions(robot_description.get_static_joint_chain("neck", "neck_left"))
+            robot.set_joint_positions(get_robot_description().get_static_joint_chain("neck", "neck_left"))
 
         pose_in_shoulder = local_transformer.transform_pose(target, robot.get_link_tf_frame("neck_shoulder_link"))
 
@@ -130,7 +131,7 @@ class BoxyMoveGripper(ProcessModule):
         robot = World.robot
         gripper = desig.gripper
         motion = desig.motion
-        robot.set_joint_positions(robot_description.get_static_gripper_chain(gripper, motion))
+        robot.set_joint_positions(get_robot_description().get_static_gripper_chain(gripper, motion))
 
 
 class BoxyDetecting(ProcessModule):
@@ -143,9 +144,9 @@ class BoxyDetecting(ProcessModule):
         robot = World.robot
         object_type = desig.object_type
         # Should be "wide_stereo_optical_frame"
-        cam_frame_name = robot_description.get_camera_frame()
+        cam_frame_name = get_robot_description().get_camera_frame()
         # should be [0, 0, 1]
-        front_facing_axis = robot_description.front_facing_axis
+        front_facing_axis = get_robot_description().front_facing_axis
 
         objects = World.current_world.get_object_by_type(object_type)
         for obj in objects:
@@ -191,9 +192,9 @@ class BoxyWorldStateDetecting(ProcessModule):
 
 
 def _move_arm_tcp(target: Pose, robot: Object, arm: str) -> None:
-    gripper = robot_description.get_tool_frame(arm)
+    gripper = get_robot_description().get_tool_frame(arm)
 
-    joints = robot_description.chains[arm].joints
+    joints = get_robot_description().chains[arm].joints
 
     inv = request_ik(target, robot, joints, gripper)
     helper._apply_ik(robot, inv, joints)
