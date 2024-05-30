@@ -5,7 +5,6 @@ import rospy
 from pycram.datastructures.enums import ObjectType, Arms
 from pycram.datastructures.pose import Pose
 from pycram.designators.action_designator import NavigateAction, ParkArmsAction, MoveTorsoAction
-
 from pycram.world_concepts.world_object import Object
 
 
@@ -37,7 +36,7 @@ def create_robot(robot: ROBOTS, pose=None):
 
     # Somewhat works, arms are not being affected by gravity
     elif robot == ROBOTS.TIAGO:
-        return Object("tiago", ObjectType.ROBOT, "tiago_dual.urdf", pose=pose)
+        return Object("tiago_dual", ObjectType.ROBOT, "tiago_dual.urdf", pose=pose)
 
     # Torso falling down, arms are slowly moving downwards
     elif robot == ROBOTS.BOXY:
