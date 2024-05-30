@@ -123,7 +123,6 @@ class SimulatedRobot:
 
     def __init__(self):
         self.pre: str = ""
-        self.robot = None
 
     def __enter__(self):
         """
@@ -132,10 +131,6 @@ class SimulatedRobot:
         """
         self.pre = ProcessModuleManager.execution_type
         ProcessModuleManager.execution_type = "simulated"
-
-        if self.robot is not None:
-            RobotManager.set_active_robot(self.robot.name)
-            BulletWorld().set_robot(self.robot)
 
     def __exit__(self, _type, value, traceback):
         """
@@ -147,7 +142,8 @@ class SimulatedRobot:
 
     def __call__(self, robot=None):
         if robot is not None:
-            self.robot = robot
+            RobotManager.set_active_robot(robot.name)
+            BulletWorld().set_robot(robot)
         return self
 
 
