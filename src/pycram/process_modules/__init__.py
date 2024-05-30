@@ -7,6 +7,7 @@ from .stretch_process_modules import StretchManager
 from ..robot_manager import RobotManager
 
 RobotManager()
+RobotManager.set_active_robot()
 
 Pr2Manager()
 BoxyManager()

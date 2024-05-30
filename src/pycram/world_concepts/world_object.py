@@ -96,7 +96,6 @@ class Object(WorldEntity):
 
         if self.obj_type == ObjectType.ROBOT:
             RobotManager.add_robot(robot_name=self.name, robot=self)
-            RobotManager.set_active_robot(self.name)
 
     @property
     def pose(self):

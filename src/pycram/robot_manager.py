@@ -3,8 +3,6 @@ import re
 from abc import ABC
 
 import rospy
-
-from pycram.robot_description import RobotDescription
 from pycram.robot_descriptions import DonbotDescription, PR2Description, BoxyDescription, \
     HSRDescription, UR5Description, TiagoDescription, StretchDescription
 
@@ -51,7 +49,7 @@ class RobotManager(ABC):
         Init for RobotManager.
         Currently does nothing
         """
-        RobotManager.robot_description = RobotManager.update_robot_description(from_ros=True)
+        pass
 
     @staticmethod
     def add_robot(robot_name, robot):
@@ -61,21 +59,28 @@ class RobotManager(ABC):
         RobotManager.available_robots[robot_name] = robot
 
     @staticmethod
-    def set_active_robot(robot_name):
+    def set_active_robot(robot_name=None):
         """
         Returns the Process Module manager for the currently loaded robot or None if there is no Manager.
 
         :return: ProcessModuleManager instance of the current robot
         """
-        instance = RobotManager._instance
-        instance.active_robot = RobotManager.available_robots[robot_name]
-        instance.robot_description = RobotManager.update_robot_description(from_ros=True,
-                                                                           topic=f'/{robot_name}/robot_description')
 
-        logging.info(f'Setting active robot. Is now: {RobotManager.active_robot.name}')
+        instance = RobotManager()
+
+        if robot_name is None:
+            instance.robot_description = RobotManager.update_robot_description(from_ros=True)
+            return
+
+        instance.active_robot = RobotManager.available_robots[robot_name]
+        instance.robot_description = RobotManager.update_robot_description(robot_name=robot_name)
+        # instance.robot_description = RobotManager.update_robot_description(from_ros=True,
+        #                                                                   topic=f'/{robot_name}/robot_description')
+
+        logging.info(f'Setting active robot. Is now: {instance.active_robot.name}')
 
     @staticmethod
-    def update_robot_description(robot_name=None, from_ros=None, topic='/pr2/robot_description'):
+    def update_robot_description(robot_name=None, from_ros=None, topic='/robot_description'):
         # Get robot name
         if robot_name:
             robot = robot_name
@@ -116,4 +121,3 @@ class RobotManager(ABC):
 
 def get_robot_description():
     return RobotManager().robot_description
-
