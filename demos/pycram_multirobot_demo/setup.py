@@ -22,6 +22,11 @@ class ENVIRONMENTS(Enum):
     KITCHEN = auto()
 
 
+class DEMOS(Enum):
+    PR2_TIAGO_SIMPLE = auto()
+    PR2_TIAGO_KITCHEN = auto()
+
+
 def create_robot(robot: ROBOTS, pose=None):
     if pose is None:
         pose = Pose([0, 1, 0])
