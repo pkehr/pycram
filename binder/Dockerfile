@@ -19,8 +19,8 @@ RUN git submodule update --init --recursive
 # RUN cd pycram
   # && git submodule update --init --recursive
 # === When all .gitmodules use https urls ===
-RUN git clone https://github.com/Tigul/neem_interface_python.git src/neem_interface_python \
-RUN cd src/neem_interface_python \
+RUN git clone https://github.com/Tigul/neem_interface_python.git src/neem_interface_python 
+RUN cd src/neem_interface_python 
 RUN git clone https://github.com/benjaminalt/neem-interface.git src/neem-interface
 
 
