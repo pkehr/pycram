@@ -19,7 +19,7 @@ RUN git submodule update --init --recursive
 # RUN cd pycram
   # && git submodule update --init --recursive
 # === When all .gitmodules use https urls ===
-RUN ls -l ${PYCRAM_WS}/src/pycram/src/neem_interface_python/
+RUN ls -l ${PYCRAM_WS}/src/pycram/src/
 
 
 RUN pip install --requirement ${PYCRAM_WS}/src/pycram/requirements.txt --user 
