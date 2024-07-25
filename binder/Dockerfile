@@ -4,7 +4,7 @@ FROM intel4coro/base-notebook:20.04-noetic-full-xpra
 ENV PATH=$PATH:/home/user/.local/bin
 ENV PYCRAM_WS=/home/${NB_USER}/workspace/ros
 WORKDIR ${PYCRAM_WS}/src/
-COPY --chown=${NB_USER}:users . pycram/
+#COPY --chown=${NB_USER}:users . pycram/
 RUN vcs import --input https://raw.githubusercontent.com/cram2/pycram/dev/pycram-https.rosinstall --recursive
 
 # === Following step should be replace to ===
