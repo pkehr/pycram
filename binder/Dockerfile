@@ -14,10 +14,13 @@ RUN git remote remove origin
 RUN git remote add origin https://github.com/K3cks/pycram
 RUN git fetch origin
 RUN git checkout binder-multirobot
+RUN git submodule update --init --recursive
 # === To ===
 # RUN cd pycram
   # && git submodule update --init --recursive
 # === When all .gitmodules use https urls ===
+
+
 
 RUN pip install --requirement ${PYCRAM_WS}/src/pycram/requirements.txt --user 
 RUN pip install --requirement ${PYCRAM_WS}/src/pycram/src/neem_interface_python/requirements.txt --user \
