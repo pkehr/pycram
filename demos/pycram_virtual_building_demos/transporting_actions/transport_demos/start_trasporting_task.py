@@ -2,7 +2,9 @@ import ipywidgets as widgets
 from ipywidgets import HBox, Button, Output
 from IPython.display import display, clear_output, HTML
 
-from pycram.context_knowledge import ContextConfig, generate_context
+from demos.pycram_multirobot_demo.multirobot_demo import multirobot_demo_simple
+
+#from pycram.context_knowledge import ContextConfig, generate_context
 
 contexts = [('Select', None),('Breakfast', "breakfast"), ('Clean Up', "clean_up")]
 environments = [('Select', None), ('Apartment', "apartment-small.urdf"), ('Kitchen (Unavailable)', None)] #('Kitchen', "kitchen-small.urdf")
@@ -23,11 +25,12 @@ def update_globals(context=None, environment=None, location=None):
         selected_location = location
 
 
-def robot_execute(func):
-    global selected_context, selected_environment, selected_location
+def robot_execute():
+    #global selected_context, selected_environment, selected_location
     with output:
         output.clear_output()
-        func(selected_location, selected_context, selected_environment)
+        multirobot_demo_simple()
+        #func(selected_location, selected_context, selected_environment)
 
 
 
@@ -43,15 +46,15 @@ def setup_task_object_widgets():
     display(HBox([context_dropdown, environment_dropdown, location_dropdown]))
 
 
-def start_demo(func):
+def start_demo():
     global output
     output = Output()
-    setup_task_object_widgets()
+    #setup_task_object_widgets()
     execute_button = Button(description="Execute Task")
     # Use a lambda function to defer the call to `robot_execute`
     # In this lambda function, lambda x: robot_execute(func),
     # x represents the button click event (which we don't use here),
     # and robot_execute(func) is the function call you want to happen when the button is clicked.
     # This way, robot_execute will only be executed when the button is clicked, not when start_demo is called.
-    execute_button.on_click(lambda x: robot_execute(func))
+    execute_button.on_click(lambda x: robot_execute())
     display(execute_button, output)
