@@ -12,7 +12,7 @@ USER ${NB_USER}
 WORKDIR ${PYCRAM_WS}/src/pycram/
 RUN git remote remove origin
 RUN git remote add origin https://github.com/K3cks/pycram
-RUN git pull
+RUN git branch --set-upstream-to=origin/dev dev && git pull
 RUN git checkout binder-multirobot
 # === To ===
 # RUN cd pycram
