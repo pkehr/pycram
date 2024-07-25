@@ -5,15 +5,15 @@ ENV PATH=$PATH:/home/user/.local/bin
 ENV PYCRAM_WS=/home/${NB_USER}/workspace/ros
 WORKDIR ${PYCRAM_WS}/src/
 COPY --chown=${NB_USER}:users . pycram/
-RUN vcs import --input pycram/binder/pycram-http.rosinstall --recursive
+RUN vcs import --input https://raw.githubusercontent.com/cram2/pycram/dev/pycram.rosinstall --recursive
 
 # === Following step should be replace to ===
 USER ${NB_USER}
 RUN cd pycram \
-  && git submodule update --init \
-  && git clone https://github.com/Tigul/neem_interface_python.git src/neem_interface_python \
-  && cd src/neem_interface_python \
-  && git clone https://github.com/benjaminalt/neem-interface.git src/neem-interface
+  && git remote remove origin \ 
+  && git remote add origin https://github.com/K3cks/pycram \ 
+  && git pull \ 
+  && git checkout binder-multirobot
 # === To ===
 # RUN cd pycram
   # && git submodule update --init --recursive
