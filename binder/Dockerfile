@@ -9,11 +9,11 @@ RUN vcs import --input https://raw.githubusercontent.com/cram2/pycram/dev/pycram
 
 # === Following step should be replace to ===
 USER ${NB_USER}
-RUN cd pycram \
-  && git remote remove origin \ 
-  && git remote add origin https://github.com/K3cks/pycram \ 
-  && git pull \ 
-  && git checkout binder-multirobot
+RUN cd pycram
+RUN git remote remove origin
+RUN git remote add origin https://github.com/K3cks/pycram
+RUN git pull
+RUN git checkout binder-multirobot
 # === To ===
 # RUN cd pycram
   # && git submodule update --init --recursive
