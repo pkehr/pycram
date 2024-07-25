@@ -2,7 +2,7 @@ import ipywidgets as widgets
 from ipywidgets import HBox, Button, Output
 from IPython.display import display, clear_output, HTML
 
-from demos.pycram_multirobot_demo.multirobot_demo import multirobot_demo_simple
+from demos.pycram_multirobot_demo.demo_pr2_tiago import multirobot_demo_simple
 
 #from pycram.context_knowledge import ContextConfig, generate_context
 
