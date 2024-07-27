@@ -6,7 +6,10 @@ from .hsrb_process_modules import HSRBManager
 from .armar6_process_modules import ARMAR6Manager
 from .tiago_process_modules import tiagoManager
 from .default_process_modules import DefaultManager
+from ..robot_manager import RobotManager
 
+RobotManager()
+RobotManager.set_active_robot()
 
 Pr2Manager()
 BoxyManager()

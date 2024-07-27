@@ -1,8 +1,9 @@
 import rospy
+
+from ..robot_manager import get_robot_description
 from ..utilities import tf_wrapper as tf
 
 from ..pose import Pose
-from ..robot_descriptions import robot_description
 from ..bullet_world import BulletWorld, Object
 
 from typing import List, Tuple, Dict
@@ -77,12 +78,12 @@ def sync_worlds() -> None:
     # add_gripper_groups()
     bullet_object_names = set()
     for obj in BulletWorld.current_bullet_world.objects:
-        if obj.name != robot_description.name and len(obj.links) != 1:
+        if obj.name != get_robot_description().name and len(obj.links) != 1:
             if obj.name != 'floor':
                 bullet_object_names.add(obj.name + "_" + str(obj.id))
 
     giskard_object_names = set(giskard_wrapper.get_group_names())
-    robot_name = {robot_description.name}
+    robot_name = {get_robot_description().name}
     if not bullet_object_names.union(robot_name).issubset(giskard_object_names):
         giskard_wrapper.clear_world()
     initial_adding_objects()
@@ -334,8 +335,8 @@ def add_gripper_groups() -> None:
     """
     if "left_gripper" not in giskard_wrapper.get_group_names():
         for gripper in ["left"]:
-            root_link = robot_description.chains[gripper].gripper.links[-1]
-            giskard_wrapper.register_group(gripper + "_gripper", root_link, robot_description.name)
+            root_link = get_robot_description().chains[gripper].gripper.links[-1]
+            giskard_wrapper.register_group(gripper + "_gripper", root_link, get_robot_description().name)
 
 
 def avoid_all_collisions() -> None:

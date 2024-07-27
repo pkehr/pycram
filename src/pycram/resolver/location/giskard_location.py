@@ -3,12 +3,13 @@ from pycram.designators.location_designator import CostmapLocation
 from pycram.bullet_world import Use_shadow_world, BulletWorld
 from pycram.helper import _apply_ik
 from pycram.pose import Pose
-from pycram.robot_descriptions import robot_description
 from pycram.pose_generator_and_validator import reachability_validator
 from typing import Tuple, Dict
 
 import tf
 import numpy as np
+
+from pycram.robot_manager import get_robot_description
 
 
 class GiskardLocation(CostmapLocation):
@@ -24,9 +25,9 @@ class GiskardLocation(CostmapLocation):
         """
         if self.reachable_for:
             pose_right, end_config_right = self._get_reachable_pose_for_arm(self.target,
-                                                                            robot_description.get_tool_frame("right"))
+                                                                            get_robot_description().get_tool_frame("right"))
             pose_left, end_config_left = self._get_reachable_pose_for_arm(self.target,
-                                                                          robot_description.get_tool_frame("left"))
+                                                                          get_robot_description().get_tool_frame("left"))
 
             test_robot = BulletWorld.current_bullet_world.get_shadow_object(BulletWorld.robot)
             with Use_shadow_world():

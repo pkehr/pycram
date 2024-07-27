@@ -16,7 +16,6 @@ from urdf_parser_py.urdf import URDF
 
 from geometry_msgs.msg import TransformStamped
 from .pose import Pose, Transform
-from .robot_descriptions import robot_description
 from typing import List, Optional, Tuple, Union, Callable
 
 

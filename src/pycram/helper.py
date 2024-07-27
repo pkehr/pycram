@@ -18,9 +18,10 @@ from pytransform3d.transformations import transform_from_pq, transform_from, pq_
 from .bullet_world import Object as BulletWorldObject
 from .local_transformer import LocalTransformer
 from .pose import Transform, Pose
-from .robot_descriptions import robot_description
 import os
 import math
+
+from .robot_manager import get_robot_description
 
 
 class bcolors:
@@ -63,7 +64,7 @@ def _transform_to_torso(pose_and_rotation: Tuple[List[float], List[float]], robo
     List[float], List[float]]:
     # map_T_torso = robot.get_link_position_and_orientation("base_footprint")
     # map_T_torso = robot.get_position_and_orientation()
-    map_T_torso = robot.get_link_pose(robot_description.torso_link).to_list()
+    map_T_torso = robot.get_link_pose(get_robot_description().torso_link).to_list()
     torso_T_map = p.invertTransform(map_T_torso[0], map_T_torso[1])
     map_T_target = pose_and_rotation
     torso_T_target = p.multiplyTransforms(torso_T_map[0], torso_T_map[1], map_T_target[0], map_T_target[1])

@@ -11,8 +11,8 @@ from ..bullet_world import Object
 from ..helper import calculate_wrist_tool_offset
 from ..local_transformer import LocalTransformer
 from ..pose import Pose, Transform
-from ..robot_descriptions import robot_description
 from ..plan_failures import IKError
+from ..robot_manager import get_robot_description
 
 
 def _get_position_for_joints(robot, joints):
@@ -82,7 +82,7 @@ def call_ik(root_link: str, tip_link: str, target_pose: Pose, robot_object: Obje
    :param joints: A list of joint name that should be altered
    :return: The solution that was generated as a list of joint values corresponding to the order of joints given
    """
-    if robot_description.name == "pr2":
+    if get_robot_description().name == "pr2":
         ik_service = "/pr2_right_arm_kinematics/get_ik" if "r_wrist" in tip_link else "/pr2_left_arm_kinematics/get_ik"
     else:
         ik_service = "/kdl_ik_service/get_ik"
@@ -95,7 +95,7 @@ def call_ik(root_link: str, tip_link: str, target_pose: Pose, robot_object: Obje
     try:
         resp = ik(req)
     except rospy.ServiceException as e:
-        if robot_description.name == "pr2":
+        if get_robot_description().name == "pr2":
             raise IKError(target_pose, root_link)
         else:
             raise e
@@ -120,9 +120,9 @@ def request_ik(target_pose: Pose, robot: Object, joints: List[str], gripper: str
     :return: A list of joint values
     """
     local_transformer = LocalTransformer()
-    base_link = robot_description.get_parent(joints[0])
+    base_link = get_robot_description().get_parent(joints[0])
     # Get link after last joint in chain
-    end_effector = robot_description.get_child(joints[-1])
+    end_effector = get_robot_description().get_child(joints[-1])
 
     target_torso = local_transformer.transform_pose(target_pose, robot.get_link_tf_frame(base_link))
     # target_torso = _transform_to_torso(pose, shadow_robot)

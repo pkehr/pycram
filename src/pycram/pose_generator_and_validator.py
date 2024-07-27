@@ -7,11 +7,12 @@ from .bullet_world import Object, BulletWorld, Use_shadow_world
 from .bullet_world_reasoning import contact
 from .costmaps import Costmap
 from .pose import Pose, Transform
-from .robot_descriptions import robot_description
 from .external_interfaces.ik import request_ik
 from .plan_failures import IKError
 from .helper import _apply_ik
 from typing import Type, Tuple, List, Union, Dict, Iterable
+
+from .robot_manager import get_robot_description
 
 
 def pose_generator(costmap: Costmap, number_of_samples=100, orientation_generator=None) -> Iterable:
@@ -96,14 +97,14 @@ def visibility_validator(pose: Pose,
     robot_pose = robot.get_pose()
     if type(object_or_pose) == Object:
         robot.set_pose(pose)
-        camera_pose = robot.get_link_pose(robot_description.get_camera_frame())
+        camera_pose = robot.get_link_pose(get_robot_description().get_camera_frame())
         robot.set_pose(Pose([100, 100, 0], [0, 0, 0, 1]))
         ray = p.rayTest(camera_pose.position_as_list(), object_or_pose.get_pose().position_as_list(),
                         physicsClientId=world.client_id)
         res = ray[0][0] == object_or_pose.id
     else:
         robot.set_pose(pose)
-        camera_pose = robot.get_link_pose(robot_description.get_camera_frame())
+        camera_pose = robot.get_link_pose(get_robot_description().get_camera_frame())
         robot.set_pose(Pose([100, 100, 0], [0, 0, 0, 1]))
         ray = p.rayTest(camera_pose.position_as_list(), object_or_pose, physicsClientId=world.client_id)
         res = ray[0][0] == -1
@@ -135,14 +136,14 @@ def reachability_validator(pose: Pose,
 
     robot.set_pose(pose)
 
-    left_gripper = robot_description.get_tool_frame('left')
-    right_gripper = robot_description.get_tool_frame('right')
+    left_gripper = get_robot_description().get_tool_frame('left')
+    right_gripper = get_robot_description().get_tool_frame('right')
 
-    # left_joints = robot_description._safely_access_chains('left').joints
-    left_joints = robot_description.chains['left'].joints
-    # right_joints = robot_description._safely_access_chains('right').joints
+    # left_joints = get_robot_description()._safely_access_chains('left').joints
+    left_joints = get_robot_description().chains['left'].joints
+    # right_joints = get_robot_description()._safely_access_chains('right').joints
     if robot.name != 'hsrb':
-        right_joints = robot_description.chains['right'].joints
+        right_joints = get_robot_description().chains['right'].joints
     # TODO Make orientation adhere to grasping orientation
     res = False
     arms = []

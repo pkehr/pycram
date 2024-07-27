@@ -7,8 +7,8 @@ import time
 from geometry_msgs.msg import TransformStamped
 from sensor_msgs.msg import JointState
 from pycram.bullet_world import BulletWorld
-from pycram.robot_descriptions import robot_description
 from pycram.pose import Transform, Pose
+from pycram.robot_manager import get_robot_description
 
 
 class RobotStateUpdater:
@@ -45,7 +45,7 @@ class RobotStateUpdater:
         :param msg: TransformStamped message published to the topic
         """
         trans, rot = self.tf_listener.lookupTransform("/map",
-                                                      robot_description.name + "/" + robot_description.base_frame,
+                                                      get_robot_description().name + "/" + get_robot_description().base_frame,
                                                         rospy.Time(0))
         BulletWorld.robot.set_pose(Pose(trans, rot))
 

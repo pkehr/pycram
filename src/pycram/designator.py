@@ -18,7 +18,6 @@ from typing import List, Dict, Any, Type, Optional, Union, get_type_hints, Calla
 from .local_transformer import LocalTransformer
 from .language import Language
 from .pose import Pose
-from .robot_descriptions import robot_description
 
 import logging
 
@@ -27,6 +26,7 @@ from .orm.object_designator import (Object as ORMObjectDesignator)
 from .orm.motion_designator import (Motion as ORMMotionDesignator)
 
 from .orm.base import Quaternion, Position, Base, RobotState, ProcessMetaData
+from .robot_manager import get_robot_description
 from .task import with_tree
 
 
@@ -487,7 +487,7 @@ class ActionDesignatorDescription(DesignatorDescription, Language):
 
         def __post_init__(self):
             self.robot_position = BulletWorld.robot.get_pose()
-            self.robot_torso_height = BulletWorld.robot.get_joint_state(robot_description.torso_joint)
+            self.robot_torso_height = BulletWorld.robot.get_joint_state(get_robot_description().torso_joint)
             self.robot_type = BulletWorld.robot.type
 
         @with_tree

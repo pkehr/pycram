@@ -7,10 +7,11 @@ from .bullet_world import _world_and_id, Object, Use_shadow_world, BulletWorld
 from .external_interfaces.ik import request_ik
 from .local_transformer import LocalTransformer
 from .plan_failures import IKError
-from .robot_descriptions import robot_description
 from .helper import _transform_to_torso, _apply_ik, calculate_wrist_tool_offset, inverseTimes
 from .pose import Pose, Transform
 from typing import List, Tuple, Optional, Union, Dict
+
+from .robot_manager import get_robot_description
 
 
 class ReasoningError(Exception):
@@ -162,7 +163,7 @@ def visible(object: Object,
     :param world: The BulletWorld if more than one BulletWorld is active
     :return: True if the object is visible from the camera_position False if not
     """
-    front_facing_axis = robot_description.front_facing_axis if not front_facing_axis else front_facing_axis
+    front_facing_axis = get_robot_description().front_facing_axis if not front_facing_axis else front_facing_axis
     with Use_shadow_world():
         shadow_obj = BulletWorld.current_bullet_world.get_shadow_object(object)
         if BulletWorld.robot:
@@ -211,7 +212,7 @@ def occluding(object: Object,
     :param world: The BulletWorld if more than one BulletWorld is active
     :return: A list of occluding objects
     """
-    front_facing_axis = robot_description.front_facing_axis if not front_facing_axis else front_facing_axis
+    front_facing_axis = get_robot_description().front_facing_axis if not front_facing_axis else front_facing_axis
     world, world_id = _world_and_id(world)
     # occ_world = world.copy()
     # state = p.saveState(physicsClientId=occ_world.client_id)
@@ -269,8 +270,8 @@ def reachable(pose: Union[Object, Pose],
 
     shadow_robot = BulletWorld.current_bullet_world.get_shadow_object(robot)
     with Use_shadow_world():
-        arm = "left" if gripper_name == robot_description.get_tool_frame("left") else "right"
-        joints = robot_description.chains[arm].joints
+        arm = "left" if gripper_name == get_robot_description().get_tool_frame("left") else "right"
+        joints = get_robot_description().chains[arm].joints
         try:
             inv = request_ik(pose, shadow_robot, joints, gripper_name)
         except IKError as e:
@@ -307,13 +308,13 @@ def blocking(pose_or_object: Union[Object, Pose],
 
     shadow_robot = BulletWorld.current_bullet_world.get_shadow_object(robot)
     with Use_shadow_world():
-        arm = "left" if gripper_name == robot_description.get_tool_frame("left") else "right"
-        joints = robot_description.chains[arm].joints
+        arm = "left" if gripper_name == get_robot_description().get_tool_frame("left") else "right"
+        joints = get_robot_description().chains[arm].joints
         local_transformer = LocalTransformer()
 
         target_map = local_transformer.transform_pose(input_pose, "map")
         if grasp:
-            grasp_orientation = robot_description.grasps.get_orientation_for_grasp(grasp)
+            grasp_orientation = get_robot_description().grasps.get_orientation_for_grasp(grasp)
             target_map.orientation.x = grasp_orientation[0]
             target_map.orientation.y = grasp_orientation[1]
             target_map.orientation.z = grasp_orientation[2]
