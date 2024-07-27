@@ -7,9 +7,9 @@ from pycram.process_module import simulated_robot, with_simulated_robot
 from pycram.ros.viz_marker_publisher import VizMarkerPublisher
 
 
-world = BulletWorld("DIRECT")
+world = BulletWorld("GUI")
 viz = VizMarkerPublisher()
-robot = Object("tiago_dual", "robot", "tiago_dual.urdf", pose=Pose([1, 2, 0]))
+robot = Object("tiago_dual", ObjectType.ROBOT, "tiago_dual.urdf", pose=Pose([1, 2, 0]))
 apartment = Object("apartment", "environment", "apartment-small.urdf")
 
 milk = Object("milk", "milk", "milk.stl", pose=Pose([2.5, 2, 1.02]), color=[1, 0, 0, 1])

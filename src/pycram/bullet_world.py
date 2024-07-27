@@ -27,12 +27,12 @@ from urdf_parser_py.urdf import URDF
 
 from . import utils
 from .event import Event
-from .robot_descriptions import robot_description
 from .enums import JointType, ObjectType
 from .local_transformer import LocalTransformer
 from sensor_msgs.msg import JointState
 
 from .pose import Pose, Transform
+from .robot_manager import RobotManager, get_robot_description
 
 
 class BulletWorld:
@@ -794,6 +794,10 @@ class Object:
         self._current_link_transforms = {}
         self._current_joint_states = {}
 
+        if self.type == ObjectType.ROBOT:
+            RobotManager.add_robot(self.name, self)
+            RobotManager.set_active_robot(self.name)
+
         pose_in_map = self.local_transformer.transform_pose(pose, "map")
         position, orientation = pose_in_map.to_list()
         self.attachments: Dict[Object, List] = {}
@@ -822,8 +826,9 @@ class Object:
 
             with open(self.path) as f:
                 self.urdf_object = URDF.from_xml_string(f.read())
-                if self.urdf_object.name == robot_description.name and not BulletWorld.robot:
-                    BulletWorld.robot = self
+                if get_robot_description() is not None:
+                    if self.urdf_object.name == get_robot_description().name and not BulletWorld.robot:
+                        BulletWorld.robot = self
 
             self.links[self.urdf_object.get_root()] = -1
             self.link_to_geometry = self._get_geometry_for_link()

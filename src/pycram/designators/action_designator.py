@@ -30,7 +30,7 @@ from ..orm.action_designator import (ParkArmsAction as ORMParkArmsAction, Naviga
 
 from ..orm.base import Quaternion, Position, Base
 from ..pose import Pose
-from ..robot_descriptions import robot_description
+from ..robot_manager import get_robot_description
 from ..task import with_tree
 from pycram.enums import ObjectType
 
@@ -53,7 +53,7 @@ class MoveTorsoAction(ActionDesignatorDescription):
 
         @with_tree
         def perform(self) -> None:
-            MoveJointsMotion([robot_description.torso_joint], [self.position]).resolve().perform()
+            MoveJointsMotion([get_robot_description().torso_joint], [self.position]).resolve().perform()
 
         def to_sql(self) -> ORMMoveTorsoAction:
             return ORMMoveTorsoAction(self.position)
@@ -242,7 +242,7 @@ class ParkArmsAction(ActionDesignatorDescription):
             if self.arm in [Arms.LEFT, Arms.BOTH]:
                 kwargs["left_arm_config"] = "park"
                 MoveArmJointsMotion(**kwargs).resolve().perform()
-                if robot_description.name == "Armar6":
+                if get_robot_description().name == "Armar6":
                     MoveTorsoAction([-0.1]).resolve().perform()
                 else:
                     MoveTorsoAction([
@@ -331,8 +331,8 @@ class PickUpAction(ActionDesignatorDescription):
                 oTm.pose.position.z += 0.02
 
             # Determine the grasp orientation and transform the pose to the base link frame
-            grasp_rotation = robot_description.grasps.get_orientation_for_grasp(self.grasp)
-            if robot_description.name == "Armar6":
+            grasp_rotation = get_robot_description().grasps.get_orientation_for_grasp(self.grasp)
+            if get_robot_description().name == "Armar6":
                 oTb = lt.transform_pose(oTm, robot.get_link_tf_frame("platform"))
             else:
                 oTb = lt.transform_pose(oTm, robot.get_link_tf_frame("base_link"))
@@ -361,7 +361,7 @@ class PickUpAction(ActionDesignatorDescription):
             # BulletWorld.current_bullet_world.add_vis_axis(oTmG)
             # Execute Bool, because sometimes u only want to visualize the poses to test things
             if execute:
-                if robot_description.name == "Armar6":
+                if get_robot_description().name == "Armar6":
                     MoveTorsoAction([-0.1]).resolve().perform()
                 else:
                     MoveTorsoAction([0.25]).resolve().perform()
@@ -369,7 +369,7 @@ class PickUpAction(ActionDesignatorDescription):
 
             # Calculate and apply any special knowledge offsets based on the robot and object type
             # Note: This currently includes robot-specific logic that should be generalized
-            tool_frame = robot_description.get_tool_frame(self.arm)
+            tool_frame = get_robot_description().get_tool_frame(self.arm)
             special_knowledge_offset = lt.transform_pose(oTmG, robot.get_link_tf_frame(tool_frame))
 
             # todo: this is for hsrb only at the moment we will need a function that returns us special knowledge
@@ -422,7 +422,7 @@ class PickUpAction(ActionDesignatorDescription):
             BulletWorld.current_bullet_world.add_vis_axis(push_baseTm)
             if execute:
                 MoveTCPMotion(push_baseTm, self.arm).resolve().perform()
-            tool_frame = robot_description.get_tool_frame(self.arm)
+            tool_frame = get_robot_description().get_tool_frame(self.arm)
             robot.attach(object=self.object_designator.bullet_world_object, link=tool_frame)
             # Finalize the pick-up by closing the gripper and lifting the object
             # rospy.logwarn("Close Gripper")
@@ -520,8 +520,8 @@ class PlaceAction(ActionDesignatorDescription):
             # if self.grasp == "top":
             # oTm.pose.position.z += 0.05
 
-            grasp_rotation = robot_description.grasps.get_orientation_for_grasp(self.grasp)
-            if robot_description.name == "Armar6":
+            grasp_rotation = get_robot_description().grasps.get_orientation_for_grasp(self.grasp)
+            if get_robot_description().name == "Armar6":
                 oTb = lt.transform_pose(oTm, robot.get_link_tf_frame("platform"))
             else:
                 oTb = lt.transform_pose(oTm, robot.get_link_tf_frame("base_link"))
@@ -532,7 +532,7 @@ class PlaceAction(ActionDesignatorDescription):
             BulletWorld.current_bullet_world.add_vis_axis(oTmG)
             MoveTCPMotion(oTmG, self.arm).resolve().perform()
 
-            tool_frame = robot_description.get_tool_frame(self.arm)
+            tool_frame = get_robot_description().get_tool_frame(self.arm)
             push_base = lt.transform_pose(oTmG, robot.get_link_tf_frame(tool_frame))
             if robot.name == "hsrb":
                 z = 0.03
@@ -660,7 +660,7 @@ class PlaceGivenObjAction(ActionDesignatorDescription):
             # oTm = Object Pose in Frame map
             oTm = self.target_location
 
-            grasp_rotation = robot_description.grasps.get_orientation_for_grasp("front")
+            grasp_rotation = get_robot_description().grasps.get_orientation_for_grasp("front")
             oTb = lt.transform_pose(oTm, robot.get_link_tf_frame("base_link"))
             oTb.orientation = grasp_rotation
             oTmG = lt.transform_pose(oTb, "map")
@@ -932,7 +932,7 @@ class TransportAction(ActionDesignatorDescription):
 
                 # Navigate to the location, adjust the torso, and place the object
                 NavigateAction(target_locations=[nav_pose]).resolve().perform()
-                if robot_description.name == "Armar6":
+                if get_robot_description().name == "Armar6":
                     MoveTorsoAction([-0.1]).resolve().perform()
                 else:
                     MoveTorsoAction([0.25]).resolve().perform()  # Adjust torso height as needed
@@ -961,7 +961,7 @@ class TransportAction(ActionDesignatorDescription):
                 objects = [self.target_object]
 
             for obj in objects:
-                if robot_description.name == "Armar6":
+                if get_robot_description().name == "Armar6":
                     MoveTorsoAction([-0.1]).resolve().perform()
                 else:
                     MoveTorsoAction([0.25]).resolve().perform()
@@ -1240,7 +1240,7 @@ class GraspingAction(ActionDesignatorDescription):
             else:
                 object_pose = self.object_desig.bullet_world_object.get_pose()
             lt = LocalTransformer()
-            gripper_name = robot_description.get_tool_frame(self.arm)
+            gripper_name = get_robot_description().get_tool_frame(self.arm)
 
             object_pose_in_gripper = lt.transform_pose(object_pose, BulletWorld.robot.get_link_tf_frame(gripper_name))
 
@@ -1449,7 +1449,7 @@ class CuttingAction(ActionDesignatorDescription):
                 # Transformations such that the target position is the position of the object and not the tcp
                 tcp_to_object = local_tf.transform_pose(object_pose,
                                                         BulletWorld.robot.get_link_tf_frame(
-                                                            robot_description.get_tool_frame(self.arm)))
+                                                            get_robot_description().get_tool_frame(self.arm)))
                 target_diff = (perpendicular_pose.to_transform("target").inverse_times(
                     tcp_to_object.to_transform("object")).to_pose())
 
