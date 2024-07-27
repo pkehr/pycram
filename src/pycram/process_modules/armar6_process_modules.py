@@ -151,10 +151,10 @@ class ARMAR6Detecting(ProcessModule):
         # should be [0, 0, 1]
         front_facing_axis = robot_description.front_facing_axis
         if desig.technique == 'all':
-            rospy.loginfo("Fake detecting all generic objects")
+            # rospy.loginfo("Fake detecting all generic objects")
             objects = BulletWorld.current_bullet_world.get_all_objets_not_robot()
         elif desig.technique == 'human':
-            rospy.loginfo("Fake detecting human -> spawn 0,0,0")
+            # rospy.loginfo("Fake detecting human -> spawn 0,0,0")
             human = []
             human.append(Object("human", ObjectType.HUMAN, "human_male.stl", pose=Pose([0, 0, 0])))
             object_dict = {}
@@ -165,20 +165,21 @@ class ARMAR6Detecting(ProcessModule):
             return object_dict
 
         else:
-            rospy.loginfo("Fake -> Detecting specific object type")
+            # rospy.loginfo("Fake -> Detecting specific object type")
             objects = BulletWorld.current_bullet_world.get_objects_by_type(object_type)
 
         object_dict = {}
 
         perceived_objects = []
         for obj in objects:
-            if btr.visible(obj, robot.get_link_pose(cam_frame_name), front_facing_axis):
-                perceived_objects.append(ObjectDesignatorDescription.Object(obj.name, obj.type, obj))
+            # if btr.visible(obj, robot.get_link_pose(cam_frame_name), front_facing_axis):
+            perceived_objects.append(ObjectDesignatorDescription.Object(obj.name, obj.type, obj))
+
         # Iterate over the list of objects and store each one in the dictionary
         for i, obj in enumerate(perceived_objects):
             object_dict[obj.name] = obj
 
-        rospy.loginfo("returning dict objects")
+        # rospy.loginfo("returning dict objects")
         return object_dict
 
 

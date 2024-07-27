@@ -880,7 +880,10 @@ class TransportAction(ActionDesignatorDescription):
                         pose = Pose([1.45, 2.7, 0], [0, 0, 0, 1])
                     else:
                         pose = Pose([1.75, 1.79, 0], [0, 0, 0.533512180079847, 0.8457923821520558])
-                    drawer_open_location = AccessingLocation.Location(pose, ["right"])
+                    if robot_description.name == "tiago_dual":
+                        drawer_open_location = AccessingLocation.Location(pose, ["right"])
+                    else:
+                        drawer_open_location = AccessingLocation.Location(pose, ["left"])
                     NavigateAction([drawer_open_location.pose]).resolve().perform()
                     OpenAction(object_designator_description=handle_desig,
                                arms=[drawer_open_location.arms[0]]).resolve().perform()
