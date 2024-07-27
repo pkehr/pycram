@@ -67,18 +67,16 @@ class RobotManager(ABC):
         :return: ProcessModuleManager instance of the current robot
         """
 
-        instance = RobotManager()
-
         if robot_name is None:
-            instance.robot_description = RobotManager.update_robot_description(from_ros=True)
+            RobotManager.robot_description = RobotManager.update_robot_description(from_ros=True)
             return
 
-        instance.active_robot = RobotManager.available_robots[robot_name]
-        instance.robot_description = RobotManager.update_robot_description(robot_name=robot_name)
+        RobotManager.active_robot = RobotManager.available_robots[robot_name]
+        RobotManager.robot_description = RobotManager.update_robot_description(robot_name=robot_name)
         # instance.robot_description = RobotManager.update_robot_description(from_ros=True,
         #                                                                   topic=f'/{robot_name}/robot_description')
 
-        logging.info(f'Setting active robot. Is now: {instance.active_robot.name}')
+        logging.info(f'Setting active robot. Is now: {RobotManager.active_robot.name}')
 
     @staticmethod
     def update_robot_description(robot_name=None, from_ros=None, topic='/robot_description'):
