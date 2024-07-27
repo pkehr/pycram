@@ -11,7 +11,7 @@ from ..helper import calculate_wrist_tool_offset, _apply_ik
 from pycram.local_transformer import LocalTransformer
 from pycram.datastructures.pose import Pose
 from ..plan_failures import IKError
-from ..robot_manager import get_robot_description
+from ..robot_manager import get_robot_description, RobotManager
 
 
 def _make_request_msg(root_link: str, tip_link: str, target_pose: Pose, robot_object: Object,
@@ -65,10 +65,20 @@ def call_ik(root_link: str, tip_link: str, target_pose: Pose, robot_object: Obje
    :param joints: A list of joint name that should be altered
    :return: The solution that was generated as a list of joint values corresponding to the order of joints given
    """
+    #prefix = f'/{get_robot_description().name}/{get_robot_description().name}_kdl'
+    prefix = ''
+
+    if RobotManager.multiple_robots_active():
+        if get_robot_description().name == 'pr2':
+            prefix = '/pr2'
+
+        else:
+            prefix = f'/{get_robot_description().name}/{get_robot_description().name}_kdl'
+
     if get_robot_description().name == "pr2":
-        ik_service = "/pr2_right_arm_kinematics/get_ik" if "r_wrist" in tip_link else "/pr2_left_arm_kinematics/get_ik"
+        ik_service = f'{prefix}/pr2_right_arm_kinematics/get_ik' if "r_wrist" in tip_link else f'{prefix}/pr2_left_arm_kinematics/get_ik'
     else:
-        ik_service = "/kdl_ik_service/get_ik"
+        ik_service = "/kdl_ik_service/get_ik" if prefix == '' else f"{prefix}/get_ik"
 
     rospy.wait_for_service(ik_service)
 
