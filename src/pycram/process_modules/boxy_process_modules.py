@@ -12,7 +12,6 @@ from ..enums import JointType
 from ..external_interfaces.ik import request_ik
 from ..local_transformer import LocalTransformer as local_tf, LocalTransformer
 from ..process_module import ProcessModule, ProcessModuleManager
-from ..robot_descriptions import robot_description
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
 
 
@@ -25,10 +24,10 @@ def _park_arms(arm):
 
     robot = BulletWorld.robot
     if arm == "right":
-        for joint, pose in robot_description.get_static_joint_chain("right", "park").items():
+        for joint, pose in get_robot_description().get_static_joint_chain("right", "park").items():
             robot.set_joint_state(joint, pose)
     if arm == "left":
-        for joint, pose in robot_description.get_static_joint_chain("left", "park").items():
+        for joint, pose in get_robot_description().get_static_joint_chain("left", "park").items():
             robot.set_joint_state(joint, pose)
 
 
@@ -51,7 +50,7 @@ class BoxyPickUp(ProcessModule):
     def _execute(self, desig: PickUpMotion.Motion):
         object = desig.object_desig.bullet_world_object
         robot = BulletWorld.robot
-        grasp = robot_description.grasps.get_orientation_for_grasp(desig.grasp)
+        grasp = get_robot_description().grasps.get_orientation_for_grasp(desig.grasp)
         target = object.get_pose()
         target.orientation.x = grasp[0]
         target.orientation.y = grasp[1]
@@ -61,7 +60,7 @@ class BoxyPickUp(ProcessModule):
         arm = desig.arm
 
         _move_arm_tcp(target, robot, arm)
-        tool_frame = robot_description.get_tool_frame(arm)
+        tool_frame = get_robot_description().get_tool_frame(arm)
         robot.attach(object, tool_frame)
 
 
@@ -84,7 +83,7 @@ class BoxyPlace(ProcessModule):
         object_pose = object.get_pose()
         local_tf = LocalTransformer()
         tcp_to_object = local_tf.transform_pose(object_pose,
-                                                robot.get_link_tf_frame(robot_description.get_tool_frame(arm)))
+                                                robot.get_link_tf_frame(get_robot_description().get_tool_frame(arm)))
         target_diff = desig.target.to_transform("target").inverse_times(tcp_to_object.to_transform("object")).to_pose()
 
         _move_arm_tcp(target_diff, robot, arm)
@@ -157,13 +156,13 @@ class BoxyMoveHead(ProcessModule):
         pose_in_shoulder = local_transformer.transform_pose(target, robot.get_link_tf_frame("neck_shoulder_link"))
 
         if pose_in_shoulder.position.x >= 0 and pose_in_shoulder.position.x >= abs(pose_in_shoulder.position.y):
-            robot.set_joint_states(robot_description.get_static_joint_chain("neck", "front"))
+            robot.set_joint_states(get_robot_description().get_static_joint_chain("neck", "front"))
         if pose_in_shoulder.position.y >= 0 and pose_in_shoulder.position.y >= abs(pose_in_shoulder.position.x):
-            robot.set_joint_states(robot_description.get_static_joint_chain("neck", "neck_right"))
+            robot.set_joint_states(get_robot_description().get_static_joint_chain("neck", "neck_right"))
         if pose_in_shoulder.position.x <= 0 and abs(pose_in_shoulder.position.x) > abs(pose_in_shoulder.position.y):
-            robot.set_joint_states(robot_description.get_static_joint_chain("neck", "back"))
+            robot.set_joint_states(get_robot_description().get_static_joint_chain("neck", "back"))
         if pose_in_shoulder.position.y <= 0 and abs(pose_in_shoulder.position.y) > abs(pose_in_shoulder.position.x):
-            robot.set_joint_states(robot_description.get_static_joint_chain("neck", "neck_left"))
+            robot.set_joint_states(get_robot_description().get_static_joint_chain("neck", "neck_left"))
 
         pose_in_shoulder = local_transformer.transform_pose(target, robot.get_link_tf_frame("neck_shoulder_link"))
 
@@ -182,7 +181,7 @@ class BoxyMoveGripper(ProcessModule):
         robot = BulletWorld.robot
         gripper = desig.gripper
         motion = desig.motion
-        robot.set_joint_states(robot_description.get_static_gripper_chain(gripper, motion))
+        robot.set_joint_states(get_robot_description().get_static_gripper_chain(gripper, motion))
 
 
 class BoxyDetecting(ProcessModule):
@@ -195,9 +194,9 @@ class BoxyDetecting(ProcessModule):
         robot = BulletWorld.robot
         object_type = desig.object_type
         # Should be "wide_stereo_optical_frame"
-        cam_frame_name = robot_description.get_camera_frame()
+        cam_frame_name = get_robot_description().get_camera_frame()
         # should be [0, 0, 1]
-        front_facing_axis = robot_description.front_facing_axis
+        front_facing_axis = get_robot_description().front_facing_axis
 
         objects = BulletWorld.current_bullet_world.get_objects_by_type(object_type)
         for obj in objects:
@@ -243,9 +242,9 @@ class BoxyWorldStateDetecting(ProcessModule):
 
 
 def _move_arm_tcp(target: Pose, robot: Object, arm: str) -> None:
-    gripper = robot_description.get_tool_frame(arm)
+    gripper = get_robot_description().get_tool_frame(arm)
 
-    joints = robot_description.chains[arm].joints
+    joints = get_robot_description().chains[arm].joints
 
     inv = request_ik(target, robot, joints, gripper)
     helper._apply_ik(robot, inv, joints)

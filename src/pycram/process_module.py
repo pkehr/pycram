@@ -14,11 +14,12 @@ from threading import Lock
 
 import rospy
 
+from .bullet_world import BulletWorld
 from .designator import MotionDesignatorDescription
 from .fluent import Fluent
 from typing import Callable, List, Type, Any, Union
 from .language import Language
-from .robot_manager import get_robot_description
+from .robot_manager import get_robot_description, RobotManager
 
 
 class ProcessModule:

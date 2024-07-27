@@ -3,7 +3,6 @@ from threading import Lock
 import pycram.bullet_world_reasoning as btr
 import numpy as np
 
-from ..robot_descriptions import robot_description
 from ..process_module import ProcessModule, ProcessModuleManager
 from ..bullet_world import BulletWorld
 from ..external_interfaces.ik import request_ik, IKError
@@ -32,7 +31,7 @@ class DefaultPickUp(ProcessModule):
     def _execute(self, desig: PickUpMotion.Motion):
         object = desig.object_desig.bullet_world_object
         robot = BulletWorld.robot
-        grasp = robot_description.grasps.get_orientation_for_grasp(desig.grasp)
+        grasp = get_robot_description().grasps.get_orientation_for_grasp(desig.grasp)
         target = object.get_pose()
         target.orientation.x = grasp[0]
         target.orientation.y = grasp[1]
@@ -42,7 +41,7 @@ class DefaultPickUp(ProcessModule):
         arm = desig.arm
 
         _move_arm_tcp(target, robot, arm)
-        tool_frame = robot_description.get_tool_frame(arm)
+        tool_frame = get_robot_description().get_tool_frame(arm)
         robot.attach(object, tool_frame)
 
 
@@ -77,11 +76,11 @@ class DefaultMoveHead(ProcessModule):
 
         local_transformer = LocalTransformer()
 
-        pan_link = robot_description.chains["neck"].links[0]
-        tilt_link = robot_description.chains["neck"].links[1]
+        pan_link = get_robot_description().chains["neck"].links[0]
+        tilt_link = get_robot_description().chains["neck"].links[1]
 
-        pan_joint = robot_description.chains["neck"].joints[0]
-        tilt_joint = robot_description.chains["neck"].joints[1]
+        pan_joint = get_robot_description().chains["neck"].joints[0]
+        tilt_joint = get_robot_description().chains["neck"].joints[1]
         pose_in_pan = local_transformer.transform_pose(target, robot.get_link_tf_frame(pan_link))
         pose_in_tilt = local_transformer.transform_pose(target, robot.get_link_tf_frame(tilt_link))
 
@@ -105,7 +104,7 @@ class DefaultMoveGripper(ProcessModule):
         robot = BulletWorld.robot
         gripper = desig.gripper
         motion = desig.motion
-        for joint, state in robot_description.get_static_gripper_chain(gripper, motion).items():
+        for joint, state in get_robot_description().get_static_gripper_chain(gripper, motion).items():
             robot.set_joint_state(joint, state)
 
 
@@ -119,9 +118,9 @@ class DefaultDetecting(ProcessModule):
         robot = BulletWorld.robot
         object_type = desig.object_type
         # Should be "wide_stereo_optical_frame"
-        cam_frame_name = robot_description.get_camera_frame()
+        cam_frame_name = get_robot_description().get_camera_frame()
         # should be [0, 0, 1]
-        front_facing_axis = robot_description.front_facing_axis
+        front_facing_axis = get_robot_description().front_facing_axis
 
         objects = BulletWorld.current_bullet_world.get_objects_by_type(object_type)
         for obj in objects:
@@ -215,9 +214,9 @@ class DefaultClose(ProcessModule):
 
 
 def _move_arm_tcp(target: Pose, robot: Object, arm: str) -> None:
-    gripper = robot_description.get_tool_frame(arm)
+    gripper = get_robot_description().get_tool_frame(arm)
 
-    joints = robot_description.chains[arm].joints
+    joints = get_robot_description().chains[arm].joints
 
     inv = request_ik(target, robot, joints, gripper)
     _apply_ik(robot, inv, joints)
