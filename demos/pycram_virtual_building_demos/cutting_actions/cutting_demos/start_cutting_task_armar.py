@@ -45,7 +45,7 @@ def robot_execute():
         print(f"Starting {selected_task} on {selected_obj}")
         start_cutting(selected_obj, selected_task)
 
-    output.clear_output()
+    # output.clear_output()
 
 
 
@@ -77,3 +77,5 @@ def start_demo():
     # This way, robot_execute will only be executed when the button is clicked, not when start_demo is called.
     execute_button.on_click(lambda x: robot_execute())
     display(execute_button, output)
+
+

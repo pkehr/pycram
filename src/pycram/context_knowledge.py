@@ -4,15 +4,16 @@ from pycram.pose import Pose
 
 breakfast_objects_apart = {"milk": {"type": "milk", "model": "milk.stl", "pose": [2.5, 2, 1.02], "color": [1, 0, 0, 1],
                                     "default_location": "island_countertop", "typeloc": "No"},
-                           #'"breakfast_cereal": {"type": "breakfast_cereal", "model": "breakfast_cereal.stl",
-                            #                    "pose": [2.5, 2.5, 1.05], "color": [0, 1, 0, 1],
-                             #                   "default_location": "island_countertop", "typeloc": "No"},
+                           "breakfast_cereal": {"type": "breakfast_cereal", "model": "breakfast_cereal.stl",
+                                                "pose": [2.4, 2.5, 1.05], "color": [0, 1, 0, 1],
+                                                "default_location": "island_countertop", "typeloc": "No"},
                            "jeroen_cup": {"type": "jeroen_cup", "model": "jeroen_cup.stl", "pose": [2.5, 2.2, 0.95],
                                           "color": [1, 0.4, 0.4, 1], "default_location": "island_countertop",
                                           "typeloc": "No"},
                            "spoon": {"type": "spoon", "model": "spoon.stl", "pose": [2.5, 2.2, 0.85],
                                      "color": [0, 0, 1, 1], "default_location": "cabinet10_drawer_top",
-                                     "typeloc": "acces"}, }
+                                     "typeloc": "acces"},
+                           }
 handles = {"cabinet10_drawer_top": "handle_cab10_t", "cabinet3_door_top_left": "handle_cab3_door_top",
            "cabinet7_door_bottom_left": "handle_cab7"}
 # breakfast_objects_kitchen = {
@@ -114,19 +115,19 @@ class ContextConfig:
         return self.handles[location]
 
 
-def generate_context(context_name, enviornment_name):
+def generate_context(context_name, enviornment_name, robot_name):
     if context_name == "breakfast" and enviornment_name == "apartment-small.urdf":
-        Object("pr2", ObjectType.ROBOT, "pr2.urdf", pose=Pose([1, 2, 0]))
+        Object(robot_name, ObjectType.ROBOT, robot_name + ".urdf", pose=Pose([1, 2, 0]))
         return ContextConfig(context_name, enviornment_name, breakfast_objects_apart)
     if context_name == "cutting-big" and enviornment_name == "apartment-small.urdf":
-        Object("pr2", ObjectType.ROBOT, "pr2.urdf", pose=Pose([1, 2, 0]))
+        Object(robot_name, ObjectType.ROBOT, robot_name + ".urdf", pose=Pose([1, 2, 0]))
         return ContextConfig(context_name, enviornment_name, cutting_big)
     elif context_name == "cutting-small" and enviornment_name == "apartment-small.urdf":
-        Object("pr2", ObjectType.ROBOT, "pr2.urdf", pose=Pose([1, 2, 0]))
+        Object(robot_name, ObjectType.ROBOT, robot_name + ".urdf", pose=Pose([1, 2, 0]))
         return ContextConfig(context_name, enviornment_name, cutting_small)
     elif context_name == "breakfast" and enviornment_name == "kitchen-small.urdf":
-        Object("pr2", ObjectType.ROBOT, "pr2.urdf", pose=Pose([0, 0, 0]))
+        Object(robot_name, ObjectType.ROBOT, robot_name + ".urdf", pose=Pose([0, 0, 0]))
         return ContextConfig(context_name, enviornment_name, breakfast_objects_kitchen)
     elif context_name == "clean_up":
-        Object("pr2", ObjectType.ROBOT, "pr2.urdf", pose=Pose([0, 0, 0]))
+        Object(robot_name, ObjectType.ROBOT, robot_name + ".urdf", pose=Pose([0, 0, 0]))
         return ContextConfig(context_name, enviornment_name, clean_up_objects)

@@ -1,7 +1,6 @@
 import itertools
 import math
 
-
 import numpy as np
 import roslibpy.tf
 import sqlalchemy.orm
@@ -336,10 +335,11 @@ class PickUpAction(ActionDesignatorDescription):
                 oTb = lt.transform_pose(oTm, robot.get_link_tf_frame("platform"))
             else:
                 oTb = lt.transform_pose(oTm, robot.get_link_tf_frame("base_link"))
-            #otbtest = oTb.copy()
-            testmulti = helper.multiply_quaternions([oTb.orientation.x, oTb.orientation.y, oTb.orientation.z, oTb.orientation.w], grasp_rotation)
-            #otbtest.orientation = testmulti
-            oTb = lt.transform_pose(oTm, robot.get_link_tf_frame("base_link"))
+            # otbtest = oTb.copy()
+            testmulti = helper.multiply_quaternions(
+                [oTb.orientation.x, oTb.orientation.y, oTb.orientation.z, oTb.orientation.w], grasp_rotation)
+            # otbtest.orientation = testmulti
+            # oTb = lt.transform_pose(oTm, robot.get_link_tf_frame("base_link"))
             # otbtest = oTb.copy()
             testmulti = helper.multiply_quaternions(
                 [oTb.orientation.x, oTb.orientation.y, oTb.orientation.z, oTb.orientation.w], grasp_rotation)
@@ -837,6 +837,19 @@ class TransportAction(ActionDesignatorDescription):
                                                                 open_container=open_container)
                 return grasp, arm, detected_object
 
+            def get_nav_pose_tiago(object_type):
+                poses = {
+                    'bowl': Pose([4.8, 3.8, 0.8]),
+                    'breakfast_cereal': Pose([1.7, 1.9, 0], [0, 0, 0, 1]),
+                    'milk': Pose([1.7, 1.5, 0], [0, 0, 0, 1]),
+                    'spoon': Pose([3, 3.7, 1.02]),
+                    'jeroen_cup': Pose([1.7, 1.7, 0], [0, 0, 0, 1]),
+                }
+
+                pose = poses.get(object_type)
+
+                return pose
+
             def access_and_pickup(current_context, location_to_search, target_object, open_container=False):
                 """
                 Accesses a specified location and picks a specified object. Optionally, it can also navigate to and open a container.
@@ -856,8 +869,18 @@ class TransportAction(ActionDesignatorDescription):
 
                 if open_container:
                     handle_desig = ObjectPart(names=[location_to_search], part_of=envi_desig.resolve())
-                    drawer_open_location = AccessingLocation(handle_desig=handle_desig.resolve(),
-                                                             robot_desig=robot_desig.resolve()).resolve()
+                    #drawer_open_location = AccessingLocation(handle_desig=handle_desig.resolve(),
+                    #                                        robot_desig=robot_desig.resolve()).resolve()
+
+                    # hardcoded position for presentations
+                    if robot_description.name == "Armar6":
+                        pose = Pose([1.7, 1.7, 0], [0, 0, 0.533512180079847, 0.8457923821520558])
+                    elif robot_description.name == "tiago_dual":
+                        #pose = Pose([1.44, 1.8, 0], [0, 0, 0, 1])
+                        pose = Pose([1.45, 2.7, 0], [0, 0, 0, 1])
+                    else:
+                        pose = Pose([1.75, 1.79, 0], [0, 0, 0.533512180079847, 0.8457923821520558])
+                    drawer_open_location = AccessingLocation.Location(pose, ["right"])
                     NavigateAction([drawer_open_location.pose]).resolve().perform()
                     OpenAction(object_designator_description=handle_desig,
                                arms=[drawer_open_location.arms[0]]).resolve().perform()
@@ -883,20 +906,124 @@ class TransportAction(ActionDesignatorDescription):
                     for key, value in object_dict.items():
                         detected_object = object_dict[key]
                         if not open_container:
-                            reachable_location = CostmapLocation(target=detected_object.pose,
-                                                                 reachable_for=robot_desig.resolve()).resolve()
-                            NavigateAction([reachable_location.pose]).resolve().perform()
+                            if robot_description.name == "tiago_dual":
+                                NavigateAction([get_nav_pose_tiago(target_object)]).resolve().perform()
+                                arm = "left"
+                            else:
+                                reachable_location = CostmapLocation(target=detected_object.pose,
+                                                                     reachable_for=robot_desig.resolve(),
+                                                                     reachable_arm="left").resolve()
+                                NavigateAction([reachable_location.pose]).resolve().perform()
+                                arm = reachable_location.reachable_arms[0]
+                        else:
+                            if robot_description.name == "tiago_dual":
+
+                                NavigateAction([Pose([1.44, 1.8, 0], [0, 0, 0, 1])]).resolve().perform()
+                                arm = "left"
                         grasp = pickup_target_object(detected_object, arm)
                 else:
                     rospy.logerr("Object not found")
                     grasp, detected_object = None, None
 
                 if open_container:
+                    if robot_description.name == "tiago_dual":
+                        NavigateAction([drawer_open_location.pose]).resolve().perform()
                     CloseAction(object_designator_description=handle_desig,
                                 arms=[drawer_open_location.arms[0]]).resolve().perform()
 
                 ParkArmsAction([Arms.BOTH]).resolve().perform()
                 return grasp, arm, detected_object
+
+            def get_place_pose(object_type, location, robot_name):
+                pr2_poses = {
+                    ('bowl', 'table_area_main'): Pose([4.8, 3.8, 0.8]),
+                    ('bowl', 'island_countertop'): Pose([3, 3.8, 1.02], [0, 0, 1, 0]),
+                    ('breakfast_cereal', 'table_area_main'): Pose([4.8, 3.6, 0.8]),
+                    ('breakfast_cereal', 'island_countertop'): Pose([3, 3.6, 1.02], [0, 0, 1, 0]),
+                    ('milk', 'table_area_main'): Pose([4.8, 4, 0.8]),
+                    ('milk', 'island_countertop'): Pose([3, 4, 1.02], [0, 0, 1, 0]),
+                    ('spoon', 'table_area_main'): Pose([4.8, 3.7, 0.8], [0, 0, 1, 0]),
+                    ('spoon', 'island_countertop'): Pose([3, 3.7, 1.02]),
+                    ('jeroen_cup', 'table_area_main'): Pose([4.9, 3.9, 0.74]),
+                    ('jeroen_cup', 'island_countertop'): Pose([2.9, 3.9, 0.95], [0, 0, 1, 0]),
+                }
+
+                armar_poses = {
+                    ('bowl', 'table_area_main'): Pose([4.8, 3.8, 0.8]),
+                    ('bowl', 'island_countertop'): Pose([3, 3.8, 1.02], [0, 0, 1, 0]),
+                    ('breakfast_cereal', 'table_area_main'): Pose([4.8, 3.6, 0.8]),
+                    ('breakfast_cereal', 'island_countertop'): Pose([3, 3.6, 1.02], [0, 0, 1, 0]),
+                    ('milk', 'table_area_main'): Pose([4.8, 4, 0.8]),
+                    ('milk', 'island_countertop'): Pose([3, 4, 1.02], [0, 0, 1, 0]),
+                    ('spoon', 'table_area_main'): Pose([4.8, 3.7, 0.8], [0, 0, 0, 1]),
+                    ('spoon', 'island_countertop'): Pose([3, 3.7, 1.02]),
+                    ('jeroen_cup', 'table_area_main'): Pose([4.9, 3.9, 0.74]),
+                    ('jeroen_cup', 'island_countertop'): Pose([2.9, 3.9, 0.95], [0, 0, 1, 0]),
+                }
+
+                tiago_poses = {
+                    ('bowl', 'table_area_main'): Pose([4.8, 3.8, 0.8]),
+                    ('bowl', 'island_countertop'): Pose([3, 3.8, 1.02], [0, 0, 1, 0]),
+                    ('breakfast_cereal', 'table_area_main'): Pose([4.8, 3.6, 0.8]),
+                    ('breakfast_cereal', 'island_countertop'): Pose([3, 3.6, 1.02], [0, 0, 1, 0]),
+                    ('milk', 'table_area_main'): Pose([4.8, 4, 0.8]),
+                    ('milk', 'island_countertop'): Pose([3, 4, 1.02], [0, 0, 1, 0]),
+                    ('spoon', 'table_area_main'): Pose([4.8, 3.7, 0.8], [0, 0, 0, 1]),
+                    ('spoon', 'island_countertop'): Pose([3, 3.7, 0.975]),
+                    ('jeroen_cup', 'table_area_main'): Pose([4.9, 3.9, 0.74]),
+                    ('jeroen_cup', 'island_countertop'): Pose([2.9, 3.9, 0.95], [0, 0, 1, 0]),
+                }
+
+                if robot_name == "Armar6":
+                    pose = armar_poses.get((object_type, location))
+                elif robot_name == "tiago_dual":
+                    pose = tiago_poses.get((object_type, location))
+                else:
+                    pose = pr2_poses.get((object_type, location))
+                return pose
+
+            def get_nav_pose(object_type, location, robot_name):
+                global current_location
+                pr2_poses = {('bowl', 'table_area_main'): Pose([4, 3.8, 0]),
+                             ('bowl', 'island_countertop'): Pose([3.9, 3.8, 0], [0, 0, 1, 0]),
+                             ('breakfast_cereal', 'table_area_main'): Pose([4, 3.6, 0]),
+                             ('breakfast_cereal', 'island_countertop'): Pose([3.9, 3.6, 0], [0, 0, 1, 0]),
+                             ('milk', 'table_area_main'): Pose([4, 4, 0]),
+                             ('milk', 'island_countertop'): Pose([3.9, 4, 0], [0, 0, 1, 0]),
+                             ('spoon', 'table_area_main'): Pose([4.2, 3.7, 0]),
+                             ('spoon', 'island_countertop'): Pose([3.7, 3.7, 0], [0, 0, 1, 0]),
+                             ('jeroen_cup', 'table_area_main'): Pose([4.3, 3.9, 0]),
+                             ('jeroen_cup', 'island_countertop'): Pose([3.8, 3.9, 0], [0, 0, 1, 0]), }
+
+                armar_poses = {('bowl', 'table_area_main'): Pose([3.8, 3.8, 0]),
+                               ('bowl', 'island_countertop'): Pose([3.9, 3.8, 0], [0, 0, 1, 0]),
+                               ('breakfast_cereal', 'table_area_main'): Pose([3.8, 3.6, 0]),
+                               ('breakfast_cereal', 'island_countertop'): Pose([4.1, 3.6, 0], [0, 0, 1, 0]),
+                               ('milk', 'table_area_main'): Pose([4.1, 3.8, 0]),
+                               ('milk', 'island_countertop'): Pose([3.8, 4.2, 0], [0, 0, 1, 0]),
+                               ('spoon', 'table_area_main'): Pose([4.3, 4.3, 0]),
+                               ('spoon', 'island_countertop'): Pose([3.6, 3.1, 0], [0, 0, 1, 0]),
+                               ('jeroen_cup', 'table_area_main'): Pose([4.1, 3.9, 0]),
+                               ('jeroen_cup', 'island_countertop'): Pose([4, 3.9, 0], [0, 0, 1, 0]), }
+
+                tiago_poses = {('bowl', 'table_area_main'): Pose([3.8, 3.8, 0]),
+                               ('bowl', 'island_countertop'): Pose([3.9, 3.8, 0], [0, 0, 1, 0]),
+                               ('breakfast_cereal', 'table_area_main'): Pose([4, 3.2, 0]),
+                               ('breakfast_cereal', 'island_countertop'): Pose([3.8, 3.6, 0], [0, 0, 1, 0]),
+                               ('milk', 'table_area_main'): Pose([4.1, 3.6, 0]),
+                               ('milk', 'island_countertop'): Pose([3.8, 4.2, 0], [0, 0, 1, 0]),
+                               ('spoon', 'table_area_main'): Pose([4.2, 3.3, 0.0]),
+                               ('spoon', 'island_countertop'): Pose([3.53, 4.1, 0], [0, 0, 1, 0]),
+                               ('jeroen_cup', 'table_area_main'): Pose([4.1, 3.4, 0]),
+                               ('jeroen_cup', 'island_countertop'): Pose([3.7, 4.3, 0], [0, 0, 1, 0]), }
+
+                if robot_name == "Armar6":
+                    pose = armar_poses.get((object_type, location))
+                elif robot_name == "tiago_dual":
+                    pose = tiago_poses.get((object_type, location))
+                else:
+                    pose = pr2_poses.get((object_type, location))
+                return pose
 
             def place_object(grasp_type, target_location, perceived_obj, arm):
                 """
@@ -920,11 +1047,14 @@ class TransportAction(ActionDesignatorDescription):
                 # Set environment link based on target location
                 environment_link = target_location
                 # Find a reachable location and navigation pose
-                place_pose, nav_pose = find_reachable_location_and_nav_pose(enviroment_link=environment_link,
-                                                                            enviroment_desig=envi_desig.resolve(),
-                                                                            object_desig=perceived_obj,
-                                                                            robot_desig=robot_desig.resolve(), arm=arm,
-                                                                            world=world, margin_cm=margin_cm)
+                #place_pose, nav_pose = find_reachable_location_and_nav_pose(enviroment_link=environment_link,
+                #                                                            enviroment_desig=envi_desig.resolve(),
+                #                                                            object_desig=perceived_obj,
+                #                                                            robot_desig=robot_desig.resolve(), arm=arm,
+                #                                                            world=world, margin_cm=margin_cm)
+                nav_pose = get_nav_pose(perceived_obj.type, target_location, robot_description.name)
+                place_pose = get_place_pose(perceived_obj.type, target_location, robot_description.name)
+
                 # Check if a navigation pose was found
                 if not nav_pose:
                     rospy.logerr("No navigable location found")
@@ -947,7 +1077,6 @@ class TransportAction(ActionDesignatorDescription):
                     grasp = "top"
                 else:
                     grasp = "front"
-
                 PickUpAction(detected_object, [arm], [grasp]).resolve().perform()
 
                 ParkArmsAction([Arms.BOTH]).resolve().perform()
@@ -1429,7 +1558,7 @@ class CuttingAction(ActionDesignatorDescription):
             for x in slice_coordinates:
                 # Adjust slice pose based on object dimensions and orientation
                 tmp_pose = object_pose.copy()
-                tmp_pose.pose.position.y +=  obj_width #plus tool länge  # Offset position for slicing
+                tmp_pose.pose.position.y += obj_width  # plus tool länge  # Offset position for slicing
                 tmp_pose.pose.position.x = x  # Set slicing position
                 # tmp_pose.pose.position.z
                 sTm = local_tf.transform_pose(tmp_pose, "map")
@@ -1440,7 +1569,6 @@ class CuttingAction(ActionDesignatorDescription):
             for slice_pose in slice_poses:
                 # check if obj is facing the object
                 slice_pose = self.facing_robot(slice_pose, BulletWorld.robot)
-
 
                 perpendicular_pose = self.perpendicular_pose(slice_pose)
 
@@ -1457,7 +1585,7 @@ class CuttingAction(ActionDesignatorDescription):
                 lift_pose.pose.position.z += object_height  # Lift the tool above the object
 
                 BulletWorld.current_bullet_world.add_vis_axis(target_diff)
-                #BulletWorld.current_bullet_world.add_vis_axis(lift_pose)
+                # BulletWorld.current_bullet_world.add_vis_axis(lift_pose)
                 MoveTCPMotion(lift_pose, self.arm).resolve().perform()
                 MoveTCPMotion(target_diff, self.arm).resolve().perform()
                 MoveTCPMotion(lift_pose, self.arm).resolve().perform()

@@ -98,12 +98,10 @@ def start_cutting(obj, technique):
                 bigknife_BO = BelieveObject(names=["knife"]).resolve()
                 CuttingAction(detected_object, bigknife_BO, ["right"], _technique).resolve().perform()
         ParkArmsAction([Arms.BOTH]).resolve().perform()
-        clear_output(wait=True)
+        #clear_output(wait=True)
         rospy.loginfo("Cutting task completed!")
         obj_to_cut.remove()
         BulletWorld.current_bullet_world.remove_vis_axis()
-
-
 #
 # start_cutting("obo:FOODON_03301710", "soma:Cutting")
 # start_cutting("obo:FOODON_03301710", "soma:Slicing")
