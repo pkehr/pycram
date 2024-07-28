@@ -23,3 +23,7 @@ repositories:
     type: git
     url: https://github.com/orocos/orocos_kinematics_dynamics.git
     version: v1.5.1
+  iai_tiago:
+    type: git
+    url: https://github.com/code-iai/iai_tiago.git
+    version: main

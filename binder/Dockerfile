@@ -33,12 +33,6 @@ RUN pip install --upgrade pip
 
 COPY --chown=${NB_USER}:users binder/me ${PYCRAM_WS}/src/me
 
-# Install tiago
-WORKDIR ${PYCRAM_WS}/src/
-RUN git clone https://github.com/code-iai/iai_tiago.git
-WORKDIR ${PYCRAM_WS}/src/iai_tiago/
-RUN git submodule update --init 
-
 USER root
 RUN apt-get update
 
