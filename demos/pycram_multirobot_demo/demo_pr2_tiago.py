@@ -73,7 +73,7 @@ def multirobot_demo_apartment(robot_one: ROBOTS, robot_two: ROBOTS):
     pose_tiago = Pose([4, 3, 0])
 
     # Environment
-    current_environment = set_environment(ENVIRONMENTS.APARTMENT)
+    current_environment = set_environment(ENVIRONMENTS.APARTMENT_SMALL)
     milk = Object("milk", ObjectType.MILK, "milk.stl", pose=Pose([0.5, 3, 1.02], orientation=[0, 0, 1, 0]),
                   color=Color(1, 0, 0, 1))
     milk_BO = BelieveObject(names=["milk"])

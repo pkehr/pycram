@@ -24,6 +24,7 @@ class ROBOTS(Enum):
 
 class ENVIRONMENTS(Enum):
     APARTMENT = auto()
+    APARTMENT_SMALL = auto()
     KITCHEN = auto()
 
 
@@ -77,6 +78,8 @@ def set_environment(environment: ENVIRONMENTS):
         return Object("apartment", ObjectType.ENVIRONMENT, "apartment.urdf")
     elif environment == ENVIRONMENTS.KITCHEN:
         return Object("kitchen", ObjectType.ENVIRONMENT, "kitchen.urdf")
+    elif environment == ENVIRONMENTS.APARTMENT_SMALL:
+        return Object("apartment", ObjectType.ENVIRONMENT, "apartment-small.urdf")
 
     else:
         raise Exception("No known Environment defined for world")
