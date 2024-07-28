@@ -14,14 +14,14 @@ def start_cutting(obj, technique):
 
     _technique = technique.split(":", 1)[1]
     #######################################################################################
-    rospy.loginfo("Querying the ontology for the cutting task")
-    query_resolver = SPARQL()
+    #rospy.loginfo("Querying the ontology for the cutting task")
+    #query_resolver = SPARQL()
 
-    repititions_ont = query_resolver.repetitions(technique, obj)
-    rospy.loginfo("The repetition for the task is: " + repititions_ont)
+    #repititions_ont = query_resolver.repetitions(technique, obj)
+    #rospy.loginfo("The repetition for the task is: " + repititions_ont)
 
-    position_ont, position_name = query_resolver.position(technique, obj)
-    rospy.loginfo("The start position is: " + position_ont)
+    #position_ont, position_name = query_resolver.position(technique, obj)
+    #rospy.loginfo("The start position is: " + position_ont)
 
     # cutting_tool_ont, cutting_tool = query_resolver.get_cutting_tool(technique, obj)
     # rospy.loginfo("The tool to cut with is:  " + cutting_tool_ont)
@@ -76,6 +76,11 @@ def start_cutting(obj, technique):
         if robot_description.name == "Armar6":
             knife_pose = Pose([2.2049586673391935, 1.40084467778416917, 1.0229705326966067],
                               [0, 0, 1, 1])
+        elif robot_description.name == "tiago_dual":
+            # knife_pose = Pose([2.1, 1.715, 0.9],
+            #                   [0, 0, 0, 1])
+            knife_pose = Pose([2.0, 1.73, 0.785],
+                              [0.05, 0.999, 0.05, 0.999])
         else:
             knife_pose = Pose([2.0449586673391935, 1.5384467778416917, 1.2229705326966067],
                               [0.14010099565491793, -0.7025332835765593, 0.15537176280408957, 0.6802046102510538])
@@ -89,6 +94,11 @@ def start_cutting(obj, technique):
             MoveGripperMotion(motion="close", gripper="right").resolve().perform()
             location_pose = Pose([1.6, 2.5, 0])
             NavigateAction([location_pose]).resolve().perform()
+        elif robot_description.name == "tiago_dual":
+            MoveGripperMotion(motion="close", gripper="right").resolve().perform()
+            MoveTorsoAction([0.33]).resolve().perform()
+            location_pose = Pose([1.5, 2.25, 0])
+            NavigateAction([location_pose]).resolve().perform()
 
         LookAtAction([looking_pose]).resolve().perform()
         status, object_dict = DetectAction(technique='specific', object_type="object_to_be_cut").resolve().perform()
@@ -98,7 +108,7 @@ def start_cutting(obj, technique):
                 bigknife_BO = BelieveObject(names=["knife"]).resolve()
                 CuttingAction(detected_object, bigknife_BO, ["right"], _technique).resolve().perform()
         ParkArmsAction([Arms.BOTH]).resolve().perform()
-        #clear_output(wait=True)
+        clear_output(wait=True)
         rospy.loginfo("Cutting task completed!")
         obj_to_cut.remove()
         BulletWorld.current_bullet_world.remove_vis_axis()
