@@ -1,5 +1,5 @@
 import rospy
-from IPython.core.display_functions import display
+from IPython.core.display_functions import display, clear_output
 from ipywidgets import HTML
 
 from pycram import robot_description
@@ -37,10 +37,34 @@ def multirobot_demo_simple(robot_one: ROBOTS, robot_two: ROBOTS):
     with simulated_robot(robot_pr2):
         actions(torso=True)
 
+import sys
+import os
+import warnings
+from contextlib import contextmanager
+from IPython.utils.io import capture_output
 
-def multirobot_demo_binder():
+@contextmanager
+def suppress_all_output():
+    with open(os.devnull, "w") as devnull, capture_output() as captured:
+        old_stdout = sys.stdout
+        old_stderr = sys.stderr
+        sys.stdout = devnull
+        sys.stderr = devnull
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            try:
+                yield
+            finally:
+                sys.stdout = old_stdout
+                sys.stderr = old_stderr
+
+def multirobot_demo():
     display(HTML('<img src="https://i.gifer.com/XVo6.gif" alt="Hourglass animation" width="50">'))
-    multirobot_demo()
+    with suppress_all_output():
+        multirobot_demo_start()
+
+    clear_output(wait=True)
+    rospy.loginfo("Multirobot task completed!")
 
 
 def multirobot_demo_apartment(robot_one: ROBOTS, robot_two: ROBOTS):
@@ -112,7 +136,7 @@ def multirobot_demo_apartment(robot_one: ROBOTS, robot_two: ROBOTS):
                       color=Color(1, 0, 0, 1))
 
 
-def multirobot_demo():
+def multirobot_demo_start():
     demo = DEMOS.PR2_TIAGO_KITCHEN
     mode = WorldMode.DIRECT
     robot_one = ROBOTS.PR2
@@ -128,4 +152,4 @@ def multirobot_demo():
 
 
 if __name__ == "__main__":
-    multirobot_demo()
+    multirobot_demo_start()

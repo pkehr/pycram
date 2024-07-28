@@ -48,7 +48,7 @@ RUN rosdep update \
   && rosdep install -y --ignore-src --from-paths ./ -r \
   && rosdep fix-permissions
 USER ${NB_USER}
-RUN catkin build --jobs 1 --limit-status-rate 0.1
+RUN catkin build --jobs 2 --limit-status-rate 0.1 --verbose --no-status
 
 RUN pip install service_identity
 
