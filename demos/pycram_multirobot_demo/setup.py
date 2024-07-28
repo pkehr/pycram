@@ -94,17 +94,14 @@ def set_active_robot(robot: ROBOTS):
 
 def actions(park=False, torso=False, navigate=False):
     if park:
-        print("Parking arms")
         rospy.sleep(2)
         ParkArmsAction([Arms.BOTH]).resolve().perform()
 
     if torso:
-        print("Moving Torso")
         rospy.sleep(2)
         MoveTorsoAction([0.25]).resolve().perform()
 
     if navigate:
-        print("Navigating")
         rospy.sleep(2)
         NavigateAction(target_locations=[Pose([1.7, 2, 0])]).resolve().perform()
 

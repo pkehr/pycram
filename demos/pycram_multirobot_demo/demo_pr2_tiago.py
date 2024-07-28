@@ -40,7 +40,7 @@ def multirobot_demo_simple(robot_one: ROBOTS, robot_two: ROBOTS):
 
 def multirobot_demo_binder():
     display(HTML('<img src="https://i.gifer.com/XVo6.gif" alt="Hourglass animation" width="50">'))
-    multirobot_demo(demo=DEMOS.PR2_TIAGO_SIMPLE)
+    multirobot_demo()
 
 
 def multirobot_demo_apartment(robot_one: ROBOTS, robot_two: ROBOTS):
@@ -112,10 +112,12 @@ def multirobot_demo_apartment(robot_one: ROBOTS, robot_two: ROBOTS):
                       color=Color(1, 0, 0, 1))
 
 
-def multirobot_demo(demo: DEMOS,
-                    mode: WorldMode = WorldMode.DIRECT,
-                    robot_one: ROBOTS = ROBOTS.PR2,
-                    robot_two: ROBOTS = ROBOTS.TIAGO):
+def multirobot_demo():
+    demo = DEMOS.PR2_TIAGO_KITCHEN
+    mode = WorldMode.DIRECT
+    robot_one = ROBOTS.PR2
+    robot_two = ROBOTS.TIAGO
+
     world = BulletWorld(mode)
     viz = VizMarkerPublisher() if mode == WorldMode.DIRECT else None
 
@@ -126,7 +128,4 @@ def multirobot_demo(demo: DEMOS,
 
 
 if __name__ == "__main__":
-    multirobot_demo(demo=DEMOS.PR2_TIAGO_KITCHEN,
-                    mode=WorldMode.DIRECT,
-                    robot_one=ROBOTS.PR2,
-                    robot_two=ROBOTS.TIAGO)
+    multirobot_demo()
