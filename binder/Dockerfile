@@ -24,7 +24,7 @@ RUN git clone https://github.com/benjaminalt/neem-interface.git src/neem-interfa
 
 
 WORKDIR ${PYCRAM_WS}/src/orocos_kinematics_dynamics/
-RUN git submodule update -- init
+RUN git submodule update --init
 
 RUN pip install --requirement ${PYCRAM_WS}/src/pycram/requirements.txt --user 
 RUN pip install --requirement ${PYCRAM_WS}/src/pycram/src/neem_interface_python/requirements.txt --user \
