@@ -3,8 +3,9 @@ import re
 from abc import ABC
 
 import rospy
-from pycram.robot_descriptions import DonbotDescription, PR2Description, BoxyDescription, \
-    HSRDescription, UR5Description, TiagoDescription, StretchDescription
+from pycram.robot_descriptions import DonbotDescription, PR2Description, BoxyDescription, UR5Description, TiagoDescription, StretchDescription
+from pycram.robot_descriptions.armar6_description import ARMAR6Description
+from pycram.robot_descriptions.hsr_description import HSRDescription
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -66,18 +67,16 @@ class RobotManager(ABC):
         :return: ProcessModuleManager instance of the current robot
         """
 
-        instance = RobotManager()
-
         if robot_name is None:
-            instance.robot_description = RobotManager.update_robot_description(from_ros=True)
+            RobotManager.robot_description = RobotManager.update_robot_description(from_ros=True)
             return
 
-        instance.active_robot = RobotManager.available_robots[robot_name]
-        instance.robot_description = RobotManager.update_robot_description(robot_name=robot_name)
+        RobotManager.active_robot = RobotManager.available_robots[robot_name]
+        RobotManager.robot_description = RobotManager.update_robot_description(robot_name=robot_name)
         # instance.robot_description = RobotManager.update_robot_description(from_ros=True,
         #                                                                   topic=f'/{robot_name}/robot_description')
 
-        logging.info(f'Setting active robot. Is now: {instance.active_robot.name}')
+        logging.info(f'Setting active robot. Is now: {RobotManager.active_robot.name}')
 
     @staticmethod
     def update_robot_description(robot_name=None, from_ros=None, topic='/robot_description'):
@@ -113,11 +112,19 @@ class RobotManager(ABC):
             description = TiagoDescription
         elif "stretch" in robot:
             description = StretchDescription
+        elif "armar6" in robot:
+            description = ARMAR6Description
         else:
             logger.error("(robot-description) The given robot name %s has no description class.", robot_name)
             return None
         return description()
 
+    @staticmethod
+    def multiple_robots_active():
+        if len(list(RobotManager.available_robots.keys())) > 1:
+            return True
+
+        return False
 
 def get_robot_description():
     return RobotManager().robot_description

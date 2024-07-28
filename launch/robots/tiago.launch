@@ -2,7 +2,7 @@
   <group ns="tiago_dual">
   <arg name="use_knowrob" default="false"/>
 
-  <node pkg="kdl_ik_service" type="start_ros_server.py" name="tiago_kdl" output="screen" />
+  <node pkg="kdl_ik_service" type="start_ros_server.py" name="tiago_dual_kdl" output="screen" />
 
   <param name="robot_description"
          textfile="$(find pycram)/resources/tiago_dual.urdf"/>

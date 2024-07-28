@@ -15,11 +15,21 @@ class ROBOTS(Enum):
     TIAGO = 'tiago'
     BOXY = 'boxy'
     UR5 = 'ur5'
+    TURTLE = 'turtle'
+    DONBOT = 'donbot'
+    STRETCH = 'stretch'
+
+    ARMAR = 'armar'
 
 
 class ENVIRONMENTS(Enum):
     APARTMENT = auto()
     KITCHEN = auto()
+
+
+class DEMOS(Enum):
+    PR2_TIAGO_SIMPLE = auto()
+    PR2_TIAGO_KITCHEN = auto()
 
 
 def create_robot(robot: ROBOTS, pose=None):
@@ -45,6 +55,18 @@ def create_robot(robot: ROBOTS, pose=None):
     # Not fully tested yet, does not explode like pr2
     elif robot == ROBOTS.UR5:
         return Object("ur5", ObjectType.ROBOT, "ur5_robotiq.urdf", pose=pose)
+
+    elif robot == ROBOTS.TURTLE:
+        return Object("turtle", ObjectType.ROBOT, "turtlebot3_burger.urdf", pose=pose)
+
+    elif robot == ROBOTS.DONBOT:
+        return Object("iai_donbot", ObjectType.ROBOT, "iai_donbot.urdf", pose=pose)
+
+    elif robot == ROBOTS.ARMAR:
+        return Object("armar6", ObjectType.ROBOT, "Armar6.urdf", pose=pose)
+
+    elif robot == ROBOTS.STRETCH:
+        return Object("stretch", ObjectType.ROBOT, "stretch.urdf", pose=pose)
 
     else:
         raise Exception("No known Robot defined for world")
@@ -79,7 +101,7 @@ def actions(park=False, torso=False, navigate=False):
     if torso:
         print("Moving Torso")
         rospy.sleep(2)
-        MoveTorsoAction([0.33]).resolve().perform()
+        MoveTorsoAction([0.25]).resolve().perform()
 
     if navigate:
         print("Navigating")
