@@ -2,6 +2,9 @@ import rospy
 from IPython.core.display_functions import display
 from ipywidgets import HTML
 
+from demos.pycram_multirobot_demo.setup.actions import actions
+from demos.pycram_multirobot_demo.setup.enums import ROBOTS, ENVIRONMENTS
+from demos.pycram_multirobot_demo.setup.object_spawner import set_environment, create_robot
 from pycram import robot_description
 from pycram.datastructures.dataclasses import Color
 from pycram.datastructures.enums import WorldMode, ObjectType
@@ -15,35 +18,9 @@ from pycram.robot_manager import get_robot_description
 from pycram.ros.viz_marker_publisher import VizMarkerPublisher
 from pycram.world_concepts.world_object import Object
 from pycram.worlds.bullet_world import BulletWorld
-from setup import ROBOTS, actions, create_robot, set_environment, ENVIRONMENTS, DEMOS
 
 
-def multirobot_demo_simple(robot_one: ROBOTS, robot_two: ROBOTS):
-    pose_pr2 = Pose([0, 1, 0])
-    pose_tiago = Pose([0, 3, 0])
-
-    robot_pr2 = create_robot(robot_one, pose=pose_pr2)
-    robot_tiago = create_robot(robot_two, pose=pose_tiago)
-    rospy.sleep(3)
-    print("pr2 actions")
-    with simulated_robot(robot_pr2):
-        actions(park=True)
-
-    rospy.sleep(3)
-    print("tiago actions")
-    with simulated_robot(robot_tiago):
-        actions(park=True, torso=True)
-
-    with simulated_robot(robot_pr2):
-        actions(torso=True)
-
-
-def multirobot_demo_binder():
-    display(HTML('<img src="https://i.gifer.com/XVo6.gif" alt="Hourglass animation" width="50">'))
-    multirobot_demo()
-
-
-def multirobot_demo_apartment(robot_one: ROBOTS, robot_two: ROBOTS):
+def transporting_apartment(robot_one: ROBOTS, robot_two: ROBOTS):
     # Robot poses
     pose_pr2 = Pose([1.5, 3, 0])
     pose_tiago = Pose([4, 3, 0])
@@ -110,22 +87,3 @@ def multirobot_demo_apartment(robot_one: ROBOTS, robot_two: ROBOTS):
 
         milk = Object("milk", ObjectType.MILK, "milk.stl", pose=Pose([4.9, 3.8, 0.82], orientation=[0, 0, 1, 0]),
                       color=Color(1, 0, 0, 1))
-
-
-def multirobot_demo():
-    demo = DEMOS.PR2_TIAGO_KITCHEN
-    mode = WorldMode.DIRECT
-    robot_one = ROBOTS.PR2
-    robot_two = ROBOTS.TIAGO
-
-    world = BulletWorld(mode)
-    viz = VizMarkerPublisher() if mode == WorldMode.DIRECT else None
-
-    if demo == DEMOS.PR2_TIAGO_SIMPLE:
-        multirobot_demo_simple(robot_one=robot_one, robot_two=robot_two)
-    elif demo == DEMOS.PR2_TIAGO_KITCHEN:
-        multirobot_demo_apartment(robot_one=robot_one, robot_two=robot_two)
-
-
-if __name__ == "__main__":
-    multirobot_demo()

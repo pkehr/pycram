@@ -1,36 +1,9 @@
-from enum import Enum, auto
-
-import rospy
-
-from pycram.datastructures.enums import ObjectType, Arms
+from pycram.datastructures.enums import ObjectType
 from pycram.datastructures.pose import Pose
-from pycram.designators.action_designator import NavigateAction, ParkArmsAction, MoveTorsoAction
 from pycram.world_concepts.world_object import Object
 
 
-class ROBOTS(Enum):
-    PANDA = 'panda'
-    PR2 = 'pr2'
-    HSRB = 'hsrb'
-    TIAGO = 'tiago'
-    BOXY = 'boxy'
-    UR5 = 'ur5'
-    TURTLE = 'turtle'
-    DONBOT = 'donbot'
-    STRETCH = 'stretch'
-
-    ARMAR = 'armar'
-
-
-class ENVIRONMENTS(Enum):
-    APARTMENT = auto()
-    APARTMENT_SMALL = auto()
-    KITCHEN = auto()
-
-
-class DEMOS(Enum):
-    PR2_TIAGO_SIMPLE = auto()
-    PR2_TIAGO_KITCHEN = auto()
+from .enums import ROBOTS, ENVIRONMENTS
 
 
 def create_robot(robot: ROBOTS, pose=None):
@@ -83,29 +56,3 @@ def set_environment(environment: ENVIRONMENTS):
 
     else:
         raise Exception("No known Environment defined for world")
-
-
-def set_active_robot(robot: ROBOTS):
-    robot_topic = 'multirobot_description/' + robot.name
-
-    try:
-        active_robot = rospy.get_param(robot_topic)
-        rospy.set_param('robot_description', active_robot)
-    except:
-        rospy.logerr(f'No topic named {robot_topic} found')
-
-
-def actions(park=False, torso=False, navigate=False):
-    if park:
-        rospy.sleep(2)
-        ParkArmsAction([Arms.BOTH]).resolve().perform()
-
-    if torso:
-        rospy.sleep(2)
-        MoveTorsoAction([0.25]).resolve().perform()
-
-    if navigate:
-        rospy.sleep(2)
-        NavigateAction(target_locations=[Pose([1.7, 2, 0])]).resolve().perform()
-
-    print("done")

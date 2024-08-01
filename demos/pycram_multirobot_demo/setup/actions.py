@@ -1,0 +1,33 @@
+import rospy
+
+from .enums import ROBOTS
+from pycram.datastructures.enums import ObjectType, Arms
+from pycram.datastructures.pose import Pose
+from pycram.designators.action_designator import NavigateAction, ParkArmsAction, MoveTorsoAction
+from pycram.world_concepts.world_object import Object
+
+
+def set_active_robot(robot: ROBOTS):
+    robot_topic = 'multirobot_description/' + robot.name
+
+    try:
+        active_robot = rospy.get_param(robot_topic)
+        rospy.set_param('robot_description', active_robot)
+    except:
+        rospy.logerr(f'No topic named {robot_topic} found')
+
+
+def actions(park=False, torso=False, navigate=False):
+    if park:
+        rospy.sleep(2)
+        ParkArmsAction([Arms.BOTH]).resolve().perform()
+
+    if torso:
+        rospy.sleep(2)
+        MoveTorsoAction([0.25]).resolve().perform()
+
+    if navigate:
+        rospy.sleep(2)
+        NavigateAction(target_locations=[Pose([1.7, 2, 0])]).resolve().perform()
+
+    print("done")
