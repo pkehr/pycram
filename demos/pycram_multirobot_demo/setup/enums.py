@@ -1,5 +1,6 @@
 from enum import Enum, auto
 
+
 class ROBOTS(Enum):
     PANDA = 'panda'
     PR2 = 'pr2'
@@ -21,5 +22,5 @@ class ENVIRONMENTS(Enum):
 
 
 class DEMOS(Enum):
-    PR2_TIAGO_SIMPLE = auto()
-    PR2_TIAGO_KITCHEN = auto()
+    SIMPLE = auto()
+    APARTMENT = auto()

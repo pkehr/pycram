@@ -2,43 +2,44 @@ from IPython.core.display_functions import display
 import ipywidgets as widgets
 from ipywidgets import Output, Button, HBox
 
-robot_one = [('Select', None), ('PR2', "pr2"), ('Tiago', "tiago")]
-robot_two = [('Select', None), ('PR2', "pr2"), ('Tiago', "tiago")]
-environments = [('Select', None), ('Apartment', "apartment-small.urdf"),
-                ('Kitchen (Unavailable)', None)]  # ('Kitchen', "kitchen-small.urdf")
+from demos.pycram_multirobot_demo.setup.enums import ROBOTS, DEMOS
 
-selected_context = None
+robot_one = [('Select', None), ('PR2', ROBOTS.PR2), ('Tiago', ROBOTS.TIAGO), ('Armar6', ROBOTS.ARMAR)]
+robot_two = [('Select', None), ('PR2', ROBOTS.PR2), ('Tiago', ROBOTS.TIAGO), ('Armar6', ROBOTS.ARMAR)]
+environments = [('Select', None), ('Apartment', DEMOS.APARTMENT), ('Simple', DEMOS.SIMPLE)]
+
+first_selected_robot = None
+second_selected_robot = None
 selected_environment = None
-selected_location = None
 
 
 def setup_task_object_widgets():
     robot_one_dropdown = widgets.Dropdown(options=robot_one, description='First Robot:')
     robot_two_dropdown = widgets.Dropdown(options=robot_two, description='Second Robot:')
-    environment_dropdown = widgets.Dropdown(options=environments, description='Environment:')
+    environment_dropdown = widgets.Dropdown(options=environments, description='Demo:')
 
-    robot_one_dropdown.observe(lambda change: update_globals(context=change['new']), names='value')
-    robot_two_dropdown.observe(lambda change: update_globals(location=change['new']), names='value')
+    robot_one_dropdown.observe(lambda change: update_globals(robot_one=change['new']), names='value')
+    robot_two_dropdown.observe(lambda change: update_globals(robot_two=change['new']), names='value')
     environment_dropdown.observe(lambda change: update_globals(environment=change['new']), names='value')
 
     display(HBox([robot_one_dropdown, robot_two_dropdown, environment_dropdown]))
 
 
-def update_globals(context=None, environment=None, location=None):
-    global selected_context, selected_environment, selected_location
-    if context is not None:
-        selected_context = context
+def update_globals(robot_one=None, robot_two=None, environment=None):
+    global first_selected_robot, second_selected_robot, selected_environment
+    if robot_one is not None:
+        first_selected_robot = robot_one
+    if robot_two is not None:
+        second_selected_robot = robot_two
     if environment is not None:
         selected_environment = environment
-    if location is not None:
-        selected_location = location
 
 
 def robot_execute(func):
-    global selected_context, selected_environment, selected_location
+    global first_selected_robot, second_selected_robot, selected_environment
     with output:
         output.clear_output()
-        func(selected_location, selected_context, selected_environment)
+        func(first_selected_robot, second_selected_robot, selected_environment)
 
 
 def start_demo(func):

@@ -11,17 +11,17 @@ def move_and_park(robot_one: ROBOTS, robot_two: ROBOTS):
     pose_pr2 = Pose([0, 1, 0])
     pose_tiago = Pose([0, 3, 0])
 
-    robot_pr2 = create_robot(robot_one, pose=pose_pr2)
-    robot_tiago = create_robot(robot_two, pose=pose_tiago)
+    first_robot = create_robot(robot_one, pose=pose_pr2)
+    second_robot = create_robot(robot_two, pose=pose_tiago)
     rospy.sleep(3)
-    print("pr2 actions")
-    with simulated_robot(robot_pr2):
+    print(f"{first_robot.name} actions")
+    with simulated_robot(first_robot):
         actions(park=True)
 
     rospy.sleep(3)
-    print("tiago actions")
-    with simulated_robot(robot_tiago):
+    print(f"{second_robot.name} actions")
+    with simulated_robot(second_robot):
         actions(park=True, torso=True)
 
-    with simulated_robot(robot_pr2):
+    with simulated_robot(first_robot):
         actions(torso=True)

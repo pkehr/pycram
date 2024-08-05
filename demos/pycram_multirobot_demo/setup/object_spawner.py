@@ -1,8 +1,6 @@
 from pycram.datastructures.enums import ObjectType
 from pycram.datastructures.pose import Pose
 from pycram.world_concepts.world_object import Object
-
-
 from .enums import ROBOTS, ENVIRONMENTS
 
 
