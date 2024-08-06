@@ -8,7 +8,7 @@ from ..helper import _apply_ik
 from ..process_module import ProcessModule
 from ..local_transformer import LocalTransformer
 from ..designators.motion_designator import *
-from ..robot_manager import get_robot_description
+from pycram.multirobot.robot_manager import get_robot_description
 from ..world_reasoning import visible, link_pose_for_joint_config
 
 

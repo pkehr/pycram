@@ -7,7 +7,7 @@ from typing_extensions import Tuple, Dict
 
 import tf
 
-from ...robot_manager import get_robot_description
+from pycram.multirobot.robot_manager import get_robot_description
 
 
 class GiskardLocation(CostmapLocation):

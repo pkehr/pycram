@@ -9,7 +9,7 @@ from pycram.datastructures.enums import ObjectType, Arms
 from bullet_world_testcase import BulletWorldTestCase
 import numpy as np
 
-from pycram.robot_manager import get_robot_description
+from pycram.multirobot.robot_manager import get_robot_description
 
 
 class TestActionDesignatorGrounding(BulletWorldTestCase):

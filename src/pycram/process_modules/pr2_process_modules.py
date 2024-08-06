@@ -15,7 +15,7 @@ from ..designators.object_designator import ObjectDesignatorDescription
 from ..designators.motion_designator import MoveMotion, LookingMotion, \
     DetectingMotion, MoveTCPMotion, MoveArmJointsMotion, WorldStateDetectingMotion, MoveJointsMotion, \
     MoveGripperMotion, OpeningMotion, ClosingMotion
-from ..robot_manager import get_robot_description
+from pycram.multirobot.robot_manager import get_robot_description
 from ..world import World
 from ..world_concepts.world_object import Object
 from ..datastructures.pose import Pose

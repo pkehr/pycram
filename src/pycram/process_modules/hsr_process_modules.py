@@ -12,7 +12,7 @@ from .. import world_reasoning as btr
 from ..local_transformer import LocalTransformer
 from ..designators.motion_designator import *
 from ..external_interfaces import giskard
-from ..robot_manager import get_robot_description
+from pycram.multirobot.robot_manager import get_robot_description
 
 
 def calculate_and_apply_ik(robot, gripper: str, target_position: Point, max_iterations: Optional[int] = None):

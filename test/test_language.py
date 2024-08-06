@@ -10,7 +10,7 @@ from pycram.datastructures.pose import Pose
 from pycram.language import Sequential, Language, Parallel, TryAll, TryInOrder, Monitor, Code
 from pycram.process_module import simulated_robot
 from bullet_world_testcase import BulletWorldTestCase
-from pycram.robot_manager import get_robot_description
+from pycram.multirobot.robot_manager import get_robot_description
 
 
 class LanguageTestCase(BulletWorldTestCase):

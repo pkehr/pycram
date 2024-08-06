@@ -1,10 +1,9 @@
 import os
-import time
 import unittest
 import sqlalchemy
 import sqlalchemy.orm
 import pycram.plan_failures
-from pycram.robot_manager import get_robot_description
+from pycram.multirobot.robot_manager import get_robot_description
 from pycram.world_concepts.world_object import Object
 from pycram import task
 from pycram.world import World

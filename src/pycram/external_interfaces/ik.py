@@ -11,7 +11,7 @@ from ..helper import calculate_wrist_tool_offset, _apply_ik
 from pycram.local_transformer import LocalTransformer
 from pycram.datastructures.pose import Pose
 from ..plan_failures import IKError
-from ..robot_manager import get_robot_description, RobotManager
+from pycram.multirobot.robot_manager import get_robot_description, RobotManager
 
 
 def _make_request_msg(root_link: str, tip_link: str, target_pose: Pose, robot_object: Object,

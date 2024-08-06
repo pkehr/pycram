@@ -5,7 +5,7 @@ import numpy as np
 
 from .external_interfaces.ik import try_to_reach, try_to_reach_with_grasp
 from .datastructures.pose import Pose, Transform
-from .robot_manager import get_robot_description
+from pycram.multirobot.robot_manager import get_robot_description
 
 from .world_concepts.world_object import Object
 from .world import World, UseProspectionWorld

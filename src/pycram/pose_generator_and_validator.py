@@ -1,7 +1,7 @@
 import tf
 import numpy as np
 
-from .robot_manager import get_robot_description
+from pycram.multirobot.robot_manager import get_robot_description
 from .world import World
 from .world_concepts.world_object import Object
 from .world_reasoning import contact

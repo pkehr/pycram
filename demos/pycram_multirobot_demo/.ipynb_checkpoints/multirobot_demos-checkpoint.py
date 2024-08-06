@@ -1,22 +1,12 @@
-import rospy
 from IPython.core.display_functions import display
-from ipywidgets import HTML, Output, Button
+from ipywidgets import HTML
 
 from demos.pycram_multirobot_demo.scenarios.move_and_park import move_and_park
 from demos.pycram_multirobot_demo.scenarios.transporting_apartment import transporting_apartment
 from demos.pycram_multirobot_demo.setup.enums import DEMOS, ROBOTS
-from pycram import robot_description
-from pycram.datastructures.dataclasses import Color
-from pycram.datastructures.enums import WorldMode, ObjectType
-from pycram.datastructures.pose import Pose
-from pycram.designators.action_designator import NavigateAction, LookAtAction, DetectAction, TransportAction, \
-    PickUpAction, GraspingAction, PlaceAction
-from pycram.designators.object_designator import BelieveObject
+from pycram.datastructures.enums import WorldMode
 
-from pycram.process_module import simulated_robot, with_simulated_robot
-from pycram.robot_manager import get_robot_description
 from pycram.ros.viz_marker_publisher import VizMarkerPublisher
-from pycram.world_concepts.world_object import Object
 from pycram.worlds.bullet_world import BulletWorld
 
 

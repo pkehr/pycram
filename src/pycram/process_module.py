@@ -17,7 +17,7 @@ from .language import Language
 
 from typing_extensions import TYPE_CHECKING
 
-from .robot_manager import RobotManager, get_robot_description
+from pycram.multirobot.robot_manager import RobotManager, get_robot_description
 from .worlds.bullet_world import BulletWorld
 
 if TYPE_CHECKING:

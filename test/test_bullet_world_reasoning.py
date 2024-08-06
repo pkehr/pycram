@@ -3,7 +3,7 @@ import time
 import pycram.world_reasoning as btr
 from bullet_world_testcase import BulletWorldTestCase
 from pycram.datastructures.pose import Pose
-from pycram.robot_manager import get_robot_description
+from pycram.multirobot.robot_manager import get_robot_description
 
 use_new = True
 

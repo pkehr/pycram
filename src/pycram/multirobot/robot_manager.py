@@ -3,7 +3,9 @@ import re
 from abc import ABC
 
 import rospy
-from pycram.robot_descriptions import DonbotDescription, PR2Description, BoxyDescription, UR5Description, TiagoDescription, StretchDescription
+
+from pycram.robot_descriptions import DonbotDescription, PR2Description, BoxyDescription, UR5Description, \
+    TiagoDescription, StretchDescription
 from pycram.robot_descriptions.armar6_description import ARMAR6Description
 from pycram.robot_descriptions.hsr_description import HSRDescription
 
@@ -125,6 +127,7 @@ class RobotManager(ABC):
             return True
 
         return False
+
 
 def get_robot_description():
     return RobotManager().robot_description

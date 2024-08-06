@@ -1,5 +1,4 @@
 from threading import Lock
-from threading import Lock
 from typing import Any
 
 import numpy as np
@@ -15,7 +14,7 @@ from ..helper import _apply_ik
 from ..local_transformer import LocalTransformer
 # from ..external_interfaces.navigate import queryPoseNav
 from ..process_module import ProcessModule
-from ..robot_manager import get_robot_description
+from pycram.multirobot.robot_manager import get_robot_description
 from ..worlds.bullet_world import BulletWorld
 
 

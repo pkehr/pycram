@@ -2,7 +2,7 @@ import time
 import unittest
 
 import pycram.task
-from pycram.robot_manager import get_robot_description
+from pycram.multirobot.robot_manager import get_robot_description
 from pycram.worlds.bullet_world import BulletWorld
 from pycram.world_concepts.world_object import Object
 from pycram.datastructures.pose import Pose

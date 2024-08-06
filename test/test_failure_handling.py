@@ -2,7 +2,7 @@ import unittest
 
 import roslaunch
 
-from pycram.robot_manager import get_robot_description
+from pycram.multirobot.robot_manager import get_robot_description
 from pycram.worlds.bullet_world import BulletWorld, Object
 from pycram.designator import ActionDesignatorDescription
 from pycram.designators.action_designator import ParkArmsAction

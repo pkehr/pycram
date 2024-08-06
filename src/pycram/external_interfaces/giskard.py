@@ -15,7 +15,7 @@ from typing_extensions import List, Dict, Callable, Optional
 from geometry_msgs.msg import PoseStamped, PointStamped, QuaternionStamped, Vector3Stamped
 from threading import Lock, RLock
 
-from ..robot_manager import get_robot_description
+from pycram.multirobot.robot_manager import get_robot_description
 
 try:
     from giskardpy.python_interface import GiskardWrapper

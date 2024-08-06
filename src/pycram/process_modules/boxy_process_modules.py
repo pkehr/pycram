@@ -5,7 +5,7 @@ import pycram.helper as helper
 from ..designators.motion_designator import *
 from ..datastructures.enums import JointType
 from ..external_interfaces.ik import request_ik
-from ..robot_manager import get_robot_description
+from pycram.multirobot.robot_manager import get_robot_description
 
 from ..world import World
 from ..local_transformer import LocalTransformer

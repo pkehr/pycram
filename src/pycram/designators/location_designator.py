@@ -2,7 +2,7 @@ import dataclasses
 from typing_extensions import List, Union, Iterable, Optional, Callable
 
 from .object_designator import ObjectDesignatorDescription, ObjectPart
-from ..robot_manager import get_robot_description
+from pycram.multirobot.robot_manager import get_robot_description
 from ..world import World, UseProspectionWorld
 from ..world_reasoning import link_pose_for_joint_config
 from ..designator import DesignatorError, LocationDesignatorDescription

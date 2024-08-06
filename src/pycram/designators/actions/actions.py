@@ -8,7 +8,7 @@ from ...designator import ActionDesignatorDescription
 from ..motion_designator import *
 from ...datastructures.pose import Pose
 from ...datastructures.enums import Arms, Grasp
-from ...robot_manager import get_robot_description
+from pycram.multirobot.robot_manager import get_robot_description
 from ...task import with_tree
 from dataclasses import dataclass, field
 from ..location_designator import CostmapLocation

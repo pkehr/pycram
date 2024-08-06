@@ -2,7 +2,7 @@ from threading import Lock
 
 import numpy as np
 
-from ..robot_manager import get_robot_description
+from pycram.multirobot.robot_manager import get_robot_description
 from ..worlds.bullet_world import World
 from ..designators.motion_designator import MoveArmJointsMotion, WorldStateDetectingMotion
 from ..local_transformer import LocalTransformer
