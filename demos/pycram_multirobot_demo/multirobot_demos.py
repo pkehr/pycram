@@ -3,6 +3,8 @@ from ipywidgets import HTML
 
 from demos.pycram_multirobot_demo.scenarios.move_and_park import move_and_park
 from demos.pycram_multirobot_demo.scenarios.transporting_apartment import transporting_apartment
+from demos.pycram_multirobot_demo.scenarios.transporting_kitchen import transporting_kitchen
+from demos.pycram_multirobot_demo.scenarios.triple_robot import triple_robots
 from demos.pycram_multirobot_demo.setup.enums import DEMOS, ROBOTS
 from pycram.datastructures.enums import WorldMode
 from pycram.ros.viz_marker_publisher import VizMarkerPublisher
@@ -18,6 +20,10 @@ def multirobot_demo(robot_one: ROBOTS = ROBOTS.PR2, robot_two: ROBOTS = ROBOTS.T
         move_and_park(robot_one=robot_one, robot_two=robot_two)
     elif demo == DEMOS.APARTMENT:
         transporting_apartment(robot_one=robot_one, robot_two=robot_two)
+    elif demo == DEMOS.KITCHEN:
+        transporting_kitchen(robot_one=robot_one, robot_two=robot_two)
+    elif demo == DEMOS.TRIPLE:
+        triple_robots(robot_one=robot_one, robot_two=robot_two, robot_three=ROBOTS.ARMAR)
 
 
 def multirobot_demo_binder(robot_one, robot_two, environment):

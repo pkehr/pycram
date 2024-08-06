@@ -6,7 +6,8 @@ from demos.pycram_multirobot_demo.setup.enums import ROBOTS, DEMOS
 
 robot_one = [('Select', None), ('PR2', ROBOTS.PR2), ('Tiago', ROBOTS.TIAGO), ('Armar6', ROBOTS.ARMAR)]
 robot_two = [('Select', None), ('PR2', ROBOTS.PR2), ('Tiago', ROBOTS.TIAGO), ('Armar6', ROBOTS.ARMAR)]
-environments = [('Select', None), ('Apartment', DEMOS.APARTMENT), ('Simple', DEMOS.SIMPLE)]
+demos = [('Select', None), ('Apartment', DEMOS.APARTMENT), ('Kitchen', DEMOS.KITCHEN), ('Triple', DEMOS.TRIPLE),
+         ('Simple', DEMOS.SIMPLE)]
 
 first_selected_robot = None
 second_selected_robot = None
@@ -16,7 +17,7 @@ selected_environment = None
 def setup_task_object_widgets():
     robot_one_dropdown = widgets.Dropdown(options=robot_one, description='First Robot:')
     robot_two_dropdown = widgets.Dropdown(options=robot_two, description='Second Robot:')
-    environment_dropdown = widgets.Dropdown(options=environments, description='Demo:')
+    environment_dropdown = widgets.Dropdown(options=demos, description='Demo:')
 
     robot_one_dropdown.observe(lambda change: update_globals(robot_one=change['new']), names='value')
     robot_two_dropdown.observe(lambda change: update_globals(robot_two=change['new']), names='value')
