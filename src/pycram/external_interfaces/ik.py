@@ -9,6 +9,7 @@ from moveit_msgs.srv import GetPositionIK
 from sensor_msgs.msg import JointState
 
 from ..datastructures.world import World, UseProspectionWorld
+from ..multirobot import RobotManager
 from ..world_concepts.world_object import Object
 from ..utils import _apply_ik
 from ..local_transformer import LocalTransformer
@@ -69,10 +70,19 @@ def call_ik(root_link: str, tip_link: str, target_pose: Pose, robot_object: Obje
    :param joints: A list of joint name that should be altered
    :return: The solution that was generated as a list of joint values corresponding to the order of joints given
    """
-    if RobotDescription.current_robot_description.name == "pr2":
-        ik_service = "/pr2_right_arm_kinematics/get_ik" if "r_wrist" in tip_link else "/pr2_left_arm_kinematics/get_ik"
+    prefix = ''
+    current_robot_name = RobotDescription.current_robot_description.name
+
+    if RobotManager.multiple_robots_active():
+        if current_robot_name == 'pr2':
+            prefix = '/pr2'
+        else:
+            prefix = f'/{current_robot_name}/{current_robot_name}_kdl'
+
+    if current_robot_name == "pr2":
+        ik_service = f'{prefix}/pr2_right_arm_kinematics/get_ik' if "r_wrist" in tip_link else f'{prefix}/pr2_left_arm_kinematics/get_ik'
     else:
-        ik_service = "/kdl_ik_service/get_ik"
+        ik_service = "/kdl_ik_service/get_ik" if prefix == '' else f"{prefix}/get_ik"
 
     rospy.loginfo_once(f"Waiting for IK service: {ik_service}")
     rospy.wait_for_service(ik_service)
@@ -144,7 +154,8 @@ def try_to_reach(pose_or_object: Union[Pose, Object], prospection_robot: Object,
     """
     input_pose = pose_or_object.get_pose() if isinstance(pose_or_object, Object) else pose_or_object
 
-    arm_chain = list(filter(lambda chain: chain.get_tool_frame() == gripper_name, RobotDescription.current_robot_description.get_manipulator_chains()))[0]
+    arm_chain = list(filter(lambda chain: chain.get_tool_frame() == gripper_name,
+                            RobotDescription.current_robot_description.get_manipulator_chains()))[0]
 
     joints = arm_chain.joints
 
@@ -243,4 +254,3 @@ def request_giskard_ik(target_pose: Pose, robot: Object, gripper: str) -> Tuple[
         if dist > 0.01:
             raise IKError(target_pose, "map", gripper)
         return pose, robot_joint_states
-

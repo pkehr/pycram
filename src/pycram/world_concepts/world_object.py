@@ -9,6 +9,7 @@ from geometry_msgs.msg import Point, Quaternion
 from typing_extensions import Type, Optional, Dict, Tuple, List, Union
 
 from ..description import ObjectDescription, LinkDescription, Joint
+from ..multirobot import RobotManager
 from ..object_descriptors.urdf import ObjectDescription as URDFObject
 from ..robot_descriptions import robot_description
 from ..datastructures.world import WorldEntity, World
@@ -97,6 +98,7 @@ class Object(WorldEntity):
             rdm = RobotDescriptionManager()
             rdm.load_description(self.name)
             World.robot = self
+            RobotManager.add_robot(self.name, self)
 
     @property
     def pose(self):

@@ -14,8 +14,11 @@ from typing_extensions import Callable, Type, Any, Union
 import rospy
 
 from .language import Language
+from .multirobot import RobotManager
 from .robot_description import RobotDescription
 from typing_extensions import TYPE_CHECKING
+
+from .worlds.bullet_world import BulletWorld
 
 if TYPE_CHECKING:
     from .designators.motion_designator import BaseMotion
@@ -136,7 +139,10 @@ class SimulatedRobot:
         """
         ProcessModuleManager.execution_type = self.pre
 
-    def __call__(self):
+    def __call__(self, robot=None):
+        if robot is not None:
+            RobotManager.set_active_robot(robot.name)
+            BulletWorld().set_robot(robot)
         return self
 
 
