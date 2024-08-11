@@ -1,0 +1,17 @@
+<launch>
+  <group ns="iai_donbot">
+  <arg name="use_knowrob" default="false"/>
+
+  <node pkg="kdl_ik_service" type="start_ros_server.py" name="iai_donbot_kdl" output="screen" />
+
+  <param name="robot_description"
+         textfile="$(find pycram)/resources/iai_donbot.urdf"/>
+
+  <!-- Use Knowrob -->
+  <group if="$(eval use_knowrob)">
+      <include file="$(find knowrob)/launch/knowrob.launch"/>
+  </group>
+
+  </group>
+
+</launch>
