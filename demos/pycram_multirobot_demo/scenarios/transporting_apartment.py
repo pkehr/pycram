@@ -1,8 +1,9 @@
 import rospy
 
 from demos.pycram_multirobot_demo.setup.actions import actions
-from demos.pycram_multirobot_demo.setup.enums import ROBOTS, ENVIRONMENTS
-from demos.pycram_multirobot_demo.setup.object_spawner import set_environment, create_robot
+from demos.utils.enums import ROBOTS, ENVIRONMENTS
+from demos.utils.launcher import launch_robot
+from demos.utils.object_spawner import set_environment, create_robot
 from pycram.datastructures.dataclasses import Color
 from pycram.datastructures.enums import ObjectType, Arms, Grasp
 from pycram.datastructures.pose import Pose
@@ -13,7 +14,9 @@ from pycram.world_concepts.world_object import Object
 
 
 def transporting_apartment(robot_one: ROBOTS, robot_two: ROBOTS):
-    # Robot poses
+    first_robot_launch = launch_robot(robot_one, use_namespace=True)
+    second_robot_launch = launch_robot(robot_two, use_namespace=True)
+
     pose_pr2 = Pose([1.5, 3, 0])
     pose_tiago = Pose([4, 3, 0])
 
@@ -64,10 +67,14 @@ def transporting_apartment(robot_one: ROBOTS, robot_two: ROBOTS):
         milk = Object("milk", ObjectType.MILK, "milk.stl", pose=Pose([2.75, 3, 1.02], orientation=[0, 0, 1, 0]),
                       color=Color(1, 0, 0, 1))
 
-        milk = Object("milk", ObjectType.MILK, "milk.stl", pose=Pose([3.3, 3.30, 0.62], orientation=[0, 0, 1, 0]),
-                      color=Color(1, 0, 0, 1))
+        PickUpAction(object_designator_description=milk_BO,
+                     arms=[Arms.LEFT],
+                     grasps=[Grasp.FRONT]).resolve().perform()
 
-        second_robot.attach(milk)
+        #milk = Object("milk", ObjectType.MILK, "milk.stl", pose=Pose([3.3, 3.30, 0.62], orientation=[0, 0, 1, 0]),
+        #              color=Color(1, 0, 0, 1))
+
+        #second_robot.attach(milk)
 
         rospy.sleep(2)
 

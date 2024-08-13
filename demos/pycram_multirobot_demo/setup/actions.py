@@ -3,7 +3,7 @@ import rospy
 from pycram.datastructures.enums import Arms
 from pycram.datastructures.pose import Pose
 from pycram.designators.action_designator import NavigateAction, ParkArmsAction, MoveTorsoAction
-from .enums import ROBOTS
+from demos.utils.enums import ROBOTS
 
 
 def set_active_robot(robot: ROBOTS):

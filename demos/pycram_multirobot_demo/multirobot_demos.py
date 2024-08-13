@@ -5,7 +5,7 @@ from demos.pycram_multirobot_demo.scenarios.move_and_park import move_and_park
 from demos.pycram_multirobot_demo.scenarios.transporting_apartment import transporting_apartment
 from demos.pycram_multirobot_demo.scenarios.transporting_kitchen import transporting_kitchen
 from demos.pycram_multirobot_demo.scenarios.triple_robot import triple_robots
-from demos.pycram_multirobot_demo.setup.enums import DEMOS, ROBOTS
+from demos.utils.enums import DEMOS, ROBOTS
 from pycram.datastructures.enums import WorldMode
 from pycram.ros.viz_marker_publisher import VizMarkerPublisher
 from pycram.worlds.bullet_world import BulletWorld

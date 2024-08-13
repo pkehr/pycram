@@ -2,7 +2,7 @@ from IPython.core.display_functions import display
 import ipywidgets as widgets
 from ipywidgets import Output, Button, HBox
 
-from demos.pycram_multirobot_demo.setup.enums import ROBOTS, DEMOS
+from demos.utils.enums import ROBOTS, DEMOS
 
 robot_one = [('Select', None), ('PR2', ROBOTS.PR2), ('Tiago', ROBOTS.TIAGO), ('Armar6', ROBOTS.ARMAR)]
 robot_two = [('Select', None), ('PR2', ROBOTS.PR2), ('Tiago', ROBOTS.TIAGO), ('Armar6', ROBOTS.ARMAR)]

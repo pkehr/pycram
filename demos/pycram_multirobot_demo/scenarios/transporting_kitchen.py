@@ -1,10 +1,11 @@
 import rospy
 
 from demos.pycram_multirobot_demo.setup.actions import actions
-from demos.pycram_multirobot_demo.setup.enums import ROBOTS, ENVIRONMENTS
-from demos.pycram_multirobot_demo.setup.object_spawner import set_environment, create_robot
+from demos.utils.enums import ROBOTS, ENVIRONMENTS
+from demos.utils.launcher import launch_robot
+from demos.utils.object_spawner import set_environment, create_robot
 from pycram.datastructures.dataclasses import Color
-from pycram.datastructures.enums import ObjectType
+from pycram.datastructures.enums import ObjectType, Arms, Grasp
 from pycram.datastructures.pose import Pose
 from pycram.designators.action_designator import NavigateAction, PickUpAction, PlaceAction
 from pycram.designators.object_designator import BelieveObject
@@ -13,7 +14,9 @@ from pycram.world_concepts.world_object import Object
 
 
 def transporting_kitchen(robot_one: ROBOTS, robot_two: ROBOTS):
-    # Robot poses
+    first_robot_launch = launch_robot(robot_one, use_namespace=True)
+    second_robot_launch = launch_robot(robot_two, use_namespace=True)
+
     pose_pr2 = Pose([1.5, 3, 0])
     pose_tiago = Pose([4, 3, 0])
 
@@ -42,14 +45,14 @@ def transporting_kitchen(robot_one: ROBOTS, robot_two: ROBOTS):
         NavigateAction(target_locations=[Pose([1.3, 3, 0], orientation=[0, 0, 1, 0])]).resolve().perform()
 
         PickUpAction(object_designator_description=milk_BO,
-                     arms=["left"],
-                     grasps=["front"]).resolve().perform()
+                     arms=[Arms.LEFT],
+                     grasps=[Grasp.FRONT]).resolve().perform()
 
         actions(park=True)
 
         NavigateAction(target_locations=[Pose([1.9, 3, 0], orientation=[0, 0, 0, 1])]).resolve().perform()
 
-        PlaceAction(milk_BO, [Pose([2.75, 3, 1.02], orientation=[0, 0, 0, 1])], ["left"]).resolve().perform()
+        PlaceAction(milk_BO, [Pose([2.75, 3, 1.02], orientation=[0, 0, 0, 1])], [Arms.LEFT]).resolve().perform()
 
         actions(park=True)
 
