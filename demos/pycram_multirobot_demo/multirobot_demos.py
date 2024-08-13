@@ -32,7 +32,7 @@ def multirobot_demo_binder(robot_one, robot_two, environment):
 
 
 if __name__ == '__main__':
-    r1 = ROBOTS.PR2
+    r1 = ROBOTS.ARMAR6
     r2 = ROBOTS.TIAGO
     demo = DEMOS.APARTMENT
     mode = WorldMode.GUI

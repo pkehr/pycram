@@ -12,7 +12,7 @@ class ROBOTS(Enum):
     DONBOT = 'donbot'
     STRETCH = 'stretch'
 
-    ARMAR = 'armar'
+    ARMAR6 = 'armar6'
 
 
 class ENVIRONMENTS(Enum):

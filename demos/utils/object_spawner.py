@@ -34,8 +34,8 @@ def create_robot(robot: ROBOTS, pose=None):
     elif robot == ROBOTS.DONBOT:
         return Object("iai_donbot", ObjectType.ROBOT, "iai_donbot.urdf", pose=pose)
 
-    elif robot == ROBOTS.ARMAR:
-        return Object("armar6", ObjectType.ROBOT, "Armar6.urdf", pose=pose)
+    elif robot == ROBOTS.ARMAR6:
+        return Object("armar6", ObjectType.ROBOT, "armar6.urdf", pose=pose)
 
     elif robot == ROBOTS.STRETCH:
         return Object("stretch", ObjectType.ROBOT, "stretch.urdf", pose=pose)
