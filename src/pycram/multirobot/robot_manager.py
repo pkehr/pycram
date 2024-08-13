@@ -4,6 +4,7 @@ from abc import ABC
 
 import rospy
 
+from pycram.multirobot.object_observer import ObjectObserver
 from pycram.robot_descriptions import DonbotDescription, PR2Description, BoxyDescription, UR5Description, \
     TiagoDescription, StretchDescription
 from pycram.robot_descriptions.armar6_description import ARMAR6Description
@@ -35,6 +36,13 @@ class RobotManager(ABC):
     Robot description of active robot
     """
 
+    multiple_robots_exist = False
+    """
+    State if multiple robots are already registered in current world
+    """
+
+    object_observer: ObjectObserver = None
+
     def __new__(cls, *args, **kwargs):
         """
         Creates a new instance if :py:attr:`~RobotManager._instance` is None, otherwise the instance
@@ -60,6 +68,33 @@ class RobotManager(ABC):
         Add another robot to the list of available robots
         """
         RobotManager.available_robots[robot_name] = robot
+        RobotManager.handle_multiple_robots()
+
+    @staticmethod
+    def handle_multiple_robots():
+        """
+        Check if multiple Robots exist in the current world.
+        """
+        robot_list = list(RobotManager.available_robots.keys())
+        if len(robot_list) > 1 and not RobotManager.multiple_robots_exist:
+            RobotManager.multiple_robots_exist = True
+            RobotManager.object_observer = ObjectObserver()
+
+            rospy.logdebug(f"Multiple Robots active: {robot_list}")
+
+    @staticmethod
+    def block_object(object_desig):
+        """
+        Block a given object, if is not blocked already
+        """
+        if RobotManager.object_observer is not None:
+            RobotManager.object_observer.block_object(object_desig)
+
+
+    @staticmethod
+    def release_object(object_desig):
+        if RobotManager.object_observer is not None:
+            RobotManager.object_observer.release_object(object_desig)
 
     @staticmethod
     def set_active_robot(robot_name=None):
@@ -114,7 +149,7 @@ class RobotManager(ABC):
             description = TiagoDescription
         elif "stretch" in robot:
             description = StretchDescription
-        elif "armar6" in robot:
+        elif "Armar6" in robot:
             description = ARMAR6Description
         else:
             logger.error("(robot-description) The given robot name %s has no description class.", robot_name)
