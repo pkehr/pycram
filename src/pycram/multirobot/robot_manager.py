@@ -24,12 +24,10 @@ class RobotManager(ABC):
     """
     Singelton instance of this Robot Manager
     """
-
     robot_description = None
     """
     Robot description of active robot
     """
-
     object_observer: ObjectObserver = None
     """
     Observer for currently used objects
@@ -88,7 +86,6 @@ class RobotManager(ABC):
         """
         if RobotManager.object_observer is not None:
             RobotManager.object_observer.block_object(object_desig)
-
 
     @staticmethod
     def release_object(object_desig):
