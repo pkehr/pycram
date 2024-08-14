@@ -13,9 +13,10 @@ from pycram.process_module import simulated_robot
 from pycram.world_concepts.world_object import Object
 
 
-def transporting_kitchen(robot_one: ROBOTS, robot_two: ROBOTS):
-    first_robot_launch = launch_robot(robot_one, use_namespace=True)
-    second_robot_launch = launch_robot(robot_two, use_namespace=True)
+def transporting_kitchen(robot_one: ROBOTS, robot_two: ROBOTS, launch_robots=True):
+    if launch_robots:
+        first_robot_launch = launch_robot(robot_one, use_namespace=True)
+        second_robot_launch = launch_robot(robot_two, use_namespace=True)
 
     pose_pr2 = Pose([1.5, 3, 0])
     pose_tiago = Pose([4, 3, 0])
