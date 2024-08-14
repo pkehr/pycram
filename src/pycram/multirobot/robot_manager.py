@@ -1,6 +1,7 @@
 import logging
 from abc import ABC
 
+from pycram.multirobot.object_observer import ObjectObserver
 from pycram.robot_description import RobotDescriptionManager
 
 logger = logging.getLogger(__name__)
@@ -27,6 +28,11 @@ class RobotManager(ABC):
     robot_description = None
     """
     Robot description of active robot
+    """
+
+    object_observer: ObjectObserver = None
+    """
+    Observer for currently used objects
     """
 
     def __new__(cls, *args, **kwargs):
@@ -70,7 +76,21 @@ class RobotManager(ABC):
     @staticmethod
     def multiple_robots_active():
         if len(list(RobotManager.available_robots.keys())) > 1:
+            RobotManager.object_observer = ObjectObserver()
             return True
 
         return False
 
+    @staticmethod
+    def block_object(object_desig):
+        """
+        Block a given object, if is not blocked already
+        """
+        if RobotManager.object_observer is not None:
+            RobotManager.object_observer.block_object(object_desig)
+
+
+    @staticmethod
+    def release_object(object_desig):
+        if RobotManager.object_observer is not None:
+            RobotManager.object_observer.release_object(object_desig)
