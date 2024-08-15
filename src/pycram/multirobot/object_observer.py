@@ -6,18 +6,21 @@ from pycram_msgs.msg import ObjectIdentifierArray, ObjectIdentifier
 
 class ObjectObserver:
     """
-    Publishes an Array of visualization marker which represent the situation in the World
+    Class to observe the state of objects that are currently in use and shouldn't be accessed by another robot
     """
 
     blocked_objects = ObjectIdentifierArray()
+    """
+    Variable that stores the array of objects
+    """
 
     def __init__(self, topic_name="/pycram/multirobot/blocked_objects", interval=0.1):
         """
-        The Publisher creates an Array of Visualization marker with a Marker for each link of each Object in the
-        World. This Array is published with a rate of interval.
+        Initialize a publisher and a subscriber for the given topic.
+        Communication is done over ros topics to have an independent source of information (useful for multiple pycram instances)
 
-        :param topic_name: The name of the topic to which the Visualization Marker should be published.
-        :param interval: The interval at which the visualization marker should be published, in seconds.
+        :param topic_name: The name of the topic to which the ObjectIdentifierArray should be published.
+        :param interval: The interval at which the ObjectIdentifierArray should be published, in seconds.
         """
         self.topic_name = topic_name
         self.interval = interval
@@ -27,7 +30,7 @@ class ObjectObserver:
 
     def block_object(self, object_desig):
         """
-        Add an object to the observer list
+        Add an object to the observer list and publish the new state
         """
         obj = ObjectIdentifier()
         obj.name = object_desig.world_object.name
@@ -42,7 +45,7 @@ class ObjectObserver:
 
     def release_object(self, object_desig):
         """
-        Remove an object from the observer List
+        Remove an object from the observer List and publish new state
         """
         blocked: ObjectIdentifierArray = self.blocked_objects
 
@@ -55,6 +58,8 @@ class ObjectObserver:
     def is_object_blocked(self, object_desig) -> bool:
         """
         State if a given object is blocked,
+
+        :param object_desig: designator of given object
         """
         all_ids = [obj.id for obj in self.blocked_objects.objects]
 
@@ -65,6 +70,8 @@ class ObjectObserver:
 
     def _cb(self, data: ObjectIdentifierArray) -> None:
         """
-        Update list of blocked objects by given data
+        Update list of blocked objects with the given data from a topic
+
+        :param data: data that the subscriber receives from the given topic
         """
         self.blocked_objects = data
