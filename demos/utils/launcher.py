@@ -21,6 +21,8 @@ def launch_robot(robot: ROBOTS, use_namespace=False):
         executable = folder + 'stretch.launch'
     elif robot == ROBOTS.ARMAR6:
         executable = folder + 'armar6.launch'
+    elif robot == ROBOTS.TURTLEBOT3_WAFFLE_PI:
+        executable = folder + 'turtlebot3_waffle_pi.launch'
     else:
         raise Exception(f'Robot {robot} is not supported')
 

@@ -23,7 +23,7 @@ def multirobot_demo(robot_one: ROBOTS = ROBOTS.PR2, robot_two: ROBOTS = ROBOTS.T
     elif demo == DEMOS.KITCHEN:
         transporting_kitchen(robot_one=robot_one, robot_two=robot_two)
     elif demo == DEMOS.TRIPLE:
-        triple_robots(robot_one=robot_one, robot_two=robot_two, robot_three=ROBOTS.ARMAR)
+        triple_robots(robot_one=robot_one, robot_two=robot_two, robot_three=ROBOTS.ARMAR6)
 
 
 def multirobot_demo_binder(robot_one, robot_two, environment):
@@ -32,9 +32,9 @@ def multirobot_demo_binder(robot_one, robot_two, environment):
 
 
 if __name__ == '__main__':
-    r1 = ROBOTS.ARMAR6
+    r1 = ROBOTS.TURTLEBOT3_WAFFLE_PI
     r2 = ROBOTS.TIAGO
-    demo = DEMOS.APARTMENT
+    demo = DEMOS.SIMPLE
     mode = WorldMode.GUI
 
     multirobot_demo(robot_one=r1, robot_two=r2, demo=demo, mode=mode)

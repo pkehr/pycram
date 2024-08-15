@@ -31,6 +31,9 @@ def create_robot(robot: ROBOTS, pose=None):
     elif robot == ROBOTS.TURTLE:
         return Object("turtle", ObjectType.ROBOT, "turtlebot3_burger.urdf", pose=pose)
 
+    elif robot == ROBOTS.TURTLEBOT3_WAFFLE_PI:
+        return Object("turtlebot3_waffle_pi", ObjectType.ROBOT, "turtlebot3_waffle_pi.urdf", pose=pose)
+
     elif robot == ROBOTS.DONBOT:
         return Object("iai_donbot", ObjectType.ROBOT, "iai_donbot.urdf", pose=pose)
 

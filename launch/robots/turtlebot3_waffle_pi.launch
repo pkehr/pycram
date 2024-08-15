@@ -1,0 +1,9 @@
+<launch>
+<group ns="turtlebot3_waffle_pi">
+  <arg name="model" default="waffle_pi"/>
+
+  <param name="tb3_model" value="$(arg model)"/>
+
+  <param name="robot_description" command="$(find xacro)/xacro --inorder $(find turtlebot3_description)/urdf/turtlebot3_waffle_pi.urdf.xacro" />
+</group>
+</launch>
