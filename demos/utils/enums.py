@@ -8,8 +8,7 @@ class ROBOTS(Enum):
     TIAGO = 'tiago'
     BOXY = 'boxy'
     UR5 = 'ur5'
-    TURTLE = 'turtle'
-    TURTLEBOT3_WAFFLE_PI = 'turtlebot3_waffle_pi'
+    TURTLE = 'turtlebot'
     DONBOT = 'donbot'
     STRETCH = 'stretch'
 

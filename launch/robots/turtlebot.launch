@@ -1,5 +1,5 @@
 <launch>
-<group ns="turtlebot3_waffle_pi">
+<group ns="turtlebot">
   <arg name="model" default="waffle_pi"/>
 
   <param name="tb3_model" value="$(arg model)"/>
