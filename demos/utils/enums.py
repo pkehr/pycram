@@ -20,6 +20,7 @@ class ENVIRONMENTS(Enum):
     APARTMENT = auto()
     APARTMENT_SMALL = auto()
     KITCHEN = auto()
+    SUTURO = auto()
 
 
 class DEMOS(Enum):

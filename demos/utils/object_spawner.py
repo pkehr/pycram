@@ -54,6 +54,8 @@ def set_environment(environment: ENVIRONMENTS):
         return Object("kitchen", ObjectType.ENVIRONMENT, "kitchen.urdf")
     elif environment == ENVIRONMENTS.APARTMENT_SMALL:
         return Object("apartment", ObjectType.ENVIRONMENT, "apartment-small.urdf")
+    elif environment == ENVIRONMENTS.SUTURO:
+        return Object("suturo_environment", ObjectType.ENVIRONMENT, "suturo_environment.urdf")
 
     else:
         raise Exception("No known Environment defined for world")
