@@ -5,7 +5,7 @@
   <node pkg="kdl_ik_service" type="start_ros_server.py" name="hsrb_kdl" output="screen" />
 
   <param name="robot_description"
-         textfile="$(find pycram)/resources/hsrb.urdf"/>
+         textfile="$(find pycram)/resources/robots/hsrb.urdf"/>
 
   <!-- Use Knowrob -->
   <group if="$(eval use_knowrob)">
