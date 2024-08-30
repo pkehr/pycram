@@ -105,7 +105,10 @@ class RealRobot:
         ProcessModuleManager.execution_type = self.pre
         ProcessModule.execution_delay = self.pre_delay
 
-    def __call__(self):
+    def __call__(self, robot=None):
+        if robot is not None:
+            RobotManager.set_active_robot(robot.name)
+            BulletWorld().set_robot(robot)
         return self
 
 
@@ -178,7 +181,10 @@ class SemiRealRobot:
         """
         ProcessModuleManager.execution_type = self.pre
 
-    def __call__(self):
+    def __call__(self, robot=None):
+        if robot is not None:
+            RobotManager.set_active_robot(robot.name)
+            BulletWorld().set_robot(robot)
         return self
 
 
