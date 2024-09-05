@@ -14,6 +14,9 @@ def create_robot(robot: ROBOTS, pose=None):
 
     # Not able to launch yet
     elif robot == ROBOTS.HSRB:
+        if pose is None:
+            return Object("hsrb", ObjectType.ROBOT, "hsrb.urdf")
+
         return Object("hsrb", ObjectType.ROBOT, "hsrb.urdf", pose=pose)
 
     # Somewhat works, arms are not being affected by gravity
@@ -29,7 +32,7 @@ def create_robot(robot: ROBOTS, pose=None):
         return Object("ur5", ObjectType.ROBOT, "ur5_robotiq.urdf", pose=pose)
 
     elif robot == ROBOTS.TURTLE:
-        return Object("turtlebot", ObjectType.ROBOT, "turtlebot3_waffle_pi.urdf", pose=pose)
+        return Object("turtlebot", ObjectType.ROBOT, "turtlebot.urdf", pose=pose)
 
     elif robot == ROBOTS.DONBOT:
         return Object("iai_donbot", ObjectType.ROBOT, "iai_donbot.urdf", pose=pose)
