@@ -69,6 +69,7 @@ class RobotManager(ABC):
 
         rdm = RobotDescriptionManager()
         rdm.load_description(name=robot_name)
+        RobotManager.active_robot = RobotManager.available_robots[robot_name] if robot_name else None
         logging.info(f'Setting active robot. Is now: {robot_name}')
 
     @staticmethod
