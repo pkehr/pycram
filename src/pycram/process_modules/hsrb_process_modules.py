@@ -4,6 +4,7 @@ from threading import Lock
 from typing_extensions import Any
 
 from ..datastructures.enums import ExecutionType
+from ..external_interfaces.navigate import PoseNavigator
 from ..external_interfaces.tmc import tmc_gripper_control, tmc_talk
 from ..robot_description import RobotDescription
 from ..process_module import ProcessModule
@@ -50,7 +51,11 @@ class HSRBNavigationReal(ProcessModule):
 
     def _execute(self, designator: MoveMotion) -> Any:
         rospy.logdebug(f"Sending goal to giskard to Move the robot")
+        move = PoseNavigator(namespace="hsrb")
+        rospy.loginfo(f"Sending goal to giskard to Move the robot")
         # giskard.achieve_cartesian_goal(designator.target, robot_description.base_link, "map")
+        move.pub_now(designator.target)
+        #giskard.achieve_cartesian_goal(designator.target, RobotDescription.current_robot_description.base_link, "map")
         # todome fix this
         # queryPoseNav(designator.target)
 
