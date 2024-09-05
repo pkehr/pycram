@@ -5,6 +5,7 @@ from .hsrb_process_modules import HSRBManager
 from .default_process_modules import DefaultManager
 from .stretch_process_modules import StretchManager
 from .tiago_process_modules import tiagoManager
+from .turtlebot_process_modules import TurtlebotManager
 
 Pr2Manager()
 BoxyManager()
@@ -13,3 +14,4 @@ HSRBManager()
 DefaultManager()
 StretchManager()
 tiagoManager()
+TurtlebotManager()
