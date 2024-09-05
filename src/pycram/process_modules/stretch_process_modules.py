@@ -186,7 +186,7 @@ class StretchDetectingReal(ProcessModule):
     """
 
     def _execute(self, designator: DetectingMotion) -> Any:
-        query_result = query(ObjectDesignatorDescription(types=[designator.object_type]))
+        query_result = query_object(ObjectDesignatorDescription(types=[designator.object_type]))
         # print(query_result)
         obj_pose = query_result["ClusterPoseBBAnnotator"]
 

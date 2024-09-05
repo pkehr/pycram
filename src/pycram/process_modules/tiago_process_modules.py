@@ -21,7 +21,7 @@ from ..world_concepts.world_object import Object
 from ..datastructures.pose import Pose
 from ..datastructures.enums import JointType, ObjectType, Arms
 from ..external_interfaces import giskard
-from ..external_interfaces.robokudo import query
+from ..external_interfaces.robokudo import *
 
 try:
     from tiago_controllers_msgs.msg import tiagoGripperCommandGoal, tiagoGripperCommandAction, tiago
@@ -260,7 +260,7 @@ class tiagoDetectingReal(ProcessModule):
     """
 
     def _execute(self, designator: DetectingMotion) -> Any:
-        query_result = query(ObjectDesignatorDescription(types=[designator.object_type]))
+        query_result = query_object(ObjectDesignatorDescription(types=[designator.object_type]))
         # print(query_result)
         obj_pose = query_result["ClusterPoseBBAnnotator"]
 
