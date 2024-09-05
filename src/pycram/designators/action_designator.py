@@ -17,6 +17,7 @@ from .motion_designator import MoveJointsMotion, MoveGripperMotion, MoveArmJoint
     LookingMotion, DetectingMotion, OpeningMotion, ClosingMotion
 from .object_designator import ObjectDesignatorDescription, BelieveObject, ObjectPart
 from ..local_transformer import LocalTransformer
+from ..multirobot import RobotManager
 from ..plan_failures import ObjectUnfetchable, ReachabilityFailure
 # from ..robot_descriptions import robot_description
 from ..robot_description import RobotDescription
@@ -719,8 +720,9 @@ class PickUpActionPerformable(ActionAbstract):
     @with_tree
     def perform(self) -> None:
         # Store the object's data copy at execution
+        print("in pickup")
         self.object_at_execution = self.object_designator.frozen_copy()
-        robot = World.robot
+        robot = RobotManager.active_robot
         # Retrieve object and robot from designators
         object = self.object_designator.world_object
         # Get grasp orientation and target pose
