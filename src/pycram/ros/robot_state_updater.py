@@ -69,7 +69,10 @@ class RobotStateUpdater:
         try:
             msg = rospy.wait_for_message(self.joint_state_topic, JointState)
             for name, position in zip(msg.name, msg.position):
-                World.robot.set_joint_position(name, position)
+                if RobotManager.multiple_robots_active():
+                    RobotManager.available_robots[self.robot_name].set_joint_position(name, position)
+                else:
+                    World.robot.set_joint_position(name, position)
         except AttributeError:
             pass
 
