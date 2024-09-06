@@ -50,14 +50,10 @@ class HSRBNavigationReal(ProcessModule):
     """
 
     def _execute(self, designator: MoveMotion) -> Any:
-        rospy.logdebug(f"Sending goal to giskard to Move the robot")
-        move = PoseNavigator(namespace="hsrb")
+        move = PoseNavigator()
         rospy.loginfo(f"Sending goal to giskard to Move the robot")
         # giskard.achieve_cartesian_goal(designator.target, robot_description.base_link, "map")
         move.pub_now(designator.target)
-        #giskard.achieve_cartesian_goal(designator.target, RobotDescription.current_robot_description.base_link, "map")
-        # todome fix this
-        # queryPoseNav(designator.target)
 
 
 class HSRBMoveHeadReal(ProcessModule):
