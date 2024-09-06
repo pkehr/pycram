@@ -1,3 +1,4 @@
+from IPython.core.display_functions import display
 from ipywidgets import Output
 
 from demos.pycram_virtual_building_demos.setup.setup_launch_robot import *
@@ -23,10 +24,11 @@ from pycram.worlds.bullet_world import BulletWorld
 def start_demo():
     global output
     output = Output()
-
     environment_param = rospy.get_param('/nbparam_environments')
     robot_param = rospy.get_param('/nbparam_robots')
     task_param = rospy.get_param('/nbparam_tasks')
+
+    display(output)
 
     if robot_param == 'pr2':
         launch_pr2()
@@ -48,7 +50,12 @@ def start_demo():
     update_text(text_widget, 'Starting Demo')
     tf = TFBroadcaster()
 
-    if task_param == "navigate":
-        navigate_simple_example()
+    with output:
+        if task_param == "navigate":
+            navigate_simple_example()
 
     update_text(text_widget, 'Done with the task...')
+
+
+if __name__ == '__main__':
+    start_demo()

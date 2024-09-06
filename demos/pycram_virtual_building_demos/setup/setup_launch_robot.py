@@ -109,26 +109,25 @@ def launch_robot(launch_file, package='pycram', launch_folder='/launch/', args: 
     :param args: List of arguments to pass onto the launch file
     """
     # Suppress all output from the function
-    with suppress_all_output():
-        try:
-            rospath = rospkg.RosPack()
+    try:
+        rospath = rospkg.RosPack()
 
-            uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
-            roslaunch.configure_logging(uuid)
-            launch_args = rospath.get_path(package) + launch_folder + launch_file
+        uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
+        roslaunch.configure_logging(uuid)
+        launch_args = rospath.get_path(package) + launch_folder + launch_file
 
-            if args is None:
-                args = [""]
+        if args is None:
+            args = [""]
 
-            args.insert(0, launch_args)
-            roslaunch_file = [(roslaunch.rlutil.resolve_launch_arguments(args)[0], args[1:])]
-            print(roslaunch_file)
-            launch = roslaunch.parent.ROSLaunchParent(uuid, roslaunch_file)
-            launch.start()
+        args.insert(0, launch_args)
+        roslaunch_file = [(roslaunch.rlutil.resolve_launch_arguments(args)[0], args[1:])]
+        print(roslaunch_file)
+        launch = roslaunch.parent.ROSLaunchParent(uuid, roslaunch_file)
+        launch.start()
 
-            rospy.loginfo(f'{launch_file} started')
+        rospy.loginfo(f'{launch_file} started')
 
-            # Wait for ik server to launch
-            time.sleep(2)
-        except Exception:
-            pass
+        # Wait for ik server to launch
+        time.sleep(2)
+    except Exception:
+        pass
