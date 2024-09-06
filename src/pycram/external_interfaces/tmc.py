@@ -1,4 +1,5 @@
 import rospy
+from tmc_control_msgs.msg import GripperApplyEffortActionGoal
 from typing_extensions import Optional
 
 from ..datastructures.enums import GripperState

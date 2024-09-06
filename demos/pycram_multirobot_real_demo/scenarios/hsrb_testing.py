@@ -12,8 +12,6 @@ import pycram.external_interfaces.giskard as giskardpy
 from pycram.ros.robot_state_updater import RobotStateUpdater
 from pycram.designators.object_designator import *
 from std_msgs.msg import String, Bool
-
-from pycram.ros.viz_marker_publisher import VizMarkerPublisher
 from pycram.utilities.robocup_utils import TextToSpeechPublisher, ImageSwitchPublisher, \
     HSRBMoveGripperReal, StartSignalWaiter
 
@@ -49,11 +47,6 @@ move = PoseNavigator()
 talk = TextToSpeechPublisher()
 image_switch_publisher = ImageSwitchPublisher()
 
-# Declare variables for humans
-guest1 = HumanDescription("Lisa", fav_drink="water")
-guest1.set_attributes(['male', 'without a hat', 'wearing a t-shirt', ' a dark top'])
-guest1.set_id(0)
-
 
 def pakerino(torso_z=0.05, config=None):
     """
@@ -64,7 +57,7 @@ def pakerino(torso_z=0.05, config=None):
         config = {'arm_lift_joint': torso_z, 'arm_flex_joint': 0, 'arm_roll_joint': -1.2,
                   'wrist_flex_joint': -1.5, 'wrist_roll_joint': 0, 'head_pan_joint': 0}
 
-    # giskardpy.avoid_all_collisions()
+    #giskardpy.avoid_all_collisions()
     giskardpy.achieve_joint_goal(config)
     print("[32mParking done")
 
@@ -72,7 +65,6 @@ def pakerino(torso_z=0.05, config=None):
 def convert_to_radians(angle):
     radians = (angle * math.pi) / 180
     return radians
-
 
 def turn_quaternion(quaternion, angle):
     angle = convert_to_radians(angle)
@@ -83,33 +75,41 @@ def turn_quaternion(quaternion, angle):
 
 def demo(step):
     with real_robot:
-        global wait_bool
-        global callback
-        global doorbell
-        global guest1
-        global guest2
+            global wait_bool
+            global callback
+            global doorbell
+            global guest1
+            global guest2
 
-        viz = VizMarkerPublisher()
-        move = PoseNavigator()
-        # object_desig: List[Object] = DetectAction(technique='all').resolve().perform()
+            move = PoseNavigator()
 
-        base_orientation = [0.0, 0.0, 0.0, 1.0]
-        modified_orientation = turn_quaternion(quaternion=base_orientation, angle=90)
-        pose = Pose(position=[2.585, 5.77, 0.86], orientation=modified_orientation)
-        # object_desig[0].set_pose(pose)
+            print("detecting")
 
-        box_object = Object("milk", ObjectType.MILK, "milk.stl", pose=pose,
-                            color=Color(1, 0, 0, 1))
+            #table_obj = DetectAction(technique='all').resolve().perform()
 
-        box_desig = ObjectDesignatorDescription.Object(box_object.name, ObjectType.MILK, box_object)
+            base_orientation = [0.0, 0.0, 0.0, 1.0]
+            modified_orientation = turn_quaternion(quaternion=base_orientation, angle=90)
+            pose = Pose(position=[2.585, 5.77, 0.8], orientation=modified_orientation)
+            # object_desig[0].set_pose(pose)
 
-        ParkArmsAction([Arms.LEFT]).resolve().perform()
+            other_pose = Pose(position=[2.585, 5.77, 0.86], orientation=modified_orientation)
 
-        PickUpAction([box_desig], [Arms.LEFT], [Grasp.FRONT]).resolve().perform()
+            box_object = Object("milk", ObjectType.MILK, "milk.stl", pose=pose,
+                                color=Color(1, 0, 0, 1))
 
-        print("placing now")
-        turtle_pose = Pose(position=[1.7, 5.0, 0.4], orientation=base_orientation)
-        PlaceAction(box_desig, [turtle_pose], [Arms.LEFT])
+            box_desig = ObjectDesignatorDescription.Object(box_object.name, ObjectType.MILK, box_object)
+
+
+            ParkArmsAction(arms=[Arms.LEFT]).resolve().perform()
+
+            #PickUpAction(object_designator_description=[box_desig], arms=[Arms.LEFT], grasps=[Grasp.FRONT]).resolve().perform()
+
+            #PlaceAction(box_desig, [other_pose], Grasp.FRONT, [Arms.LEFT]).resolve().perform()
+
+
+            print("end")
+            #rospy.sleep(10)
+
 
 
 demo(0)

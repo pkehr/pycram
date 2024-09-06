@@ -12,6 +12,7 @@ from owlready2 import Thing
 from tf import transformations
 from typing_extensions import List, Union, Callable, Type
 
+from demos.pycram_new.robocup_utils import multiply_quaternions
 from .location_designator import CostmapLocation
 from .motion_designator import *
 from .object_designator import ObjectDesignatorDescription, BelieveObject, ObjectPart
@@ -237,7 +238,7 @@ class PlaceAction(ActionDesignatorDescription):
 
     def __init__(self,
                  object_designator_description: Union[ObjectDesignatorDescription, ObjectDesignatorDescription.Object],
-                 target_locations: List[Pose],
+                 target_locations: List[Pose], grasp: Grasp,
                  arms: List[Arms], resolver=None, ontology_concept_holders: Optional[List[Thing]] = None):
         """
         Create an Action Description to place an object
@@ -245,6 +246,7 @@ class PlaceAction(ActionDesignatorDescription):
         :param object_designator_description: Description of object to place.
         :param target_locations: List of possible positions/orientations to place the object
         :param arms: List of possible arms to use
+        :param grasp: grasp orientation
         :param resolver: Grounding method to resolve this designator
         :param ontology_concept_holders: A list of ontology concepts that the action is categorized as or associated with
         """
@@ -253,6 +255,7 @@ class PlaceAction(ActionDesignatorDescription):
             ObjectDesignatorDescription, ObjectDesignatorDescription.Object] = object_designator_description
         self.target_locations: List[Pose] = target_locations
         self.arms: List[Arms] = arms
+        self.grasp = grasp
 
         if self.soma:
             self.init_ontology_concepts({"placing": self.soma.Placing})
@@ -266,7 +269,7 @@ class PlaceAction(ActionDesignatorDescription):
         obj_desig = self.object_designator_description if isinstance(self.object_designator_description,
                                                                      ObjectDesignatorDescription.Object) else self.object_designator_description.resolve()
 
-        return PlaceActionPerformable(obj_desig, self.arms[0], self.target_locations[0])
+        return PlaceActionPerformable(obj_desig, self.arms[0], self.grasp, self.target_locations[0])
 
 
 class NavigateAction(ActionDesignatorDescription):
@@ -784,9 +787,10 @@ class PickUpActionPerformable(ActionAbstract):
 
     @with_tree
     def perform(self) -> None:
+        print("in Performable")
         # Initialize the local transformer and robot reference
         lt = LocalTransformer()
-        robot = RobotManager.active_robot
+        robot = World.robot
         # Retrieve object and robot from designators
         object = self.object_designator.world_object
         # Calculate the object's pose in the map frame
@@ -809,7 +813,7 @@ class PickUpActionPerformable(ActionAbstract):
         grasp_rotation = RobotDescription.current_robot_description.grasps[self.grasp]
         oTb = lt.transform_pose(oTm, robot.get_link_tf_frame("base_link"))
         # Set pose to the grasp rotation
-        oTb.orientation = multiply_quaternions(oTb.orientation_as_list(), grasp_rotation) # [0, 0, 0, 1]
+        oTb.orientation = multiply_quaternions(oTb.orientation_as_list(), grasp_rotation)  # [0, 0, 0, 1]
         # Transform the pose to the map frame
         oTmG = lt.transform_pose(oTb, "map")
 
@@ -892,6 +896,10 @@ class PlaceActionPerformable(ActionAbstract):
     """
     Arm that is currently holding the object
     """
+    grasp: Grasp
+    """
+    Grasp that was used to pick up the object
+    """
     target_location: Pose
     """
     Pose in the world at which the object should be placed
@@ -900,24 +908,60 @@ class PlaceActionPerformable(ActionAbstract):
 
     @with_tree
     def perform(self) -> None:
-        object_pose = self.object_designator.world_object.get_pose()
-        local_tf = LocalTransformer()
+        lt = LocalTransformer()
+        robot = World.robot
+        execute = True
+        # oTm = Object Pose in Frame map
+        oTm = self.target_location
 
-        # Transformations such that the target position is the position of the object and not the tcp
-        tcp_to_object = local_tf.transform_pose(object_pose,
-                                                World.robot.get_link_tf_frame(
-                                                    RobotDescription.current_robot_description.get_arm_chain(
-                                                        self.arm).get_tool_frame()))
-        target_diff = self.target_location.to_transform("target").inverse_times(
-            tcp_to_object.to_transform("object")).to_pose()
+        if self.grasp == "top":
+            oTm.pose.position.z += 0.05
 
-        MoveTCPMotion(target_diff, self.arm).perform()
-        MoveGripperMotion(GripperState.OPEN, self.arm).perform()
-        World.robot.detach(self.object_designator.world_object)
-        retract_pose = local_tf.transform_pose(target_diff, World.robot.get_link_tf_frame(
-            RobotDescription.current_robot_description.get_arm_chain(self.arm).get_tool_frame()))
-        retract_pose.position.x -= 0.07
-        MoveTCPMotion(retract_pose, self.arm).perform()
+        # Determine the grasp orientation and transform the pose to the base link frame
+        grasp_rotation = RobotDescription.current_robot_description.grasps[self.grasp]
+        oTb = lt.transform_pose(oTm, robot.get_link_tf_frame("base_link"))
+        # Set pose to the grasp rotation
+        oTb.orientation = multiply_quaternions(oTb.orientation_as_list(), grasp_rotation)
+        # Transform the pose to the map frame
+        oTmG = lt.transform_pose(oTb, "map")
+
+        rospy.logwarn("Placing now")
+        #World.current_world.add_vis_axis(oTmG)
+        if execute:
+            MoveTCPMotion(oTmG, self.arm).perform()
+
+        tool_frame = RobotDescription.current_robot_description.get_arm_chain(self.arm).get_tool_frame()
+        push_base = lt.transform_pose(oTmG, robot.get_link_tf_frame(tool_frame))
+        if robot.name == "hsrb":
+            z = 0.03
+            if self.grasp == Grasp.TOP:
+                z = 0.07
+            push_base.pose.position.z += z
+        # todo: make this for other robots
+        push_baseTm = lt.transform_pose(push_base, "map")
+
+        rospy.logwarn("Pushing now")
+        #BulletWorld.current_bullet_world.add_vis_axis(push_baseTm)
+        if execute:
+            MoveTCPMotion(push_baseTm, self.arm).perform()
+
+            #try:
+            #    plan = MoveTCPMotion(side_push, self.arm) >> Monitor(monitor_func)
+            #    plan.perform()
+            #except (SensorMonitoringCondition):
+            #    rospy.logwarn("Open Gripper")
+            #    MoveGripperMotion(motion="open", gripper=self.arm).resolve().perform()
+
+        # Finalize the placing by opening the gripper and lifting the arm
+        rospy.logwarn("Open Gripper")
+        MoveGripperMotion(motion=GripperState.OPEN, gripper=self.arm).perform()
+
+        rospy.logwarn("Lifting now")
+        liftingTm = push_baseTm
+        liftingTm.pose.position.z += 0.08
+        #BulletWorld.current_bullet_world.add_vis_axis(liftingTm)
+        if execute:
+            MoveTCPMotion(liftingTm, self.arm).perform()
 
 
 @dataclass

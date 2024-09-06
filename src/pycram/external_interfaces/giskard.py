@@ -151,7 +151,9 @@ def sync_worlds() -> None:
                                                                 RobotDescription.current_robot_description.name)
             giskard_wrapper.monitors.add_set_seed_odometry(_pose_to_pose_stamped(obj.get_pose()),
                                                            RobotDescription.current_robot_description.name)'''
+
     giskard_object_names = set(giskard_wrapper.world.get_group_names())
+
     robot_name = {RobotDescription.current_robot_description.name}
     if not world_object_names.union(robot_name).issubset(giskard_object_names):
         giskard_wrapper.world.clear()
@@ -289,7 +291,7 @@ def _manage_par_motion_goals(goal_func, *args) -> Optional['MoveResult']:
             for cmd in giskard_wrapper.motion_goals.get_goals():
                 par_value_pair = json.loads(cmd.kwargs)
                 if "tip_link" in par_value_pair.keys() and "root_link" in par_value_pair.keys():
-                    if par_value_pair["tip_link"] == robot_description.base_link:
+                    if par_value_pair["tip_link"] == RobotDescription.current_robot_description.base_link:
                         continue
                     chain = World.robot.description.get_chain(par_value_pair["root_link"],
                                                               par_value_pair["tip_link"])
@@ -566,7 +568,7 @@ def achieve_cartesian_goal(goal_pose: Pose, tip_link: str, root_link: str) -> 'M
     # giskard_wrapper.motion_goals.avoid_all_collisions()
     # TODO: group 2 with CollisionEntry.ALL does not work -> not defined
 
-    giskard_wrapper.motion_goals.allow_collision(group1='gripper', group2='milk')
+    # giskard_wrapper.motion_goals.allow_collision(group1='gripper', group2='Milkpack')
     giskard_wrapper.motion_goals.avoid_collision(group1="hsrb", group2="kitchen")
     giskard_wrapper.motion_goals.avoid_collision(group1="gripper", group2="kitchen")
 
