@@ -39,6 +39,9 @@ COPY --chown=${NB_USER}:users binder/build_cmake_pybullet_3.10_double.sh /home/$
 RUN cd bullet3 && ./build_cmake_pybullet_3.10_double.sh
 ENV PYTHONPATH=${PYTHONPATH}:/home/${NB_USER}/bullet3/build_cmake/better_python:/home/${NB_USER}/bullet3/examples/pybullet
 
+# New geometry msgs
+WORKDIR ${PYCRAM_WS}/src/
+RUN git clone https://github.com/sunava/geometry2.git
 
 # HSR resources
 WORKDIR ${PYCRAM_WS}/src/
