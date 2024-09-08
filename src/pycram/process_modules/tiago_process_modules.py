@@ -7,6 +7,7 @@ from .. import world_reasoning as btr
 import numpy as np
 import rospy
 
+from ..multirobot import RobotManager
 from ..process_module import ProcessModule, ProcessModuleManager
 from ..external_interfaces.ik import request_ik
 from ..utils import _apply_ik
@@ -19,7 +20,7 @@ from ..robot_description import RobotDescription
 from ..datastructures.world import World
 from ..world_concepts.world_object import Object
 from ..datastructures.pose import Pose
-from ..datastructures.enums import JointType, ObjectType, Arms
+from ..datastructures.enums import JointType, ObjectType, Arms, ExecutionType
 from ..external_interfaces import giskard
 from ..external_interfaces.robokudo import *
 
@@ -137,7 +138,7 @@ class tiagoMoveArmJoints(ProcessModule):
 
     def _execute(self, desig: MoveArmJointsMotion):
 
-        robot = World.robot
+        robot = RobotManager.active_robot
         if desig.right_arm_poses:
             robot.set_joint_positions(desig.right_arm_poses)
         if desig.left_arm_poses:
@@ -392,59 +393,59 @@ class tiagoManager(ProcessModuleManager):
         self._close_lock = Lock()
 
     def navigate(self):
-        if ProcessModuleManager.execution_type == "simulated":
+        if ProcessModuleManager.execution_type == ExecutionType.SIMULATED:
             return tiagoNavigation(self._navigate_lock)
-        elif ProcessModuleManager.execution_type == "real":
+        elif ProcessModuleManager.execution_type == ExecutionType.REAL:
             return tiagoNavigationReal(self._navigate_lock)
 
     def looking(self):
-        if ProcessModuleManager.execution_type == "simulated":
+        if ProcessModuleManager.execution_type == ExecutionType.SIMULATED:
             return tiagoMoveHead(self._looking_lock)
-        elif ProcessModuleManager.execution_type == "real":
+        elif ProcessModuleManager.execution_type == ExecutionType.REAL:
             return tiagoMoveHeadReal(self._looking_lock)
 
     def detecting(self):
-        if ProcessModuleManager.execution_type == "simulated":
+        if ProcessModuleManager.execution_type == ExecutionType.SIMULATED:
             return tiagoDetecting(self._detecting_lock)
-        elif ProcessModuleManager.execution_type == "real":
+        elif ProcessModuleManager.execution_type == ExecutionType.REAL:
             return tiagoDetectingReal(self._detecting_lock)
 
     def move_tcp(self):
-        if ProcessModuleManager.execution_type == "simulated":
+        if ProcessModuleManager.execution_type == ExecutionType.SIMULATED:
             return tiagoMoveTCP(self._move_tcp_lock)
-        elif ProcessModuleManager.execution_type == "real":
+        elif ProcessModuleManager.execution_type == ExecutionType.REAL:
             return tiagoMoveTCPReal(self._move_tcp_lock)
 
     def move_arm_joints(self):
-        if ProcessModuleManager.execution_type == "simulated":
+        if ProcessModuleManager.execution_type == ExecutionType.SIMULATED:
             return tiagoMoveArmJoints(self._move_arm_joints_lock)
-        elif ProcessModuleManager.execution_type == "real":
+        elif ProcessModuleManager.execution_type == ExecutionType.REAL:
             return tiagoMoveArmJointsReal(self._move_arm_joints_lock)
 
     def world_state_detecting(self):
-        if ProcessModuleManager.execution_type == "simulated" or ProcessModuleManager.execution_type == "real":
+        if ProcessModuleManager.execution_type == ExecutionType.SIMULATED or ProcessModuleManager.execution_type == ExecutionType.REAL:
             return tiagoWorldStateDetecting(self._world_state_detecting_lock)
 
     def move_joints(self):
-        if ProcessModuleManager.execution_type == "simulated":
+        if ProcessModuleManager.execution_type == ExecutionType.SIMULATED:
             return tiagoMoveJoints(self._move_joints_lock)
-        elif ProcessModuleManager.execution_type == "real":
+        elif ProcessModuleManager.execution_type == ExecutionType.REAL:
             return tiagoMoveJointsReal(self._move_joints_lock)
 
     def move_gripper(self):
-        if ProcessModuleManager.execution_type == "simulated":
+        if ProcessModuleManager.execution_type == ExecutionType.SIMULATED:
             return tiagoMoveGripper(self._move_gripper_lock)
-        elif ProcessModuleManager.execution_type == "real":
+        elif ProcessModuleManager.execution_type == ExecutionType.REAL:
             return tiagoMoveGripperReal(self._move_gripper_lock)
 
     def open(self):
-        if ProcessModuleManager.execution_type == "simulated":
+        if ProcessModuleManager.execution_type == ExecutionType.SIMULATED:
             return tiagoOpen(self._open_lock)
-        elif ProcessModuleManager.execution_type == "real":
+        elif ProcessModuleManager.execution_type == ExecutionType.REAL:
             return tiagoOpenReal(self._open_lock)
 
     def close(self):
-        if ProcessModuleManager.execution_type == "simulated":
+        if ProcessModuleManager.execution_type == ExecutionType.SIMULATED:
             return tiagoClose(self._close_lock)
-        elif ProcessModuleManager.execution_type == "real":
+        elif ProcessModuleManager.execution_type == ExecutionType.REAL:
             return tiagoCloseReal(self._close_lock)
