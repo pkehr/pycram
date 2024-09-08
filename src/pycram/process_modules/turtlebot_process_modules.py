@@ -51,7 +51,7 @@ class TurtlebotNavigation(ProcessModule):
 class TurtlebotManager(ProcessModuleManager):
 
     def __init__(self):
-        super().__init__("pr2")
+        super().__init__("turtlebot")
         self._navigate_lock = Lock()
         self._looking_lock = Lock()
         self._detecting_lock = Lock()
