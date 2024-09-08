@@ -18,6 +18,24 @@ def pakerino(torso_z=0.15, config=None):
     return giskardpy.achieve_joint_goal(config)
 
 
+def multiply_quaternions(q1: List, q2: List) -> List:
+    """
+    Multiply two quaternions using the robotics convention (x, y, z, w).
+
+    :param q1: The first quaternion
+    :param q2: The second quaternion
+    :return: The quaternion resulting from the multiplication
+    """
+    x1, y1, z1, w1 = q1
+    x2, y2, z2, w2 = q2
+
+    w = w1 * w2 - x1 * x2 - y1 * y2 - z1 * z2
+    x = w1 * x2 + x1 * w2 + y1 * z2 - z1 * y2
+    y = w1 * y2 - x1 * z2 + y1 * w2 + z1 * x2
+    z = w1 * z2 + x1 * y2 - y1 * x2 + z1 * w2
+
+    return (x, y, z, w)
+
 
 class SoundRequestPublisher:
     """
@@ -130,10 +148,6 @@ class StartSignalWaiter:
 
         rospy.loginfo("Obstacle detection signal received.")
 
-
-
-
-
     def update_ros_parameters(new_params):
         """
         Update specified parameters on the ROS parameter server.
@@ -150,7 +164,6 @@ class StartSignalWaiter:
 
         except rospy.ROSInterruptException as e:
             print(f"An error occurred: {e}")
-
 
 
 class TextToSpeechPublisher():
@@ -179,7 +192,6 @@ class TextToSpeechPublisher():
                     self.pub.publish(goal_msg)
                     break
 
-                    
 
 class ImageSwitchPublisher:
     """

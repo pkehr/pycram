@@ -12,7 +12,6 @@ from owlready2 import Thing
 from tf import transformations
 from typing_extensions import List, Union, Callable, Type
 
-from demos.pycram_new.robocup_utils import multiply_quaternions
 from .location_designator import CostmapLocation
 from .motion_designator import *
 from .object_designator import ObjectDesignatorDescription, BelieveObject, ObjectPart
@@ -36,6 +35,7 @@ from ..orm.object_designator import Object as ORMObject
 from ..plan_failures import ObjectUnfetchable, ReachabilityFailure
 from ..robot_description import RobotDescription
 from ..tasktree import with_tree
+from ..utilities.robocup_utils import multiply_quaternions
 
 
 class MoveTorsoAction(ActionDesignatorDescription):
