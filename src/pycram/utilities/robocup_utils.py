@@ -1,3 +1,5 @@
+import math
+
 import actionlib
 import rospy
 from actionlib_msgs.msg import GoalStatusArray
@@ -35,6 +37,17 @@ def multiply_quaternions(q1: List, q2: List) -> List:
     z = w1 * z2 + x1 * y2 - y1 * x2 + z1 * w2
 
     return (x, y, z, w)
+
+def convert_to_radians(angle):
+    radians = (angle * math.pi) / 180
+    return radians
+
+
+def rotated_quaternion(angle):
+    angle = convert_to_radians(angle)
+    quaternion = [0, 0, math.sin(angle / 2), math.cos(angle / 2)]
+
+    return quaternion
 
 
 class SoundRequestPublisher:
