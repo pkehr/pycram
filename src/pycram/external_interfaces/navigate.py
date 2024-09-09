@@ -13,22 +13,30 @@ import pycram.external_interfaces.giskard as giskardpy
 
 class PoseNavigator():
     def __init__(self, namespace: str=None):
-        self.namespace = ""
-        if namespace is not None:
-            self.namespace = '/'+namespace
+        self.move_base_name = ""
+
+        if namespace is None:
+            self.move_base_name = '/move_base/move'
+            self.initial_pose_name = "/initialpose"
+            self.amcl_pose_name = '/amcl_pose'
+        elif namespace == 'turtle':
+            self.move_base_name = '/turtle/move_base/move'
+            self.initial_pose_name = "/turtle/initialpose"
+            self.amcl_pose_name = '/turtle/amcl_pose'
+
         rospy.loginfo("move_base init")
         global move_client
 
-        self.client = actionlib.SimpleActionClient(self.namespace+'/move_base/move', MoveBaseAction)
-        rospy.loginfo("Waiting for move_base ActionServer")
+        self.client = actionlib.SimpleActionClient(self.move_base_name, MoveBaseAction)
+        rospy.loginfo("Waiting for move_base ActionServer at: " + self.move_base_name)
         if self.client.wait_for_server():
             rospy.loginfo("Done")
         #self.pub = rospy.Publisher('goal', PoseStamped, queue_size=10, latch=True)
         self.toya_pose = None
         self.goal_pose = None
-        self.pose_pub = rospy.Publisher(self.namespace + "/initialpose", PoseWithCovarianceStamped, queue_size=100)
+        self.pose_pub = rospy.Publisher(self.initial_pose_name, PoseWithCovarianceStamped, queue_size=100)
 
-        self.pose_sub = rospy.Subscriber(self.namespace + "/amcl_pose", PoseWithCovarianceStamped, self.toya_pose_cb)
+        self.pose_sub = rospy.Subscriber(self.amcl_pose_name, PoseWithCovarianceStamped, self.toya_pose_cb)
         rospy.loginfo("move_base init construct done")
 
     def pub_fake_pose(self, fake_pose: PoseStamped):
