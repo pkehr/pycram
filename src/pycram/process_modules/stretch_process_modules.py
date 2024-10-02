@@ -26,7 +26,7 @@ class StretchMoveHead(ProcessModule):
 
     def _execute(self, designator: MoveMotion) -> Any:
         target = designator.target
-        robot = World.robot
+        robot = RobotManager.active_robot
 
         local_transformer = LocalTransformer()
         pose_in_pan = local_transformer.transform_pose(target, robot.get_link_tf_frame("link_head_pan"))
@@ -99,7 +99,7 @@ class StretchOpen(ProcessModule):
         goal_pose = link_pose_for_joint_config(part_of_object, {
             container_joint: part_of_object.get_joint_limits(container_joint)[1] - 0.05}, desig.object_part.name)
 
-        _move_arm_tcp(goal_pose, World.robot, desig.arm)
+        _move_arm_tcp(goal_pose, RobotManager.active_robot, desig.arm)
 
         desig.object_part.world_object.set_joint_position(container_joint,
                                                               part_of_object.get_joint_limits(
@@ -119,7 +119,7 @@ class StretchClose(ProcessModule):
         goal_pose = link_pose_for_joint_config(part_of_object, {
             container_joint: part_of_object.get_joint_limits(container_joint)[0]}, desig.object_part.name)
 
-        _move_arm_tcp(goal_pose, World.robot, desig.arm)
+        _move_arm_tcp(goal_pose, RobotManager.active_robot, desig.arm)
 
         desig.object_part.world_object.set_joint_position(container_joint,
                                                        part_of_object.get_joint_limits(
@@ -158,7 +158,7 @@ class StretchMoveHeadReal(ProcessModule):
 
     def _execute(self, desig: LookingMotion):
         target = desig.target
-        robot = World.robot
+        robot = RobotManager.active_robot
 
         local_transformer = LocalTransformer()
         pose_in_pan = local_transformer.transform_pose(target, robot.get_link_tf_frame("head_pan_link"))
@@ -191,7 +191,7 @@ class StretchDetectingReal(ProcessModule):
         obj_pose = query_result["ClusterPoseBBAnnotator"]
 
         lt = LocalTransformer()
-        obj_pose = lt.transform_pose(obj_pose, World.robot.get_link_tf_frame("torso_lift_link"))
+        obj_pose = lt.transform_pose(obj_pose, RobotManager.active_robot.get_link_tf_frame("torso_lift_link"))
         obj_pose.orientation = [0, 0, 0, 1]
         obj_pose.position.x += 0.05
 

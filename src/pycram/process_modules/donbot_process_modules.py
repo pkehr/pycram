@@ -2,6 +2,7 @@ from threading import Lock
 
 import numpy as np
 
+from ..multirobot import RobotManager
 from ..worlds.bullet_world import World
 from ..designators.motion_designator import MoveArmJointsMotion, WorldStateDetectingMotion
 from ..local_transformer import LocalTransformer
@@ -18,7 +19,7 @@ def _park_arms(arm):
     :return: None
     """
 
-    robot = World.robot
+    robot = RobotManager.active_robot
     if arm == "left":
         for joint, pose in RobotDescription.current_robot_description.get_static_joint_chain("left", "park").items():
             robot.set_joint_position(joint, pose)
@@ -30,7 +31,7 @@ class DonbotNavigation(ProcessModule):
     """
 
     def _execute(self, desig):
-        robot = World.robot
+        robot = RobotManager.active_robot
         robot.set_pose(desig.target)
 
 
@@ -41,7 +42,7 @@ class DonbotPlace(ProcessModule):
 
     def _execute(self, desig):
         obj = desig.object.world_object
-        robot = World.robot
+        robot = RobotManager.active_robot
 
         # Transformations such that the target position is the position of the object and not the tcp
         object_pose = obj.get_pose()
@@ -62,7 +63,7 @@ class DonbotMoveHead(ProcessModule):
 
     def _execute(self, desig):
         target = desig.target
-        robot = World.robot
+        robot = RobotManager.active_robot
 
         local_transformer = LocalTransformer()
 
@@ -91,7 +92,7 @@ class DonbotMoveGripper(ProcessModule):
     """
 
     def _execute(self, desig):
-        robot = World.robot
+        robot = RobotManager.active_robot
         gripper = desig.gripper
         motion = desig.motion
         robot.set_joint_positions(RobotDescription.current_robot_description.get_arm_chain(gripper).get_static_gripper_state(motion))
@@ -104,7 +105,7 @@ class DonbotMoveTCP(ProcessModule):
 
     def _execute(self, desig):
         target = desig.target
-        robot = World.robot
+        robot = RobotManager.active_robot
 
         _move_arm_tcp(target, robot, desig.arm)
 
@@ -116,7 +117,7 @@ class DonbotMoveJoints(ProcessModule):
     """
 
     def _execute(self, desig: MoveArmJointsMotion):
-        robot = World.robot
+        robot = RobotManager.active_robot
         if desig.left_arm_poses:
             robot.set_joint_positions(desig.left_arm_poses)
 

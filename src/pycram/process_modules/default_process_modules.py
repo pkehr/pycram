@@ -4,6 +4,7 @@ import numpy as np
 
 from ..datastructures.enums import JointType
 from ..external_interfaces.ik import request_ik
+from ..multirobot import RobotManager
 from ..utils import _apply_ik
 from ..process_module import ProcessModule
 from ..robot_description import RobotDescription
@@ -19,7 +20,7 @@ class DefaultNavigation(ProcessModule):
     """
 
     def _execute(self, desig: MoveMotion):
-        robot = World.robot
+        robot = RobotManager.active_robot
         robot.set_pose(desig.target)
 
 class DefaultMoveHead(ProcessModule):
@@ -30,7 +31,7 @@ class DefaultMoveHead(ProcessModule):
 
     def _execute(self, desig: LookingMotion):
         target = desig.target
-        robot = World.robot
+        robot = RobotManager.active_robot
 
         local_transformer = LocalTransformer()
 
@@ -59,7 +60,7 @@ class DefaultMoveGripper(ProcessModule):
     """
 
     def _execute(self, desig: MoveGripperMotion):
-        robot = World.robot
+        robot = RobotManager.active_robot
         gripper = desig.gripper
         motion = desig.motion
         for joint, state in RobotDescription.current_robot_description.get_arm_chain(gripper).get_static_gripper_state(motion).items():
@@ -73,7 +74,7 @@ class DefaultDetecting(ProcessModule):
     """
 
     def _execute(self, desig: DetectingMotion):
-        robot = World.robot
+        robot = RobotManager.active_robot
         object_type = desig.object_type
         # Should be "wide_stereo_optical_frame"
         cam_frame_name = RobotDescription.current_robot_description.get_camera_frame()
@@ -93,7 +94,7 @@ class DefaultMoveTCP(ProcessModule):
 
     def _execute(self, desig: MoveTCPMotion):
         target = desig.target
-        robot = World.robot
+        robot = RobotManager.active_robot
 
         _move_arm_tcp(target, robot, desig.arm)
 
@@ -106,7 +107,7 @@ class DefaultMoveArmJoints(ProcessModule):
 
     def _execute(self, desig: MoveArmJointsMotion):
 
-        robot = World.robot
+        robot = RobotManager.active_robot
         if desig.right_arm_poses:
             for joint, pose in desig.right_arm_poses.items():
                 robot.set_joint_position(joint, pose)
@@ -117,7 +118,7 @@ class DefaultMoveArmJoints(ProcessModule):
 
 class DefaultMoveJoints(ProcessModule):
     def _execute(self, desig: MoveJointsMotion):
-        robot = World.robot
+        robot = RobotManager.active_robot
         for joint, pose in zip(desig.names, desig.positions):
             robot.set_joint_position(joint, pose)
 
@@ -145,7 +146,7 @@ class DefaultOpen(ProcessModule):
         goal_pose = link_pose_for_joint_config(part_of_object, {
             container_joint: part_of_object.get_joint_limits(container_joint)[1] - 0.05}, desig.object_part.name)
 
-        _move_arm_tcp(goal_pose, World.robot, desig.arm)
+        _move_arm_tcp(goal_pose, RobotManager.active_robot, desig.arm)
 
         desig.object_part.world_object.set_joint_position(container_joint,
                                                               part_of_object.get_joint_limits(
@@ -164,7 +165,7 @@ class DefaultClose(ProcessModule):
         goal_pose = link_pose_for_joint_config(part_of_object, {
             container_joint: part_of_object.get_joint_limits(container_joint)[0]}, desig.object_part.name)
 
-        _move_arm_tcp(goal_pose, World.robot, desig.arm)
+        _move_arm_tcp(goal_pose, RobotManager.active_robot, desig.arm)
 
         desig.object_part.world_object.set_joint_position(container_joint,
                                                               part_of_object.get_joint_limits(

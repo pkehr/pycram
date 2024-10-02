@@ -13,6 +13,7 @@ from matplotlib import colors
 from nav_msgs.msg import OccupancyGrid, MapMetaData
 
 from .datastructures.world import UseProspectionWorld
+from .multirobot import RobotManager
 from .world_concepts.world_object import Object
 from .description import Link
 from .local_transformer import LocalTransformer
@@ -466,7 +467,7 @@ class OccupancyCostmap(Costmap):
             while r_t is None:
                 r_t = World.current_world.ray_test_batch(n[:, 0], n[:, 1], num_threads=0)
             j += len(n)
-            if World.robot:
+            if RobotManager.active_robot:
                 attached_objs_id = [o.id for o in self.world.robot.attachments.keys()]
                 res[i:j] = [
                     1 if ray[0] == -1 or ray[0] == self.world.robot.id or ray[0] in attached_objs_id else 0 for

@@ -37,7 +37,7 @@ def _park_arms(arm):
     :return: None
     """
 
-    robot = World.robot
+    robot = RobotManager.active_robot
     if arm == "right":
         for joint, pose in RobotDescription.current_robot_description.get_static_joint_chain("right", "park").items():
             robot.set_joint_position(joint, pose)
@@ -52,7 +52,7 @@ class tiagoNavigation(ProcessModule):
     """
 
     def _execute(self, desig: MoveMotion):
-        robot = World.robot
+        robot = RobotManager.active_robot
         robot.set_pose(desig.target)
 
 
@@ -64,7 +64,7 @@ class tiagoMoveHead(ProcessModule):
 
     def _execute(self, desig: LookingMotion):
         target = desig.target
-        robot = World.robot
+        robot = RobotManager.active_robot
 
         local_transformer = LocalTransformer()
         pose_in_pan = local_transformer.transform_pose(target, robot.get_link_tf_frame("head_1_link"))
@@ -88,7 +88,7 @@ class tiagoMoveGripper(ProcessModule):
     """
 
     def _execute(self, desig: MoveGripperMotion):
-        robot = World.robot
+        robot = RobotManager.active_robot
         gripper = desig.gripper
         motion = desig.motion
         for joint, state in RobotDescription.current_robot_description.get_arm_chain(
@@ -103,7 +103,7 @@ class tiagoDetecting(ProcessModule):
     """
 
     def _execute(self, desig: DetectingMotion):
-        robot = World.robot
+        robot = RobotManager.active_robot
         object_type = desig.object_type
         # Should be "wide_stereo_optical_frame"
         cam_frame_name = RobotDescription.current_robot_description.get_camera_frame()
@@ -125,7 +125,7 @@ class tiagoMoveTCP(ProcessModule):
 
     def _execute(self, desig: MoveTCPMotion):
         target = desig.target
-        robot = World.robot
+        robot = RobotManager.active_robot
 
         _move_arm_tcp(target, robot, desig.arm)
 
@@ -151,7 +151,7 @@ class tiagoMoveJoints(ProcessModule):
     """
 
     def _execute(self, desig: MoveJointsMotion):
-        robot = World.robot
+        robot = RobotManager.active_robot
         robot.set_joint_positions(dict(zip(desig.names, desig.positions)))
 
 
@@ -178,7 +178,7 @@ class tiagoOpen(ProcessModule):
         goal_pose = btr.link_pose_for_joint_config(part_of_object, {
             container_joint: part_of_object.get_joint_limits(container_joint)[1] - 0.05}, desig.object_part.name)
 
-        _move_arm_tcp(goal_pose, World.robot, desig.arm)
+        _move_arm_tcp(goal_pose, RobotManager.active_robot, desig.arm)
 
         desig.object_part.world_object.set_joint_position(container_joint,
                                                           part_of_object.get_joint_limits(
@@ -198,7 +198,7 @@ class tiagoClose(ProcessModule):
         goal_pose = btr.link_pose_for_joint_config(part_of_object, {
             container_joint: part_of_object.get_joint_limits(container_joint)[0]}, desig.object_part.name)
 
-        _move_arm_tcp(goal_pose, World.robot, desig.arm)
+        _move_arm_tcp(goal_pose, RobotManager.active_robot, desig.arm)
 
         desig.object_part.world_object.set_joint_position(container_joint,
                                                           part_of_object.get_joint_limits(
@@ -237,7 +237,7 @@ class tiagoMoveHeadReal(ProcessModule):
 
     def _execute(self, desig: LookingMotion):
         target = desig.target
-        robot = World.robot
+        robot = RobotManager.active_robot
 
         local_transformer = LocalTransformer()
         pose_in_pan = local_transformer.transform_pose(target, robot.get_link_tf_frame("head_1_link"))
@@ -266,7 +266,7 @@ class tiagoDetectingReal(ProcessModule):
         obj_pose = query_result["ClusterPoseBBAnnotator"]
 
         lt = LocalTransformer()
-        obj_pose = lt.transform_pose(obj_pose, World.robot.get_link_tf_frame("torso_lift_link"))
+        obj_pose = lt.transform_pose(obj_pose, RobotManager.active_robot.get_link_tf_frame("torso_lift_link"))
         obj_pose.orientation = [0, 0, 0, 1]
         obj_pose.position.x += 0.05
 

@@ -4,6 +4,7 @@ import numpy as np
 
 from .external_interfaces.ik import try_to_reach, try_to_reach_with_grasp
 from .datastructures.pose import Pose, Transform
+from .multirobot import RobotManager
 from .robot_description import RobotDescription
 from .world_concepts.world_object import Object
 from .datastructures.world import World, UseProspectionWorld
@@ -105,12 +106,12 @@ def visible(
     """
     with UseProspectionWorld():
         prospection_obj = World.current_world.get_prospection_object_for_object(obj)
-        if World.robot:
-            prospection_robot = World.current_world.get_prospection_object_for_object(World.robot)
+        if RobotManager.active_robot:
+            prospection_robot = World.current_world.get_prospection_object_for_object(RobotManager.active_robot)
 
         state_id = World.current_world.save_state()
         for obj in World.current_world.objects:
-            if obj == prospection_obj or (World.robot and obj == prospection_robot):
+            if obj == prospection_obj or (RobotManager.active_robot and obj == prospection_robot):
                 continue
             else:
                 obj.set_pose(Pose([100, 100, 0], [0, 0, 0, 1]), set_attachments=False)

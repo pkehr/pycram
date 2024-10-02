@@ -7,6 +7,7 @@ from .. import world_reasoning as btr
 import numpy as np
 import rospy
 
+from ..multirobot import RobotManager
 from ..process_module import ProcessModule, ProcessModuleManager
 from ..external_interfaces.ik import request_ik
 from ..utils import _apply_ik
@@ -31,7 +32,7 @@ def _park_arms(arm):
     :return: None
     """
 
-    robot = World.robot
+    robot = RobotManager.active_robot
     if arm == "right":
         for joint, pose in RobotDescription.current_robot_description.get_static_joint_chain("right", "park").items():
             robot.set_joint_position(joint, pose)
@@ -46,7 +47,7 @@ class ARMAR6Navigation(ProcessModule):
     """
 
     def _execute(self, desig: MoveMotion):
-        robot = World.robot
+        robot = RobotManager.active_robot
         robot.set_pose(desig.target)
 
 
@@ -58,7 +59,7 @@ class ARMAR6MoveHead(ProcessModule):
 
     def _execute(self, desig: LookingMotion):
         target = desig.target
-        robot = World.robot
+        robot = RobotManager.active_robot
 
         local_transformer = LocalTransformer()
         pose_in_pan = local_transformer.transform_pose(target, robot.get_link_tf_frame("middle_neck"))
@@ -85,7 +86,7 @@ class ARMAR6MoveGripper(ProcessModule):
     """
 
     def _execute(self, desig: MoveGripperMotion):
-        robot = World.robot
+        robot = RobotManager.active_robot
         motion = desig.motion
         for joint, state in RobotDescription.current_robot_description.get_arm_chain(
                 desig.gripper).get_static_gripper_state(motion).items():
@@ -99,7 +100,7 @@ class ARMAR6Detecting(ProcessModule):
     """
 
     def _execute(self, desig: DetectingMotion):
-        robot = World.robot
+        robot = RobotManager.active_robot
         object_type = desig.object_type
         # Should be "wide_stereo_optical_frame"
         cam_frame_name = RobotDescription.current_robot_description.get_camera_frame()
@@ -121,7 +122,7 @@ class ARMAR6MoveTCP(ProcessModule):
 
     def _execute(self, desig: MoveTCPMotion):
         target = desig.target
-        robot = World.robot
+        robot = RobotManager.active_robot
 
         _move_arm_tcp(target, robot, desig.arm)
 
@@ -134,7 +135,7 @@ class ARMAR6MoveArmJoints(ProcessModule):
 
     def _execute(self, desig: MoveArmJointsMotion):
 
-        robot = World.robot
+        robot = RobotManager.active_robot
         if desig.right_arm_poses:
             robot.set_joint_positions(desig.right_arm_poses)
         if desig.left_arm_poses:
@@ -147,7 +148,7 @@ class ARMAR6MoveJoints(ProcessModule):
     """
 
     def _execute(self, desig: MoveJointsMotion):
-        robot = World.robot
+        robot = RobotManager.active_robot
         robot.set_joint_positions(dict(zip(desig.names, desig.positions)))
 
 
@@ -174,7 +175,7 @@ class ARMAR6Open(ProcessModule):
         goal_pose = btr.link_pose_for_joint_config(part_of_object, {
             container_joint: part_of_object.get_joint_limits(container_joint)[1] - 0.05}, desig.object_part.name)
 
-        _move_arm_tcp(goal_pose, World.robot, desig.arm)
+        _move_arm_tcp(goal_pose, RobotManager.active_robot, desig.arm)
 
         desig.object_part.world_object.set_joint_position(container_joint,
                                                           part_of_object.get_joint_limits(container_joint)[1])
@@ -193,7 +194,7 @@ class ARMAR6Close(ProcessModule):
         goal_pose = btr.link_pose_for_joint_config(part_of_object, {
             container_joint: part_of_object.get_joint_limits(container_joint)[0]}, desig.object_part.name)
 
-        _move_arm_tcp(goal_pose, World.robot, desig.arm)
+        _move_arm_tcp(goal_pose, RobotManager.active_robot, desig.arm)
 
         desig.object_part.world_object.set_joint_position(container_joint,
                                                               part_of_object.get_joint_limits(container_joint)[0])
@@ -242,7 +243,7 @@ class ARMAR6MoveHeadReal(ProcessModule):
 
     def _execute(self, desig: LookingMotion):
         target = desig.target
-        robot = World.robot
+        robot = RobotManager.active_robot
 
         local_transformer = LocalTransformer()
         pose_in_pan = local_transformer.transform_pose(target, robot.get_link_tf_frame("head_pan_link"))
@@ -271,7 +272,7 @@ class ARMAR6DetectingReal(ProcessModule):
         obj_pose = query_result["ClusterPoseBBAnnotator"]
 
         lt = LocalTransformer()
-        obj_pose = lt.transform_pose(obj_pose, World.robot.get_link_tf_frame("torso_lift_link"))
+        obj_pose = lt.transform_pose(obj_pose, RobotManager.active_robot.get_link_tf_frame("torso_lift_link"))
         obj_pose.orientation = [0, 0, 0, 1]
         obj_pose.position.x += 0.05
 

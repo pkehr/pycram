@@ -11,6 +11,7 @@ from ....local_transformer import LocalTransformer
 from ....datastructures.world import World
 from ....datastructures.pose import Pose, Transform
 from ....datastructures.enums import Arms, Grasp
+from ....multirobot import RobotManager
 from ....robot_description import RobotDescription, KinematicChainDescription
 from ....designator import ObjectDesignatorDescription
 
@@ -63,7 +64,7 @@ class DualArmPickupAction(PickUpAction):
         # Iterate over possible grippers
         for gripper in self.gripper_list:
             # Object pose in gripper frame
-            gripper_frame = World.robot.get_link_tf_frame(gripper.get_tool_frame())
+            gripper_frame = RobotManager.active_robot.get_link_tf_frame(gripper.get_tool_frame())
 
             object_T_gripper: Pose = local_transformer.transform_pose(object_pose, gripper_frame)
             object_V_gripper: Vector3 = object_T_gripper.pose.position  # translation vector

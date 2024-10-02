@@ -55,7 +55,7 @@ class RobotStateUpdater:
         else:
             trans, rot = self.tf_listener.lookupTransform("/map", RobotDescription.current_robot_description.base_link,
                                                           rospy.Time(0))
-            World.robot.set_pose(Pose(trans, rot))
+            RobotManager.active_robot.set_pose(Pose(trans, rot))
 
 
     def _subscribe_joint_state(self, msg: JointState) -> None:
@@ -72,7 +72,7 @@ class RobotStateUpdater:
                 if RobotManager.multiple_robots_active():
                     RobotManager.available_robots[self.robot_name].set_joint_position(name, position)
                 else:
-                    World.robot.set_joint_position(name, position)
+                    RobotManager.active_robot.set_joint_position(name, position)
         except AttributeError:
             pass
 

@@ -3,6 +3,7 @@ import tf
 from ....datastructures.pose import Pose
 from ....designators.location_designator import CostmapLocation
 from ....external_interfaces.giskard import projection_cartesian_goal_with_approach, projection_joint_goal
+from ....multirobot import RobotManager
 from ....robot_description import RobotDescription
 from ....datastructures.world import UseProspectionWorld, World
 from ....local_transformer import LocalTransformer
@@ -47,10 +48,10 @@ class GiskardLocation(CostmapLocation):
 
                 robot_joint_states = {}
                 for joint_name, state in last_joint_states.items():
-                    if joint_name in World.robot.joints.keys():
+                    if joint_name in RobotManager.active_robot.joints.keys():
                         robot_joint_states[joint_name] = state
 
-                prospection_robot = World.current_world.get_prospection_object_for_object(World.robot)
+                prospection_robot = World.current_world.get_prospection_object_for_object(RobotManager.active_robot)
 
                 with UseProspectionWorld():
                     prospection_robot.set_joint_positions(robot_joint_states)

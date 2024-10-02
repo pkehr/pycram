@@ -8,6 +8,7 @@ import numpy as np
 import rospy
 
 from ..external_interfaces.navigate import PoseNavigator
+from ..multirobot import RobotManager
 from ..process_module import ProcessModule, ProcessModuleManager
 from ..external_interfaces.ik import request_ik
 from ..utils import _apply_ik
@@ -44,7 +45,7 @@ class TurtlebotNavigation(ProcessModule):
     """
 
     def _execute(self, desig: MoveMotion):
-        robot = World.robot
+        robot = RobotManager.active_robot
         robot.set_pose(desig.target)
 
 

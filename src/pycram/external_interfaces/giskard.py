@@ -15,6 +15,7 @@ from ..datastructures.enums import JointType, ObjectType
 from ..datastructures.pose import Pose
 # from ..robot_descriptions import robot_description
 from ..datastructures.world import World
+from ..multirobot import RobotManager
 # from ..robot_description import ManipulatorDescription
 from ..robot_description import RobotDescription
 from ..world_concepts.world_object import Object
@@ -108,7 +109,7 @@ def initial_adding_objects() -> None:
     """
     groups = giskard_wrapper.world.get_group_names()
     for obj in World.current_world.objects:
-        if obj is World.robot or obj is World.current_world.get_prospection_object_for_object(World.robot):
+        if obj is RobotManager.active_robot or obj is World.current_world.get_prospection_object_for_object(RobotManager.active_robot):
             continue
         name = obj.name
         if name not in groups:
@@ -293,7 +294,7 @@ def _manage_par_motion_goals(goal_func, *args) -> Optional['MoveResult']:
                 if "tip_link" in par_value_pair.keys() and "root_link" in par_value_pair.keys():
                     if par_value_pair["tip_link"] == RobotDescription.current_robot_description.base_link:
                         continue
-                    chain = World.robot.description.get_chain(par_value_pair["root_link"],
+                    chain = RobotManager.active_robot.description.get_chain(par_value_pair["root_link"],
                                                               par_value_pair["tip_link"])
                     if set(chain).intersection(used_joints) != set():
                         giskard_wrapper.motion_goals._goals = tmp_goals

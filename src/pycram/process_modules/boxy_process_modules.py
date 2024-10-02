@@ -1,6 +1,7 @@
 from threading import Lock
 import numpy as np
 from .. import world_reasoning as btr
+from ..multirobot import RobotManager
 from ..utils import _apply_ik
 from ..designators.motion_designator import *
 from ..datastructures.enums import JointType
@@ -19,7 +20,7 @@ class BoxyNavigation(ProcessModule):
     """
 
     def _execute(self, desig: MoveMotion):
-        robot = World.robot
+        robot = RobotManager.active_robot
         robot.set_pose(desig.target)
 
 
@@ -36,7 +37,7 @@ class BoxyOpen(ProcessModule):
         goal_pose = btr.link_pose_for_joint_config(part_of_object, {
             container_joint: part_of_object.get_joint_limits(container_joint)[1] - 0.05}, desig.object_part.name)
 
-        _move_arm_tcp(goal_pose, World.robot, desig.arm)
+        _move_arm_tcp(goal_pose, RobotManager.active_robot, desig.arm)
 
         desig.object_part.world_object.set_joint_position(container_joint,
                                                               part_of_object.get_joint_limits(
@@ -55,7 +56,7 @@ class BoxyClose(ProcessModule):
         goal_pose = btr.link_pose_for_joint_config(part_of_object, {
             container_joint: part_of_object.get_joint_limits(container_joint)[0]}, desig.object_part.name)
 
-        _move_arm_tcp(goal_pose, World.robot, desig.arm)
+        _move_arm_tcp(goal_pose, RobotManager.active_robot, desig.arm)
 
         desig.object_part.world_object.set_joint_position(container_joint,
                                                               part_of_object.get_joint_limits(
@@ -82,7 +83,7 @@ class BoxyMoveHead(ProcessModule):
 
     def _execute(self, desig):
         target = desig.target
-        robot = World.robot
+        robot = RobotManager.active_robot
 
         local_transformer = LocalTransformer()
 
@@ -112,7 +113,7 @@ class BoxyMoveGripper(ProcessModule):
     """
 
     def _execute(self, desig):
-        robot = World.robot
+        robot = RobotManager.active_robot
         gripper = desig.gripper
         motion = desig.motion
         robot.set_joint_positions(RobotDescription.current_robot_description.kinematic_chains[gripper].get_static_gripper_state(motion))
@@ -125,7 +126,7 @@ class BoxyDetecting(ProcessModule):
     """
 
     def _execute(self, desig):
-        robot = World.robot
+        robot = RobotManager.active_robot
         object_type = desig.object_type
         # Should be "wide_stereo_optical_frame"
         cam_frame_name = RobotDescription.current_robot_description.get_camera_frame()
@@ -145,7 +146,7 @@ class BoxyMoveTCP(ProcessModule):
 
     def _execute(self, desig: MoveTCPMotion):
         target = desig.target
-        robot = World.robot
+        robot = RobotManager.active_robot
 
         _move_arm_tcp(target, robot, desig.arm)
 
@@ -158,7 +159,7 @@ class BoxyMoveArmJoints(ProcessModule):
 
     def _execute(self, desig: MoveArmJointsMotion):
 
-        robot = World.robot
+        robot = RobotManager.active_robot
         if desig.right_arm_poses:
             robot.set_joint_positions(desig.right_arm_poses)
         if desig.left_arm_poses:

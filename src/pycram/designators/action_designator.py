@@ -228,6 +228,8 @@ class PickUpAction(ActionDesignatorDescription):
         else:
             obj_desig = self.object_designator_description
 
+
+
         return PickUpActionPerformable(obj_desig[0], self.arms[0], self.grasps[0])
 
 
@@ -788,9 +790,11 @@ class PickUpActionPerformable(ActionAbstract):
     @with_tree
     def perform(self) -> None:
         print("in Performable")
+        RobotManager.block_object(object_desig=self.object_designator)
+
         # Initialize the local transformer and robot reference
         lt = LocalTransformer()
-        robot = World.robot
+        robot = RobotManager.active_robot
         # Retrieve object and robot from designators
         object = self.object_designator.world_object
         # Calculate the object's pose in the map frame
@@ -909,7 +913,7 @@ class PlaceActionPerformable(ActionAbstract):
     @with_tree
     def perform(self) -> None:
         lt = LocalTransformer()
-        robot = World.robot
+        robot = RobotManager.active_robot
         execute = True
         # oTm = Object Pose in Frame map
         oTm = self.target_location
@@ -1149,7 +1153,7 @@ class GraspingActionPerformable(ActionAbstract):
         gripper_name = RobotDescription.current_robot_description.get_arm_chain(self.arm).get_tool_frame()
 
         object_pose_in_gripper = lt.transform_pose(object_pose,
-                                                   World.robot.get_link_tf_frame(gripper_name))
+                                                   RobotManager.active_robot.get_link_tf_frame(gripper_name))
 
         pre_grasp = object_pose_in_gripper.copy()
         pre_grasp.pose.position.x -= 0.1
@@ -1177,7 +1181,7 @@ class FaceAtPerformable(ActionAbstract):
     @with_tree
     def perform(self) -> None:
         # get the robot position
-        robot_position = World.robot.pose
+        robot_position = RobotManager.active_robot.pose
 
         # calculate orientation for robot to face the object
         angle = np.arctan2(robot_position.position.y - self.pose.position.y,

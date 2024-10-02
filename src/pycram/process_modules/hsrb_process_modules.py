@@ -9,6 +9,7 @@ from ..external_interfaces.navigate import PoseNavigator
 from ..external_interfaces.robokudo import query_human, stop_query, query_specific_region, query_human_attributes, \
     send_query
 from ..external_interfaces.tmc import tmc_gripper_control, tmc_talk
+from ..multirobot import RobotManager
 from ..robot_description import RobotDescription
 from ..process_module import ProcessModule
 from ..local_transformer import LocalTransformer
@@ -28,7 +29,7 @@ class HSRBNavigation(ProcessModule):
     """
 
     def _execute(self, desig: MoveMotion):
-        robot = World.robot
+        robot = RobotManager.active_robot
         robot.set_pose(desig.target)
 
 
