@@ -100,6 +100,7 @@ class Object(WorldEntity):
             rdm.load_description(self.description.name)
             World.robot = self
             RobotManager.add_robot(self.name, self)
+            RobotManager.multiple_robots_active()
 
     @property
     def pose(self):

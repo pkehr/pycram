@@ -1,11 +1,11 @@
 import logging
 from abc import ABC
 
+import rospy
+
 from pycram.multirobot.object_observer import ObjectObserver
 from pycram.robot_description import RobotDescriptionManager
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
 
 
 class RobotManager(ABC):
@@ -70,7 +70,7 @@ class RobotManager(ABC):
         rdm = RobotDescriptionManager()
         rdm.load_description(name=robot_name)
         RobotManager.active_robot = RobotManager.available_robots[robot_name] if robot_name else None
-        logging.info(f'Setting active robot. Is now: {robot_name}')
+        rospy.logdebug(f'Setting active robot. Is now: {robot_name}')
 
     @staticmethod
     def multiple_robots_active():
@@ -81,14 +81,29 @@ class RobotManager(ABC):
         return False
 
     @staticmethod
-    def block_object(object_desig):
+    def block_object(object_desig, robot_name):
         """
         Block a given object, if is not blocked already
         """
         if RobotManager.object_observer is not None:
-            RobotManager.object_observer.block_object(object_desig)
+            if RobotManager.is_object_blocked(object_desig):
+                rospy.logerr(f"Object {object_desig.name} is in use by another robot!")
+                return
+
+            rospy.loginfo(f'Blocking object "{object_desig.name}" for robot {robot_name}')
+            RobotManager.object_observer.block_object(object_desig, robot_name)
 
     @staticmethod
-    def release_object(object_desig):
+    def release_object(object_desig, robot_name):
         if RobotManager.object_observer is not None:
-            RobotManager.object_observer.release_object(object_desig)
+            if RobotManager.is_object_blocked(object_desig):
+                rospy.loginfo(f'Releasing object "{object_desig.name}" from robot {robot_name}')
+                RobotManager.object_observer.release_object(object_desig)
+                return
+
+            rospy.logerr(f"Object {object_desig.name} is not in use by a robot!")
+
+
+    @staticmethod
+    def is_object_blocked(object_desig):
+        return RobotManager.object_observer.is_object_blocked(object_desig=object_desig)

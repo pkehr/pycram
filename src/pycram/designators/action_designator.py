@@ -790,7 +790,7 @@ class PickUpActionPerformable(ActionAbstract):
     @with_tree
     def perform(self) -> None:
         print("in Performable")
-        RobotManager.block_object(object_desig=self.object_designator)
+        RobotManager.block_object(object_desig=self.object_designator, robot_name=RobotManager.active_robot.name)
 
         # Initialize the local transformer and robot reference
         lt = LocalTransformer()

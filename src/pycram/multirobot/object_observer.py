@@ -1,3 +1,5 @@
+import threading
+import time
 from typing import Union
 
 import rospy
@@ -10,6 +12,7 @@ class ObjectObserver:
     """
 
     blocked_objects = ObjectIdentifierArray()
+    blocked_objects_ret = ObjectIdentifierArray()
     """
     Variable that stores the array of objects
     """
@@ -28,32 +31,33 @@ class ObjectObserver:
         self.sub = rospy.Subscriber(self.topic_name, ObjectIdentifierArray, queue_size=10, callback=self._cb)
         self.pub = rospy.Publisher(self.topic_name, ObjectIdentifierArray, queue_size=10)
 
-    def block_object(self, object_desig):
+        self.kill_event = threading.Event()
+        self.thread = threading.Thread(target=self.publish_blocked_objects)
+        self.thread.start()
+
+    def block_object(self, object_desig, robot_name):
         """
         Add an object to the observer list and publish the new state
         """
+        self.blocked_objects = self.blocked_objects_ret
+
         obj = ObjectIdentifier()
-        obj.name = object_desig.world_object.name
-        obj.id = object_desig.world_object.id
+        obj.in_use_by = robot_name
+        obj.name = object_desig.name
+        obj.id = object_desig.id
 
-        obj_array = ObjectIdentifierArray()
-        obj_array.objects = self.blocked_objects.objects
-        obj_array.objects.append(obj)
-
-        # TODO: publish is not correct?
-        self.pub.publish(obj_array)
+        self.blocked_objects.objects.append(obj)
 
     def release_object(self, object_desig):
         """
         Remove an object from the observer List and publish new state
         """
-        blocked: ObjectIdentifierArray = self.blocked_objects
+        blocked: ObjectIdentifierArray = self.blocked_objects_ret
 
-        new_objects = [item for item in blocked.objects if item.id != object_desig.world_object.id]
+        new_objects = [item for item in blocked.objects if item.id != object_desig.id]
         blocked.objects = new_objects
 
         self.blocked_objects = blocked
-        self.pub.publish(blocked)
 
     def is_object_blocked(self, object_desig) -> bool:
         """
@@ -61,12 +65,17 @@ class ObjectObserver:
 
         :param object_desig: designator of given object
         """
-        all_ids = [obj.id for obj in self.blocked_objects.objects]
+        all_ids = [obj.id for obj in self.blocked_objects_ret.objects]
 
-        if object_desig.world_object.id in all_ids:
+        if object_desig.id in all_ids:
             return True
 
         return False
+
+    def publish_blocked_objects(self):
+        while not self.kill_event.is_set():
+            self.pub.publish(self.blocked_objects)
+            time.sleep(self.interval)
 
     def _cb(self, data: ObjectIdentifierArray) -> None:
         """
@@ -74,4 +83,4 @@ class ObjectObserver:
 
         :param data: data that the subscriber receives from the given topic
         """
-        self.blocked_objects = data
+        self.blocked_objects_ret = data
