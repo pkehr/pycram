@@ -94,10 +94,11 @@ class RobotManager(ABC):
             RobotManager.object_observer.block_object(object_desig, robot_name)
 
     @staticmethod
-    def release_object(object_desig, robot_name):
+    def release_object(object_desig):
         if RobotManager.object_observer is not None:
             if RobotManager.is_object_blocked(object_desig):
-                rospy.loginfo(f'Releasing object "{object_desig.name}" from robot {robot_name}')
+                blocked_object = RobotManager.object_observer.blocked_objects[object_desig.id]
+                rospy.loginfo(f'Releasing object "{object_desig.name}" from robot {blocked_object["robot"]}')
                 RobotManager.object_observer.release_object(object_desig)
                 return
 
