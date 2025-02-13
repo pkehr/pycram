@@ -22,6 +22,7 @@ from typing_extensions import Dict, Optional, get_type_hints
 from ..datastructures.pose import Pose
 from ..tasktree import with_tree
 from ..designator import BaseMotion
+from ..world_concepts.world_object import Object
 
 
 @dataclass
@@ -35,9 +36,14 @@ class MoveMotion(BaseMotion):
     Location to which the robot should be moved
     """
 
+    used_robot: Optional[Object] = None
+    """
+    Robot that should be moved, if it is not the currently active robot
+    """
+
     @with_tree
     def perform(self):
-        pm_manager = ProcessModuleManager.get_manager()
+        pm_manager = ProcessModuleManager.get_manager(robot=self.used_robot)
         return pm_manager.navigate().execute(self)
         # return ProcessModule.perform(self)
 
@@ -72,9 +78,14 @@ class MoveArmDownForceTorqueMotion(BaseMotion):
     The Speed the arm moves with
     """
 
+    used_robot: Optional[Object] = None
+    """
+    Robot that should be moved, if it is not the currently active robot
+    """
+
     @with_tree
     def perform(self):
-        pm_manager = ProcessModuleManager.get_manager()
+        pm_manager = ProcessModuleManager.get_manager(robot=self.used_robot)
         return pm_manager.move_arm_down().execute(self)
 
     def to_sql(self) -> ORMMotionDesignator:
@@ -103,9 +114,14 @@ class MoveTCPMotion(BaseMotion):
     If the gripper can collide with something
     """
 
+    used_robot: Optional[Object] = None
+    """
+    Robot that should be moved, if it is not the currently active robot
+    """
+
     @with_tree
     def perform(self):
-        pm_manager = ProcessModuleManager.get_manager()
+        pm_manager = ProcessModuleManager.get_manager(robot=self.used_robot)
         return pm_manager.move_tcp().execute(self)
 
     def to_sql(self) -> ORMMoveTCPMotion:
@@ -147,10 +163,14 @@ class MoveTCPForceTorqueMotion(BaseMotion):
     If the gripper can collide with something
     """
 
+    used_robot: Optional[Object] = None
+    """
+    Robot that should be moved, if it is not the currently active robot
+    """
 
     @with_tree
     def perform(self):
-        pm_manager = ProcessModuleManager.get_manager()
+        pm_manager = ProcessModuleManager.get_manager(robot=self.used_robot)
         return pm_manager.move_tcp_ft().execute(self)
 
     def to_sql(self) -> ORMMoveTCPMotion:
@@ -184,9 +204,14 @@ class PickUpMotion(BaseMotion):
     From which direction the object should be grasped, e.g. 'left', 'front', etc.
     """
 
+    used_robot: Optional[Object] = None
+    """
+    Robot that should be moved, if it is not the currently active robot
+    """
+
     @with_tree
     def perform(self):
-        pm_manager = ProcessModuleManager.get_manager()
+        pm_manager = ProcessModuleManager.get_manager(robot=self.used_robot)
         return pm_manager.pick_up().execute(self)
 
     def to_sql(self) -> ORMMotionDesignator:
@@ -215,9 +240,14 @@ class PlaceMotion(BaseMotion):
     """
     grasp: str
 
+    used_robot: Optional[Object] = None
+    """
+    Robot that should be moved, if it is not the currently active robot
+    """
+
     @with_tree
     def perform(self):
-        pm_manager = ProcessModuleManager.get_manager()
+        pm_manager = ProcessModuleManager.get_manager(robot=self.used_robot)
         return pm_manager.place().execute(self)
 
 
@@ -228,9 +258,14 @@ class LookingMotion(BaseMotion):
     """
     target: Pose
 
+    used_robot: Optional[Object] = None
+    """
+    Robot that should be moved, if it is not the currently active robot
+    """
+
     @with_tree
     def perform(self):
-        pm_manager = ProcessModuleManager.get_manager()
+        pm_manager = ProcessModuleManager.get_manager(robot=self.used_robot)
         return pm_manager.looking().execute(self)
 
     def to_sql(self) -> ORMLookingMotion:
@@ -264,9 +299,14 @@ class MoveGripperMotion(BaseMotion):
     If the gripper is allowed to collide with something
     """
 
+    used_robot: Optional[Object] = None
+    """
+    Robot that should be moved, if it is not the currently active robot
+    """
+
     @with_tree
     def perform(self):
-        pm_manager = ProcessModuleManager.get_manager()
+        pm_manager = ProcessModuleManager.get_manager(robot=self.used_robot)
         return pm_manager.move_gripper().execute(self)
 
     def to_sql(self) -> ORMMoveGripperMotion:
@@ -299,9 +339,14 @@ class DetectingMotion(BaseMotion):
     The state instructs our perception system to either start or stop the search for an object or human.
     Can also be used to describe the region or location where objects are perceived.
     """
+
+    used_robot: Optional[Object] = None
+    """
+    Robot that should be moved, if it is not the currently active robot
+    """
     @with_tree
     def perform(self):
-        pm_manager = ProcessModuleManager.get_manager()
+        pm_manager = ProcessModuleManager.get_manager(robot=self.used_robot)
         world_object = pm_manager.detecting().execute(self)
 
         if not world_object:
@@ -343,8 +388,13 @@ class MoveArmJointsMotion(BaseMotion):
     Target positions for the right arm joints
     """
 
+    used_robot: Optional[Object] = None
+    """
+    Robot that should be moved, if it is not the currently active robot
+    """
+
     def perform(self):
-        pm_manager = ProcessModuleManager.get_manager()
+        pm_manager = ProcessModuleManager.get_manager(robot=self.used_robot)
         return pm_manager.move_arm_joints().execute(self)
 
     def to_sql(self) -> ORMMotionDesignator:
@@ -365,8 +415,13 @@ class WorldStateDetectingMotion(BaseMotion):
     Object type that should be detected
     """
 
+    used_robot: Optional[Object] = None
+    """
+    Robot that should be moved, if it is not the currently active robot
+    """
+
     def perform(self):
-        pm_manager = ProcessModuleManager.get_manager()
+        pm_manager = ProcessModuleManager.get_manager(robot=self.used_robot)
         return pm_manager.world_state_detecting().execute(self)
 
     def to_sql(self) -> ORMMotionDesignator:
@@ -391,8 +446,13 @@ class MoveJointsMotion(BaseMotion):
     Target positions of joints, should correspond to the list of names
     """
 
+    used_robot: Optional[Object] = None
+    """
+    Robot that should be moved, if it is not the currently active robot
+    """
+
     def perform(self):
-        pm_manager = ProcessModuleManager.get_manager()
+        pm_manager = ProcessModuleManager.get_manager(robot=self.used_robot)
         return pm_manager.move_joints().execute(self)
 
     def to_sql(self) -> ORMMotionDesignator:
@@ -417,9 +477,14 @@ class OpeningMotion(BaseMotion):
     Arm that should be used
     """
 
+    used_robot: Optional[Object] = None
+    """
+    Robot that should be moved, if it is not the currently active robot
+    """
+
     @with_tree
     def perform(self):
-        pm_manager = ProcessModuleManager.get_manager()
+        pm_manager = ProcessModuleManager.get_manager(robot=self.used_robot)
         return pm_manager.open().execute(self)
 
     def to_sql(self) -> ORMOpeningMotion:
@@ -449,9 +514,14 @@ class ClosingMotion(BaseMotion):
     Arm that should be used
     """
 
+    used_robot: Optional[Object] = None
+    """
+    Robot that should be moved, if it is not the currently active robot
+    """
+
     @with_tree
     def perform(self):
-        pm_manager = ProcessModuleManager.get_manager()
+        pm_manager = ProcessModuleManager.get_manager(robot=self.used_robot)
         return pm_manager.close().execute(self)
 
     def to_sql(self) -> ORMClosingMotion:
@@ -475,9 +545,14 @@ class TalkingMotion(BaseMotion):
     Sentence what the robot should say
     """
 
+    used_robot: Optional[Object] = None
+    """
+    Robot that should be moved, if it is not the currently active robot
+    """
+
     @with_tree
     def perform(self):
-        pm_manager = ProcessModuleManager.get_manager()
+        pm_manager = ProcessModuleManager.get_manager(robot=self.used_robot)
         return pm_manager.talk().execute(self)
 
     def to_sql(self) -> ORMMotionDesignator:
@@ -503,9 +578,14 @@ class PouringMotion(BaseMotion):
     the angle to move the gripper to
     """
 
+    used_robot: Optional[Object] = None
+    """
+    Robot that should be moved, if it is not the currently active robot
+    """
+
     @with_tree
     def perform(self):
-        pm_manager = ProcessModuleManager.get_manager()
+        pm_manager = ProcessModuleManager.get_manager(robot=self.used_robot)
         return pm_manager.pour().execute(self)
 
     def to_sql(self) -> ORMMotionDesignator:
@@ -527,9 +607,14 @@ class HeadFollowMotion(BaseMotion):
 
     """
 
+    used_robot: Optional[Object] = None
+    """
+    Robot that should be moved, if it is not the currently active robot
+    """
+
     @with_tree
     def perform(self):
-        pm_manager = ProcessModuleManager.get_manager()
+        pm_manager = ProcessModuleManager.get_manager(robot=self.used_robot)
         return pm_manager.head_follow().execute(self)
 
     def to_sql(self) -> ORMMotionDesignator:
@@ -549,9 +634,14 @@ class PointingMotion(BaseMotion):
     point the robot moves gripper to (in map frame)
     """
 
+    used_robot: Optional[Object] = None
+    """
+    Robot that should be moved, if it is not the currently active robot
+    """
+
     @with_tree
     def perform(self):
-        pm_manager = ProcessModuleManager.get_manager()
+        pm_manager = ProcessModuleManager.get_manager(robot=self.used_robot)
         return pm_manager.pointing().execute(self)
 
     def to_sql(self) -> ORMMotionDesignator:
@@ -572,9 +662,14 @@ class DoorOpenMotion(BaseMotion):
     name of the handle joint so that giskard knows how to open the door
     """
 
+    used_robot: Optional[Object] = None
+    """
+    Robot that should be moved, if it is not the currently active robot
+    """
+
     @with_tree
     def perform(self):
-        pm_manager = ProcessModuleManager.get_manager()
+        pm_manager = ProcessModuleManager.get_manager(robot=self.used_robot)
         return pm_manager.door_opening().execute(self)
 
     def to_sql(self) -> ORMMotionDesignator:
@@ -599,9 +694,14 @@ class GraspHandleMotion(BaseMotion):
     give offset for the end grasping position
     """
 
+    used_robot: Optional[Object] = None
+    """
+    Robot that should be moved, if it is not the currently active robot
+    """
+
     @with_tree
     def perform(self):
-        pm_manager = ProcessModuleManager.get_manager()
+        pm_manager = ProcessModuleManager.get_manager(robot=self.used_robot)
         return pm_manager.grasp_door_handle().execute(self)
 
     def to_sql(self) -> ORMMotionDesignator:
@@ -626,9 +726,14 @@ class GraspingDishwasherHandleMotion(BaseMotion):
     Arm that should be used
     """
 
+    used_robot: Optional[Object] = None
+    """
+    Robot that should be moved, if it is not the currently active robot
+    """
+
     @with_tree
     def perform(self):
-        pm_manager = ProcessModuleManager.get_manager()
+        pm_manager = ProcessModuleManager.get_manager(robot=self.used_robot)
         return pm_manager.grasp_dishwasher_handle().execute(self)
 
     def to_sql(self) -> ORMMotionDesignator:
@@ -656,9 +761,14 @@ class HalfOpeningDishwasherMotion(BaseMotion):
     Arm that should be used
     """
 
+    used_robot: Optional[Object] = None
+    """
+    Robot that should be moved, if it is not the currently active robot
+    """
+
     @with_tree
     def perform(self):
-        pm_manager = ProcessModuleManager.get_manager()
+        pm_manager = ProcessModuleManager.get_manager(robot=self.used_robot)
         return pm_manager.half_open_dishwasher().execute(self)
 
     def to_sql(self) -> ORMMotionDesignator:
@@ -683,9 +793,14 @@ class MoveArmAroundMotion(BaseMotion):
     Arm that should be used
     """
 
+    used_robot: Optional[Object] = None
+    """
+    Robot that should be moved, if it is not the currently active robot
+    """
+
     @with_tree
     def perform(self):
-        pm_manager = ProcessModuleManager.get_manager()
+        pm_manager = ProcessModuleManager.get_manager(robot=self.used_robot)
         return pm_manager.move_arm_around_dishwasher().execute(self)
 
     def to_sql(self) -> ORMMotionDesignator:
@@ -718,9 +833,14 @@ class FullOpeningDishwasherMotion(BaseMotion):
     Arm that should be used
     """
 
+    used_robot: Optional[Object] = None
+    """
+    Robot that should be moved, if it is not the currently active robot
+    """
+
     @with_tree
     def perform(self):
-        pm_manager = ProcessModuleManager.get_manager()
+        pm_manager = ProcessModuleManager.get_manager(robot=self.used_robot)
         return pm_manager.full_open_dishwasher().execute(self)
 
     def to_sql(self) -> ORMMotionDesignator:

@@ -6,6 +6,7 @@ import actionlib
 from .. import world_reasoning as btr
 import numpy as np
 
+from ..multirobot import RobotManager
 from ..process_module import ProcessModule, ProcessModuleManager
 from ..external_interfaces.ik import request_ik
 from ..ros.logging import logdebug
@@ -35,7 +36,7 @@ class Pr2Navigation(ProcessModule):
     """
 
     def _execute(self, desig: MoveMotion):
-        robot = World.robot
+        robot = RobotManager.get_active_robot(desig.used_robot)
         robot.set_pose(desig.target)
 
 
@@ -47,7 +48,7 @@ class Pr2MoveHead(ProcessModule):
 
     def _execute(self, desig: LookingMotion):
         target = desig.target
-        robot = World.robot
+        robot = RobotManager.get_active_robot(desig.used_robot)
 
         local_transformer = LocalTransformer()
         pose_in_pan = local_transformer.transform_pose(target, robot.get_link_tf_frame("head_pan_link"))
@@ -70,9 +71,9 @@ class Pr2MoveGripper(ProcessModule):
     """
 
     def _execute(self, desig: MoveGripperMotion):
-        robot = World.robot
+        robot = RobotManager.get_active_robot(desig.used_robot)
         motion = desig.motion
-        for joint, state in RobotDescription.current_robot_description.get_arm_chain(
+        for joint, state in RobotManager.get_robot_description(robot).get_arm_chain(
                 desig.gripper).get_static_gripper_state(motion).items():
             robot.set_joint_position(joint, state)
 
@@ -84,13 +85,15 @@ class Pr2Detecting(ProcessModule):
     """
 
     def _execute(self, desig: DetectingMotion):
-        robot = World.robot
+        robot = RobotManager.get_active_robot(desig.used_robot)
         object_type = desig.object_type
+        robot_description = RobotManager.get_robot_description(robot)
+
         # Should be "wide_stereo_optical_frame"
-        camera_link_name = RobotDescription.current_robot_description.get_camera_link()
+        camera_link_name = robot_description.get_camera_link()
         # should be [0, 0, 1]
-        camera_description = RobotDescription.current_robot_description.cameras[
-            list(RobotDescription.current_robot_description.cameras.keys())[0]]
+        camera_description = robot_description.cameras[
+            list(robot_description.cameras.keys())[0]]
         front_facing_axis = camera_description.front_facing_axis
 
         objects = World.current_world.get_object_by_type(object_type)
@@ -106,7 +109,7 @@ class Pr2MoveTCP(ProcessModule):
 
     def _execute(self, desig: MoveTCPMotion):
         target = desig.target
-        robot = World.robot
+        robot = RobotManager.get_active_robot(desig.used_robot)
 
         _move_arm_tcp(target, robot, desig.arm)
 
@@ -119,7 +122,7 @@ class Pr2MoveArmJoints(ProcessModule):
 
     def _execute(self, desig: MoveArmJointsMotion):
 
-        robot = World.robot
+        robot = RobotManager.get_active_robot(desig.used_robot)
         if desig.right_arm_poses:
             robot.set_multiple_joint_positions(desig.right_arm_poses)
         if desig.left_arm_poses:
@@ -132,7 +135,7 @@ class PR2MoveJoints(ProcessModule):
     """
 
     def _execute(self, desig: MoveJointsMotion):
-        robot = World.robot
+        robot = RobotManager.get_active_robot(desig.used_robot)
         robot.set_multiple_joint_positions(dict(zip(desig.names, desig.positions)))
 
 
@@ -152,6 +155,8 @@ class Pr2Open(ProcessModule):
     """
 
     def _execute(self, desig: OpeningMotion):
+        robot = RobotManager.get_active_robot(desig.used_robot)
+
         part_of_object = desig.object_part.world_object
 
         container_joint = part_of_object.find_joint_above_link(desig.object_part.name, JointType.PRISMATIC)
@@ -159,7 +164,7 @@ class Pr2Open(ProcessModule):
         goal_pose = btr.link_pose_for_joint_config(part_of_object, {
             container_joint: part_of_object.get_joint_limits(container_joint)[1] - 0.05}, desig.object_part.name)
 
-        _move_arm_tcp(goal_pose, World.robot, desig.arm)
+        _move_arm_tcp(goal_pose, robot, desig.arm)
 
         desig.object_part.world_object.set_joint_position(container_joint,
                                                           part_of_object.get_joint_limits(
@@ -172,6 +177,7 @@ class Pr2Close(ProcessModule):
     """
 
     def _execute(self, desig: ClosingMotion):
+        robot = RobotManager.get_active_robot(desig.used_robot)
         part_of_object = desig.object_part.world_object
 
         container_joint = part_of_object.find_joint_above_link(desig.object_part.name, JointType.PRISMATIC)
@@ -179,7 +185,7 @@ class Pr2Close(ProcessModule):
         goal_pose = btr.link_pose_for_joint_config(part_of_object, {
             container_joint: part_of_object.get_joint_limits(container_joint)[0]}, desig.object_part.name)
 
-        _move_arm_tcp(goal_pose, World.robot, desig.arm)
+        _move_arm_tcp(goal_pose, robot, desig.arm)
 
         desig.object_part.world_object.set_joint_position(container_joint,
                                                           part_of_object.get_joint_limits(
@@ -187,9 +193,9 @@ class Pr2Close(ProcessModule):
 
 
 def _move_arm_tcp(target: Pose, robot: Object, arm: Arms) -> None:
-    gripper = RobotDescription.current_robot_description.get_arm_chain(arm).get_tool_frame()
+    gripper = RobotManager.get_robot_description(robot).get_arm_chain(arm).get_tool_frame()
 
-    joints = RobotDescription.current_robot_description.get_arm_chain(arm).joints
+    joints = RobotManager.get_robot_description(robot).get_arm_chain(arm).joints
 
     inv = request_ik(target, robot, joints, gripper)
     _apply_ik(robot, inv)
@@ -207,7 +213,7 @@ class Pr2NavigationReal(ProcessModule):
 
     def _execute(self, designator: MoveMotion) -> Any:
         logdebug(f"Sending goal to giskard to Move the robot")
-        giskard.achieve_cartesian_goal(designator.target, RobotDescription.current_robot_description.base_link, "map")
+        giskard.achieve_cartesian_goal(designator.target, RobotManager.get_robot_description(designator.used_robot).base_link, "map")
 
 
 class Pr2MoveHeadReal(ProcessModule):
@@ -218,7 +224,7 @@ class Pr2MoveHeadReal(ProcessModule):
 
     def _execute(self, desig: LookingMotion):
         target = desig.target
-        robot = World.robot
+        robot = RobotManager.get_active_robot(desig.used_robot)
 
         local_transformer = LocalTransformer()
         pose_in_pan = local_transformer.transform_pose(target, robot.get_link_tf_frame("head_pan_link"))
@@ -243,11 +249,12 @@ class Pr2DetectingReal(ProcessModule):
 
     def _execute(self, designator: DetectingMotion) -> Any:
         query_result = query(ObjectDesignatorDescription(types=[designator.object_type]))
+        robot = RobotManager.get_active_robot(designator.used_robot)
         # print(query_result)
         obj_pose = query_result["ClusterPoseBBAnnotator"]
 
         lt = LocalTransformer()
-        obj_pose = lt.transform_pose(obj_pose, World.robot.get_link_tf_frame("torso_lift_link"))
+        obj_pose = lt.transform_pose(obj_pose, robot.get_link_tf_frame("torso_lift_link"))
         obj_pose.orientation = [0, 0, 0, 1]
         obj_pose.position.x += 0.05
 
@@ -271,12 +278,14 @@ class Pr2MoveTCPReal(ProcessModule):
     """
 
     def _execute(self, designator: MoveTCPMotion) -> Any:
+        robot = RobotManager.get_active_robot(designator.used_robot)
+        robot_description = RobotManager.get_robot_description(robot)
         lt = LocalTransformer()
         pose_in_map = lt.transform_pose(designator.target, "map")
 
         if designator.allow_gripper_collision:
             giskard.allow_gripper_collision(designator.arm)
-        giskard.achieve_cartesian_goal(pose_in_map, RobotDescription.current_robot_description.get_arm_chain(
+        giskard.achieve_cartesian_goal(pose_in_map, robot_description.get_arm_chain(
             designator.arm).get_tool_frame(),
                                        "torso_lift_link")
         # robot_description.base_link)
@@ -343,8 +352,11 @@ class Pr2OpenReal(ProcessModule):
     """
 
     def _execute(self, designator: OpeningMotion) -> Any:
+        robot = RobotManager.get_active_robot(designator.used_robot)
+        robot_description = RobotManager.get_robot_description(robot)
+
         giskard.achieve_open_container_goal(
-            RobotDescription.current_robot_description.get_arm_chain(designator.arm).get_tool_frame(),
+            robot_description.get_arm_chain(designator.arm).get_tool_frame(),
             designator.object_part.name)
 
 
@@ -354,8 +366,10 @@ class Pr2CloseReal(ProcessModule):
     """
 
     def _execute(self, designator: ClosingMotion) -> Any:
+        robot = RobotManager.get_active_robot(designator.used_robot)
+        robot_description = RobotManager.get_robot_description(robot)
         giskard.achieve_close_container_goal(
-            RobotDescription.current_robot_description.get_arm_chain(designator.arm).get_tool_frame(),
+            robot_description.get_arm_chain(designator.arm).get_tool_frame(),
             designator.object_part.name)
 
 

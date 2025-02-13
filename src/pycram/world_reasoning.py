@@ -5,6 +5,7 @@ from .datastructures.dataclasses import ContactPointsList
 from .datastructures.pose import Pose, Transform
 from .datastructures.world import World, UseProspectionWorld
 from .external_interfaces.ik import try_to_reach, try_to_reach_with_grasp
+from .multirobot import RobotManager
 from .robot_description import RobotDescription
 from .utils import RayTestUtils
 from .world_concepts.world_object import Object
@@ -74,10 +75,12 @@ def get_visible_objects(
     :param plot_segmentation_mask: If the segmentation mask should be plotted
     :return: A segmentation mask of the objects that are visible and the pose of the point at exactly 2 meters in front of the camera in the direction of the front facing axis with respect to the world coordinate frame.
     """
-    if front_facing_axis is None:
-        front_facing_axis = RobotDescription.current_robot_description.get_default_camera().front_facing_axis
+    robot = RobotManager.get_active_robot()
 
-    camera_frame = RobotDescription.current_robot_description.get_camera_frame()
+    if front_facing_axis is None:
+        front_facing_axis = RobotManager.get_robot_description(robot).get_default_camera().front_facing_axis
+
+    camera_frame = RobotManager.get_robot_description(robot).get_camera_frame()
     world_to_cam = camera_pose.to_transform(camera_frame)
 
     cam_to_point = Transform(list(np.multiply(front_facing_axis, 2)), [0, 0, 0, 1], camera_frame,
@@ -112,12 +115,12 @@ def visible(
     """
     with UseProspectionWorld():
         prospection_obj = World.current_world.get_prospection_object_for_object(obj)
-        if World.robot:
-            prospection_robot = World.current_world.get_prospection_object_for_object(World.robot)
+        if RobotManager.active_robot:
+            prospection_robot = World.current_world.get_prospection_object_for_object(RobotManager.active_robot)
 
         state_id = World.current_world.save_state()
         for obj in World.current_world.objects:
-            if obj == prospection_obj or (World.robot and obj == prospection_robot):
+            if obj == prospection_obj or (RobotManager.active_robot and obj == prospection_robot):
                 continue
             else:
                 obj.set_pose(Pose([100, 100, 0], [0, 0, 0, 1]), set_attachments=False)
@@ -158,7 +161,7 @@ def occluding(
     with UseProspectionWorld():
         state_id = World.current_world.save_state()
         for other_obj in World.current_world.objects:
-            if other_obj.name == World.current_world.robot.name:
+            if other_obj.name == RobotManager.active_robot.name:
                 continue
             elif obj.get_pose() == other_obj.get_pose():
                 obj = other_obj

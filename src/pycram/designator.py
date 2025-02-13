@@ -6,6 +6,7 @@ from abc import ABC, abstractmethod
 from inspect import isgenerator, isgeneratorfunction
 
 from .external_interfaces import giskard
+from .multirobot import RobotManager
 from .ros.logging import logwarn, loginfo
 
 try:
@@ -407,9 +408,10 @@ class ActionDesignatorDescription(DesignatorDescription, Language):
         """
 
         def __post_init__(self):
-            self.robot_position = World.robot.get_pose()
-            self.robot_torso_height = World.robot.get_joint_position(RobotDescription.current_robot_description.torso_joint)
-            self.robot_type = World.robot.obj_type
+            self.robot_position = RobotManager.active_robot.get_pose()
+            self.robot_torso_height = RobotManager.active_robot.get_joint_position(
+                RobotDescription.current_robot_description.torso_joint)
+            self.robot_type = RobotManager.active_robot.obj_type
 
         @with_tree
         def perform(self) -> Any:

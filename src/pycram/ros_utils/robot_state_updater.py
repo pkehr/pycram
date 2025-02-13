@@ -4,7 +4,8 @@ import tf
 from geometry_msgs.msg import TransformStamped
 from sensor_msgs.msg import JointState
 from ..datastructures.world import World
-from ..robot_description import RobotDescription
+from ..multirobot import RobotManager
+from ..robot_description import RobotDescription, RobotDescriptionManager
 from ..datastructures.pose import Pose
 from ..ros.data_types import Time
 from ..ros.ros_tools import wait_for_message, create_timer, sleep
@@ -19,7 +20,7 @@ class RobotStateUpdater:
         * The current joint state of the robot
     """
 
-    def __init__(self, tf_topic: str, joint_state_topic: str):
+    def __init__(self, tf_topic: str, joint_state_topic: str, multirobot_name: str = None):
         """
         The robot state updater uses a TF topic and a joint state topic to get the current state of the robot.
 
@@ -34,6 +35,9 @@ class RobotStateUpdater:
         self.tf_timer = create_timer(0.1, self._subscribe_tf)
         self.joint_state_timer = create_timer(0.1, self._subscribe_joint_state)
 
+        if multirobot_name is not None:
+            self.robot_name = multirobot_name
+
         atexit.register(self._stop_subscription)
 
     def _subscribe_tf(self, msg: TransformStamped) -> None:
@@ -42,8 +46,17 @@ class RobotStateUpdater:
 
         :param msg: TransformStamped message published to the topic
         """
-        trans, rot = self.tf_listener.lookupTransform("/map", RobotDescription.current_robot_description.base_link, Time(0))
-        World.robot.set_pose(Pose(trans, rot))
+
+        if RobotManager.multiple_robots_active():
+            base_link = RobotDescriptionManager().descriptions[self.robot_name].base_link
+            trans, rot = self.tf_listener.lookupTransform("/map", base_link,
+                                                          Time(0))
+            RobotManager.available_robots[self.robot_name].set_pose(Pose(trans, rot))
+
+        else:
+            trans, rot = self.tf_listener.lookupTransform("/map", RobotDescription.current_robot_description.base_link,
+                                                          Time(0))
+            RobotManager.active_robot.set_pose(Pose(trans, rot))
 
     def _subscribe_joint_state(self, msg: JointState) -> None:
         """
@@ -56,8 +69,10 @@ class RobotStateUpdater:
         try:
             msg = wait_for_message(self.joint_state_topic, JointState)
             for name, position in zip(msg.name, msg.position):
-                if name in list(World.robot.joints.keys()):
-                    World.robot.set_joint_position(name, position)
+                if RobotManager.multiple_robots_active():
+                    RobotManager.available_robots[self.robot_name].set_joint_position(name, position)
+                else:
+                    RobotManager.active_robot.set_joint_position(name, position)
         except AttributeError:
             pass
 

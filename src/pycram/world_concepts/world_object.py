@@ -20,6 +20,7 @@ from ..description import ObjectDescription, LinkDescription, Joint
 from ..failures import ObjectAlreadyExists, WorldMismatchErrorBetweenObjects, UnsupportedFileExtension, \
     ObjectDescriptionUndefined
 from ..local_transformer import LocalTransformer
+from ..multirobot import RobotManager
 from ..object_descriptors.generic import ObjectDescription as GenericObjectDescription
 from ..object_descriptors.urdf import ObjectDescription as URDF
 from ..ros.data_types import Time
@@ -328,6 +329,8 @@ class Object(WorldEntity):
         rdm = RobotDescriptionManager()
         rdm.load_description(self.description.name)
         World.robot = self
+        RobotManager.add_robot(self)
+        RobotManager.multiple_robots_active()
         self._add_virtual_move_base_joints()
 
     def _add_virtual_move_base_joints(self):
