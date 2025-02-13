@@ -12,6 +12,7 @@ from abc import ABC
 from typing_extensions import Callable, Type, Any, Union
 
 from .language import Language
+from .multirobot import RobotManager
 from .robot_description import RobotDescription
 from typing_extensions import TYPE_CHECKING
 from .datastructures.enums import ExecutionType
@@ -101,7 +102,9 @@ class RealRobot:
         ProcessModuleManager.execution_type = self.pre
         ProcessModule.execution_delay = self.pre_delay
 
-    def __call__(self):
+    def __call__(self, robot=None):
+        if robot is not None:
+            RobotManager.set_active_robot(robot.name)
         return self
 
 
@@ -136,7 +139,9 @@ class SimulatedRobot:
         """
         ProcessModuleManager.execution_type = self.pre
 
-    def __call__(self):
+    def __call__(self, robot=None):
+        if robot is not None:
+            RobotManager.set_active_robot(robot.name)
         return self
 
 
@@ -171,7 +176,9 @@ class SemiRealRobot:
         """
         ProcessModuleManager.execution_type = self.pre
 
-    def __call__(self):
+    def __call__(self, robot=None):
+        if robot is not None:
+            RobotManager.set_active_robot(robot.name)
         return self
 
 
@@ -274,10 +281,13 @@ class ProcessModuleManager(ABC):
         ProcessModuleManager.available_pms.append(self)
 
     @staticmethod
-    def get_manager() -> Union[ProcessModuleManager, None]:
+    def get_manager(robot=None) -> Union[ProcessModuleManager, None]:
         """
         :return: ProcessModuleManager instance of the current robot
         """
+        if robot is None:
+            robot = RobotDescription.current_robot_description
+
         manager = None
         _default_manager = None
         if not ProcessModuleManager.execution_type:
@@ -286,7 +296,7 @@ class ProcessModuleManager(ABC):
             return
 
         for pm_manager in ProcessModuleManager.available_pms:
-            if pm_manager.robot_name == RobotDescription.current_robot_description.name:
+            if pm_manager.robot_name == robot.name:
                 manager = pm_manager
             if pm_manager.robot_name == "default":
                 _default_manager = pm_manager
