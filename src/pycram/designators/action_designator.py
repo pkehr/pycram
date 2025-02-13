@@ -11,7 +11,6 @@ import numpy as np
 import rospy
 import sqlalchemy
 from geometry_msgs.msg import PointStamped
-from giskardpy.data_types.exceptions import ForceTorqueThresholdException
 from owlready2 import Thing
 from sqlalchemy.orm import Session
 from tf import transformations
@@ -49,6 +48,11 @@ from ..ros.logging import logwarn
 from ..ros_utils.force_torque_sensor import ForceTorqueSensor
 from ..tasktree import with_tree
 from ..utils import axis_angle_to_quaternion
+
+try:
+    from giskardpy.data_types.exceptions import ForceTorqueThresholdException
+except Exception:
+    logwarn("Failed to import Giskard exception")
 
 
 class MoveTorsoAction(ActionDesignatorDescription):

@@ -5,9 +5,9 @@ from threading import Lock, RLock
 
 import numpy as np
 from geometry_msgs.msg import PoseStamped, PointStamped, QuaternionStamped, Vector3Stamped, Vector3, Point
-from giskardpy.data_types.exceptions import ForceTorqueThresholdException
+
 from giskardpy.motion_graph.monitors.force_torque_monitor import PayloadForceTorque
-from giskardpy_ros.ros1 import tfwrapper as tf
+
 from typing_extensions import List, Dict, Callable, Optional
 
 from ..datastructures.dataclasses import MeshVisualShape
@@ -22,12 +22,17 @@ from ..ros.ros_tools import get_node_names
 from ..world_concepts.world_object import Object
 
 try:
+    from giskardpy_ros.ros1 import tfwrapper as tf
+    from giskardpy.data_types.exceptions import ForceTorqueThresholdException
+
     from giskardpy_ros.python_interface.python_interface import GiskardWrapper
     from giskard_msgs.msg import WorldBody, MoveResult, CollisionEntry
 
     giskard_wrapper: Optional[GiskardWrapper] = None
 except ModuleNotFoundError as e:
     logwarn("Failed to import Giskard messages, the real robot will not be available")
+except ImportError as e:
+    logwarn(f"Failed to import Giskard: {e}")
 
 giskard_update_service = None
 is_init = False
