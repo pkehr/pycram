@@ -1,3 +1,4 @@
+from demos.pycram_multirobot_real_demo.utils import rotated_quaternion
 from pycram.datastructures.dataclasses import Color
 from pycram.datastructures.enums import Arms
 from pycram.datastructures.enums import ObjectType, WorldMode
@@ -9,7 +10,7 @@ from pycram.object_descriptors.urdf import ObjectDescription
 from pycram.process_module import real_robot
 from pycram.ros_utils.robot_state_updater import RobotStateUpdater
 from pycram.utilities.robocup_utils import TextToSpeechPublisher, ImageSwitchPublisher, \
-    HSRBMoveGripperReal, rotated_quaternion
+    HSRBMoveGripperReal
 from pycram.world_concepts.world_object import Object
 from pycram.worlds.bullet_world import BulletWorld
 
