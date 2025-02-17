@@ -7,18 +7,35 @@ from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 
 
 class PoseNavigator:
-    def __init__(self):
+    def __init__(self, namespace: str = None):
+        self.move_base_name = ""
+
+        if namespace is None:
+            self.move_base_name = '/move_base/move'
+            self.initial_pose_name = "/initialpose"
+            self.amcl_pose_name = '/amcl_pose'
+        elif namespace == 'turtle':
+            self.move_base_name = '/turtle/move_base/move'
+            self.initial_pose_name = "/turtle/initialpose"
+            self.amcl_pose_name = '/turtle/amcl_pose'
+        else:
+            rospy.logerr(f"namespace not defined yet. PoseNavigator for {namespace} will not work")
+            return
+
+        rospy.loginfo(f"Initialize move base for {namespace}")
         global move_client
-        self.client = actionlib.SimpleActionClient('move_base/move', MoveBaseAction)
-        rospy.loginfo("Waiting for move_base ActionServer")
+
+        self.client = actionlib.SimpleActionClient(self.move_base_name, MoveBaseAction)
+        rospy.loginfo("Waiting for move_base ActionServer at: " + self.move_base_name)
         if self.client.wait_for_server():
             rospy.loginfo("Done")
         # self.pub = rospy.Publisher('goal', PoseStamped, queue_size=10, latch=True)
         self.toya_pose = None
         self.goal_pose = None
-        self.toya_pose_pub = rospy.Publisher("/initialpose", PoseWithCovarianceStamped, queue_size=100)
+        self.pose_pub = rospy.Publisher(self.initial_pose_name, PoseWithCovarianceStamped, queue_size=100)
 
-        self.toya_pose_sub = rospy.Subscriber("/amcl_pose", PoseWithCovarianceStamped, self.toya_pose_cb)
+        self.pose_sub = rospy.Subscriber(self.amcl_pose_name, PoseWithCovarianceStamped, self.toya_pose_cb)
+        rospy.loginfo("move_base init construct done")
 
     def pub_fake_pose(self, fake_pose: PoseStamped):
         msg = PoseWithCovarianceStamped()
@@ -27,7 +44,7 @@ class PoseNavigator:
         msg.pose.covariance = [0.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
                                0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
                                0.06853892326654787]
-        self.toya_pose_pub.publish(msg)
+        self.pose_pub.publish(msg)
 
     def toya_pose_cb(self, msg):
         self.toya_pose = msg.pose.pose.position
