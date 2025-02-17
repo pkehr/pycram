@@ -4,25 +4,44 @@ import actionlib
 import rospy
 from geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
+from typing_extensions import Union
+
+from pycram.datastructures.enums import ROBOTS
 
 
 class PoseNavigator:
-    def __init__(self, namespace: str = None):
-        self.move_base_name = ""
+    def __init__(self, ros_namespace: Union[ROBOTS, str] = None):
 
-        if namespace is None:
+        name = ros_namespace
+
+        if isinstance(ros_namespace, ROBOTS):
+            name = ros_namespace.name
+            if ros_namespace == ROBOTS.HSRB:
+                self.move_base_name = '/move_base/move'
+                self.initial_pose_name = '/initialpose'
+                self.amcl_pose_name = '/amcl_pose'
+            elif ros_namespace == ROBOTS.TURTLE:
+                self.move_base_name = '/turtle/move_base/move'
+                self.initial_pose_name = '/turtle/initialpose'
+                self.amcl_pose_name = '/turtle/amcl_pose'
+            else:
+                rospy.logerr(f"Robot {ros_namespace.value} does not have a preset yet. Defaulting to no namespace")
+                ros_namespace = None
+
+        if isinstance(ros_namespace, str):
+            name = ros_namespace
+            self.move_base_name = f'/{ros_namespace}/move_base/move'
+            self.initial_pose_name = f'/{ros_namespace}/initialpose'
+            self.amcl_pose_name = f'/{ros_namespace}/amcl_pose'
+
+        if ros_namespace is None:
             self.move_base_name = '/move_base/move'
             self.initial_pose_name = "/initialpose"
             self.amcl_pose_name = '/amcl_pose'
-        elif namespace == 'turtle':
-            self.move_base_name = '/turtle/move_base/move'
-            self.initial_pose_name = "/turtle/initialpose"
-            self.amcl_pose_name = '/turtle/amcl_pose'
-        else:
-            rospy.logerr(f"namespace not defined yet. PoseNavigator for {namespace} will not work")
-            return
 
-        rospy.loginfo(f"Initialize move base for {namespace}")
+            ros_namespace = "Default"
+
+        rospy.loginfo(f"Initialize move base for {name}")
         global move_client
 
         self.client = actionlib.SimpleActionClient(self.move_base_name, MoveBaseAction)

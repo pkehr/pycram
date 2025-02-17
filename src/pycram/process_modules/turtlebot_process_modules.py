@@ -34,7 +34,7 @@ class TurtlebotNavigationReal(ProcessModule):
 
     def _execute(self, designator: MoveMotion) -> Any:
         rospy.logdebug(f"Sending goal to giskard to Move the robot")
-        move = PoseNavigator(namespace="turtle")
+        move = PoseNavigator(ros_namespace="turtle")
         # giskard.achieve_cartesian_goal(designator.target, robot_description.base_link, "map")
         move.pub_now(designator.target)
 
