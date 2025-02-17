@@ -46,7 +46,7 @@ def hsrb_transport_object(object_desig, placing_pose, placing_nav_pose=None):
 
     ParkArmsAction(arms=[Arms.LEFT]).resolve().perform()
 
-    PickUpAction(object_designator_description=[object_desig], arms=[Arms.LEFT],
+    PickUpAction(object_designator_description=object_desig, arms=[Arms.LEFT],
                  grasps=[Grasp.FRONT]).resolve().perform()
 
     ParkArmsAction(arms=[Arms.LEFT]).resolve().perform()

@@ -25,7 +25,7 @@ def main():
     pose_hsrb = Pose([4.5, 5, 0])
     pose_turtle = Pose([4, 3, 0])
 
-    hsrb = create_robot(ROBOTS.HSRB, pose=pose_hsrb, is_real=True)
+    hsrb = create_robot(ROBOTS.HSRB, pose=pose_hsrb)
     RobotStateUpdater("/tf", "/hsrb/joint_states", multirobot_name="hsrb")
     hsrb_desig = ObjectDesignatorDescription(names=["hsrb"])
 
