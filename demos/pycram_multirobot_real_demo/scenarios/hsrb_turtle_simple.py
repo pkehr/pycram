@@ -1,10 +1,10 @@
 import rospy
 
 from demos.pycram_multirobot_demo.setup.actions import actions
-from demos.utils.enums import ROBOTS, ENVIRONMENTS
+from demos.utils.enums import ENVIRONMENTS
 from demos.utils.object_spawner import set_environment, create_robot
 from pycram.datastructures.dataclasses import Color
-from pycram.datastructures.enums import WorldMode, Grasp, Arms, ObjectType
+from pycram.datastructures.enums import WorldMode, Grasp, Arms, ObjectType, ROBOTS
 from pycram.datastructures.pose import Pose
 from pycram.designator import ObjectDesignatorDescription
 from pycram.designators.action_designator import NavigateAction, MoveTorsoAction, PickUpAction

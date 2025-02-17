@@ -24,14 +24,14 @@ robot_desig_hsrb = ObjectDesignatorDescription(names=["hsrb"]).resolve()
 robot_color = Color(R=0.6, G=0.6, B=0.6, A=1)
 robot_hsrb.set_color(robot_color)
 RobotStateUpdater("/tf", "/hsrb/robot_state/joint_states", multirobot_name='hsrb')
-hsrb_move = PoseNavigator(namespace='hsrb')
+hsrb_move = PoseNavigator(ros_namespace='hsrb')
 
 # Spawn Turtle
 robot_turtle = Object("turtlebot", ObjectType.ROBOT, f"turtlebot{extension}")
 robot_desig_turtle = ObjectDesignatorDescription(names=["turtlebot"]).resolve()
 robot_color = Color(R=0.6, G=0.6, B=0.6, A=1)
 robot_turtle.set_color(robot_color)
-turtle_move = PoseNavigator(namespace='turtle')
+turtle_move = PoseNavigator(ros_namespace='turtle')
 
 kitchen = Object("kitchen", ObjectType.ENVIRONMENT, "pre_robocup_5.urdf")
 kitchen_desig = ObjectDesignatorDescription(names=["kitchen"])

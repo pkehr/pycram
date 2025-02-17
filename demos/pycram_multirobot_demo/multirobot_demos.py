@@ -9,8 +9,8 @@ from demos.pycram_multirobot_demo.scenarios.party_apartment import party_apartme
 from demos.pycram_multirobot_demo.scenarios.transporting_apartment import transporting_apartment
 from demos.pycram_multirobot_demo.scenarios.transporting_kitchen import transporting_kitchen
 from demos.pycram_multirobot_demo.scenarios.triple_robot import triple_robots
-from demos.utils.enums import DEMOS, ROBOTS
-from pycram.datastructures.enums import WorldMode
+from demos.utils.enums import DEMOS
+from pycram.datastructures.enums import WorldMode, ROBOTS
 from pycram.ros_utils.viz_marker_publisher import VizMarkerPublisher
 from pycram.worlds.bullet_world import BulletWorld
 

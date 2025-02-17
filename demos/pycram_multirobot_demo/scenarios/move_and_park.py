@@ -4,9 +4,8 @@ import rospy
 
 from demos.pycram_multirobot_demo.setup.actions import actions
 from demos.utils.launcher import launch_all_robots
-from demos.utils.enums import ROBOTS
 from demos.utils.object_spawner import create_robot
-from pycram.datastructures.enums import Arms
+from pycram.datastructures.enums import Arms, ROBOTS
 from pycram.datastructures.pose import Pose
 from pycram.process_module import simulated_robot
 
