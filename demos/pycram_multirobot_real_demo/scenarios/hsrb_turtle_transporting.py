@@ -7,7 +7,7 @@ from pycram.external_interfaces.navigate import PoseNavigator
 # new imports
 from pycram.object_descriptors.urdf import ObjectDescription
 from pycram.process_module import real_robot
-from pycram.ros.robot_state_updater import RobotStateUpdater
+from pycram.ros_utils.robot_state_updater import RobotStateUpdater
 from pycram.utilities.robocup_utils import TextToSpeechPublisher, ImageSwitchPublisher, \
     HSRBMoveGripperReal, rotated_quaternion
 from pycram.world_concepts.world_object import Object

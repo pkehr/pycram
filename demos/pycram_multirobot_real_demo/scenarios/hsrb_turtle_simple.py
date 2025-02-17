@@ -9,7 +9,7 @@ from pycram.datastructures.pose import Pose
 from pycram.designator import ObjectDesignatorDescription
 from pycram.designators.action_designator import NavigateAction, MoveTorsoAction, PickUpAction
 from pycram.process_module import real_robot, semi_real_robot, with_real_robot
-from pycram.ros.robot_state_updater import RobotStateUpdater
+from pycram.ros_utils.robot_state_updater import RobotStateUpdater
 from pycram.ros.viz_marker_publisher import VizMarkerPublisher
 from pycram.world_concepts.world_object import Object
 from pycram.worlds.bullet_world import BulletWorld

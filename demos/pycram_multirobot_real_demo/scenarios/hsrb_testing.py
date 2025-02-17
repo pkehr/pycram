@@ -9,7 +9,7 @@ from pycram.designators.motion_designator import TalkingMotion
 from pycram.external_interfaces.navigate import PoseNavigator
 from pycram.process_module import real_robot
 import pycram.external_interfaces.giskard as giskardpy
-from pycram.ros.robot_state_updater import RobotStateUpdater
+from pycram.ros_utils.robot_state_updater import RobotStateUpdater
 from pycram.designators.object_designator import *
 from std_msgs.msg import String, Bool
 from pycram.utilities.robocup_utils import TextToSpeechPublisher, ImageSwitchPublisher, \
