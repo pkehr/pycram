@@ -179,6 +179,35 @@ class BulletWorld(World):
     def perform_collision_detection(self) -> None:
         p.performCollisionDetection(physicsClientId=self.id)
 
+    @staticmethod
+    def calculate_min_distance(object1: Object, object2: Object, safety_distance: float = 0.0,
+                               allowed_robot_links: List[str] = []) -> float:
+        """
+        Calculates the minimum distance between two objects, excluding allowed links.
+
+        Args:
+            object1 (Object): The first object (e.g., the robot).
+            object2 (Object): The second object.
+            safety_distance (float): The safety distance to be considered.
+            allowed_robot_links (List[str]): Robot link names allowed to contact the object.
+
+        Returns:
+            float: Minimum distance between the two objects, ignoring allowed links.
+        """
+        closest_points = p.getClosestPoints(object1.id, object2.id, distance=safety_distance,
+                                            physicsClientId=World.current_world.id)
+
+        min_distance = float('inf')
+        for point in closest_points:
+            link1_name = object1.get_link_by_id(point[3]).name
+
+            if link1_name in allowed_robot_links:
+                continue
+
+            min_distance = min(min_distance, point[8])
+
+        return min_distance
+
     def get_object_contact_points(self, obj: Object) -> ContactPointsList:
         """
         Get the contact points of the object with akk other objects in the world. The contact points are returned as a

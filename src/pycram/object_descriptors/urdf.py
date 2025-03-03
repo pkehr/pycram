@@ -104,6 +104,35 @@ class JointDescription(AbstractJointDescription):
         return bool(self.parsed_description.limit)
 
     @property
+    def mimic_of(self) -> Union[str, None]:
+        """
+        :return: The name of the joint that this joint is a mimic of, or None if this joint is not a mimic.
+        """
+        return self.parsed_description.mimic.joint if self.parsed_description.mimic else None
+
+    @property
+    def mimic_multiplier(self) -> Union[float, None]:
+        """
+        :return: The multiplier of the mimic joint, or None if this joint is not a mimic.
+        """
+        if self.parsed_description.mimic:
+            if self.parsed_description.mimic.multiplier is None:
+                return 1.0
+            return self.parsed_description.mimic.multiplier
+        return None
+
+    @property
+    def mimic_offset(self) -> Union[float, None]:
+        """
+        :return: The offset of the mimic joint, or None if this joint is not a mimic.
+        """
+        if self.parsed_description.mimic:
+            if self.parsed_description.mimic.offset is None:
+                return 0.0
+            return self.parsed_description.mimic.offset
+        return None
+    
+    @property
     def type(self) -> JointType:
         """
         :return: The type of this joint.

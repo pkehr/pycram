@@ -222,7 +222,10 @@ class GoalValidator:
         """
         The relative initial error (relative to the acceptable error).
         """
-        return np.maximum(self.initial_error, 1e-3)
+        if self.initial_error is None:
+            return np.full_like(self.acceptable_error, 1e-3)
+        else:
+            return np.maximum(self.initial_error, 1e-3)
 
     def get_relative_error(self, error: Any, threshold: Optional[float] = 1e-3) -> np.ndarray:
         """
@@ -419,7 +422,7 @@ class JointPositionGoalValidator(GoalValidator):
         :param acceptable_error: The acceptable error.
         """
         if acceptable_error is None:
-            self.error_checker.acceptable_error = self.acceptable_orientation_error if joint_type == JointType.REVOLUTE\
+            self.error_checker.acceptable_error = self.acceptable_orientation_error if joint_type == JointType.REVOLUTE \
                 else self.acceptable_position_error
         super().register_goal(goal_value, current_value_getter_input, initial_value, acceptable_error)
 
@@ -467,7 +470,6 @@ def validate_object_pose(pose_setter_func):
     """
 
     def wrapper(world: 'World', obj: 'Object', pose: 'Pose'):
-
         world.pose_goal_validator.register_goal(pose, obj)
 
         if not pose_setter_func(world, obj, pose):
@@ -488,7 +490,6 @@ def validate_multiple_object_poses(pose_setter_func):
     """
 
     def wrapper(world: 'World', object_poses: Dict['Object', 'Pose']):
-
         world.multi_pose_goal_validator.register_goal(list(object_poses.values()),
                                                       list(object_poses.keys()))
 
@@ -510,7 +511,6 @@ def validate_joint_position(position_setter_func):
     """
 
     def wrapper(world: 'World', joint: 'Joint', position: float):
-
         joint_type = joint.type
         world.joint_position_goal_validator.register_goal(position, joint_type, joint)
 

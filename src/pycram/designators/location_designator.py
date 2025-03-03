@@ -4,6 +4,7 @@ import time
 from typing_extensions import List, Union, Iterable, Optional, Callable
 
 from .object_designator import ObjectDesignatorDescription, ObjectPart
+from ..datastructures.dataclasses import AxisAlignedBoundingBox
 from ..datastructures.world import World, UseProspectionWorld
 from ..local_transformer import LocalTransformer
 from ..world_reasoning import link_pose_for_joint_config
@@ -299,7 +300,7 @@ class SemanticCostmapLocation(LocationDesignatorDescription):
     class Location(LocationDesignatorDescription.Location):
         pass
 
-    def __init__(self, urdf_link_name, part_of, for_object=None, resolver=None, margin_cm=0.2, inner_margin_cm=0.1):
+    def __init__(self, urdf_link_name, part_of, for_object=None, resolver=None, margin_cm=20):
         """
         Creates a distribution over a urdf link to sample poses which are on this link. Can be used, for example, to find
         poses that are on a table. Optionally an object can be given for which poses should be calculated, in that case
@@ -315,7 +316,6 @@ class SemanticCostmapLocation(LocationDesignatorDescription):
         self.part_of: ObjectDesignatorDescription.Object = part_of
         self.for_object: Optional[ObjectDesignatorDescription.Object] = for_object
         self.margin_cm = margin_cm
-        self.inner_margin_cm = inner_margin_cm
 
     def ground(self) -> Location:
         """
@@ -333,34 +333,54 @@ class SemanticCostmapLocation(LocationDesignatorDescription):
 
         :yield: An instance of SemanticCostmapLocation.Location with the found valid position of the Costmap.
         """
-        sem_costmap = SemanticCostmap(self.part_of.world_object, self.urdf_link_name, margin_cm=self.margin_cm,
-                                      inner_margin_cm=self.inner_margin_cm)
+        sem_costmap = SemanticCostmap(self.part_of.world_object, self.urdf_link_name, margin_cm=self.margin_cm)
 
         sem_costmap.visualize()
 
         height_offset = 0
         if self.for_object:
             min_p, max_p = self.for_object.world_object.get_axis_aligned_bounding_box().get_min_max_points()
+            min_p, max_p = self.get_aabb_for_link().get_min_max_points()
             height_offset = (max_p.z - min_p.z) / 2
         for maybe_pose in PoseGenerator(sem_costmap):
             maybe_pose.position.z += height_offset
             yield self.Location(maybe_pose)
 
+    def get_aabb_for_link(self) -> AxisAlignedBoundingBox:
+        """
+        Returns the axis aligned bounding box (AABB) of the link provided when creating this costmap. To try and let the
+        AABB as close to the actual object as possible, the Object will be rotated such that the link will be in the
+        identity orientation.
+
+        :return: Two points in world coordinate space, which span a rectangle
+        """
+
+        with UseProspectionWorld():
+            prospection_object = World.current_world.get_prospection_object_for_object(self.for_object.world_object)
+            original_orientation = prospection_object.get_orientation()
+            prospection_object.set_orientation(Pose(orientation=[0, 0, 0, 1]))
+            link_name = next(iter(prospection_object.links))
+            link = prospection_object.links[link_name]
+            link_pose_trans = link.transform
+            inverse_trans = link_pose_trans.invert()
+            prospection_object.set_orientation(inverse_trans.to_pose().orientation)
+            aabb = link.get_axis_aligned_bounding_box()
+            prospection_object.set_orientation(original_orientation)
+        return aabb
 
 def find_placeable_pose(enviroment_link, enviroment_desig, robot_desig, arm, world,
-                        margin_cm=0.2, inner_margin_cm=0.2, object_desig=None):
+                        margin_cm=0.2, inner_margin_cm=0.2, object_desig=None, clearance_radius=0.25):
     # rospy.loginfo("Create a SemanticCostmapLocation instance")
     location_desig = SemanticCostmapLocation(urdf_link_name=enviroment_link,
                                              part_of=enviroment_desig,
-                                             for_object=object_desig, margin_cm=margin_cm,
-                                             inner_margin_cm=inner_margin_cm)
+                                             for_object=object_desig, margin_cm=margin_cm)
 
     # rospy.loginfo("Iterate through the locations in the location designator")
     empty_loc = []
     for location in location_desig:
 
         # Check if the location is clear of objects
-        if not is_location_clear(location.pose, world):
+        if not is_location_clear(location.pose, world, clearance_radius=clearance_radius):
             continue  # Skip this location if it's not clear
 
         empty_loc.append(location.pose)
@@ -374,12 +394,14 @@ def is_location_clear(location_pose, world, clearance_radius=0.25):
     Implement the logic to check for nearby objects in the environment.
     """
     for obj in world.current_world.objects:
-        if obj.type != ObjectType.ENVIRONMENT and obj.type != ObjectType.ROBOT:
+        if obj.obj_type != ObjectType.ENVIRONMENT and obj.obj_type != ObjectType.ROBOT:
             # Calculate the Euclidean distance between the object and the location
             obj_position = obj.pose.position  # Assuming 'pose' attribute with 'position'
-            distance = ((obj_position.x - location_pose.position.x) ** 2 +
-                        (obj_position.y - location_pose.position.y) ** 2 +
-                        (obj_position.z - location_pose.position.z) ** 2) ** 0.6
+            # distance = ((obj_position.x - location_pose.position.x) ** 2 +
+            #             (obj_position.y - location_pose.position.y) ** 2 +
+            #             (obj_position.z - location_pose.position.z) ** 2) ** 0.6
+            distance = ((obj_position.y - location_pose.position.y) ** 2 +
+                        (obj_position.z - location_pose.position.z) ** 2) ** 0.5
             if distance < clearance_radius:
                 return False  # An object is within the clearance radius
     return True  # No objects are within the clearance radius

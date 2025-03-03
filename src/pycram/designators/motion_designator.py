@@ -314,7 +314,10 @@ class DetectingMotion(BaseMotion):
             except:
                 return world_object
 
-
+        if isinstance(world_object, dict):
+            if self.object_type == ObjectType.ENVIRONMENT:
+                return world_object
+            world_object = world_object.get(self.object_type.name.lower()).world_object
         return ObjectDesignatorDescription.Object(world_object.name, world_object.obj_type,
                                                   world_object)
 
