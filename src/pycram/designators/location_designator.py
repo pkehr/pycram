@@ -369,7 +369,7 @@ class SemanticCostmapLocation(LocationDesignatorDescription):
         return aabb
 
 def find_placeable_pose(enviroment_link, enviroment_desig, robot_desig, arm, world,
-                        margin_cm=0.2, inner_margin_cm=0.2, object_desig=None, clearance_radius=0.25):
+                        margin_cm=20, inner_margin_cm=0.2, object_desig=None, clearance_radius=0.25):
     # rospy.loginfo("Create a SemanticCostmapLocation instance")
     location_desig = SemanticCostmapLocation(urdf_link_name=enviroment_link,
                                              part_of=enviroment_desig,
@@ -380,7 +380,7 @@ def find_placeable_pose(enviroment_link, enviroment_desig, robot_desig, arm, wor
     for location in location_desig:
 
         # Check if the location is clear of objects
-        if not is_location_clear(location.pose, world, clearance_radius=clearance_radius):
+        if not is_location_clear(location.pose, world, clearance_radius=clearance_radius, for_object=object_desig):
             continue  # Skip this location if it's not clear
 
         empty_loc.append(location.pose)
@@ -388,13 +388,15 @@ def find_placeable_pose(enviroment_link, enviroment_desig, robot_desig, arm, wor
     return empty_loc
 
 
-def is_location_clear(location_pose, world, clearance_radius=0.25):
+def is_location_clear(location_pose, world, clearance_radius=0.25, for_object=None):
     """
     Check if the specified location is clear of objects within the given clearance radius.
     Implement the logic to check for nearby objects in the environment.
     """
     for obj in world.current_world.objects:
         if obj.obj_type != ObjectType.ENVIRONMENT and obj.obj_type != ObjectType.ROBOT:
+            if for_object and obj == for_object.world_object:
+                continue
             # Calculate the Euclidean distance between the object and the location
             obj_position = obj.pose.position  # Assuming 'pose' attribute with 'position'
             # distance = ((obj_position.x - location_pose.position.x) ** 2 +

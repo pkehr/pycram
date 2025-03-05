@@ -27,7 +27,7 @@ from pycram.world_concepts.world_object import Object
 from pycram.worlds.bullet_world import BulletWorld
 
 demo_mode = simulated_robot
-demo_mode = real_robot
+# demo_mode = real_robot
 
 world = BulletWorld(WorldMode.GUI)
 # v = VizMarkerPublisher()
@@ -58,7 +58,7 @@ else:
     cereal1 = Object("cereal1", ObjectType.BREAKFAST_CEREAL, "breakfast_cereal.stl", pose=Pose([5.4, 4.1, 1.16]))  # Pose([5.4, 4.1, 1.16])
     bowl = Object("bowl1", ObjectType.BOWL, "bowl.stl", pose=Pose([5.4, 3.8, 0.57]))  # Pose([5.4, 3.8, 0.57])
     # [2.5, 5.717920690528091, 0.715]
-    milk2 = Object("milk2", ObjectType.MILK, "milk.stl", pose=Pose([2.6, 4.8, 0.81], [0, 0, 1, 1]))
+    # milk2 = Object("milk2", ObjectType.MILK, "milk.stl", pose=Pose([2.6, 4.8, 0.81], [0, 0, 1, 1]))
     cereal2 = Object("cereal2", ObjectType.BREAKFAST_CEREAL, "breakfast_cereal.stl",
                      pose=Pose([2, 4.8, 0.82], [0, 0, 1, 1]))
     bowl2 = Object("bowl2", ObjectType.BOWL, "bowl.stl", pose=Pose([2.3, 4.8, 0.75], [0, 0, 1, 1]))
@@ -196,10 +196,9 @@ popcorn_frame = "popcorn_table:p_table:table_front_edge_center"
 
 
 def find_group(obj_type):
-    obj_lower = obj_type.lower()
     for group, items in groups.items():
         for item in items:
-            if obj_lower in item.lower() or item.lower() in obj_lower:
+            if obj_type in item.lower() or item.lower() in obj_type:
                 return group
     return None
 
@@ -417,7 +416,8 @@ def placeorpark(object_name, object, grasp, talk_bool, target_location, link, pi
     while not park:
         print("waiting for park")
         rospy.sleep(0.1)
-    giskard.update_from_giskard(robot, park)
+    if demo_mode == real_robot:
+        giskard.update_from_giskard(robot, park)
 
 
 # noteme this is with driving! return grasped_bool, grasp, group, object, obj_id, groups_on_table
@@ -444,16 +444,21 @@ def process_pick_up_objects(talk_bool):
         dictionary = table_obj
         for value in dictionary.values():
             try:
-                group = find_group(value.obj_type)
+                if demo_mode == real_robot:
+                    obj_lower = value.obj_type.lower()
+                else:
+                    obj_lower = value.obj_type.name.lower()
+                group = find_group(obj_lower)
                 if group == "Containers and Drinkware" and not handled_cereal:
                     continue
-                if any(cereal_type.lower() in value.obj_type.lower() for cereal_type in cereal_types) and handled_cereal:
+
+                if any(cereal_type.lower() in obj_lower for cereal_type in cereal_types) and handled_cereal:
                     continue
                 groups_on_table[value.name] = [value, group]
             except AttributeError:
                 pass
         giskard.sync_worlds()
-    except PerceptionObjectNotFound:
+    except PerceptionObjectNotFound as e:
         talk_pub("I am Done, I hope I did good!")
         return
 
@@ -474,7 +479,7 @@ def process_pick_up_objects(talk_bool):
 
             grasp_set = None
             # if to far behind the front face were robots look on the table
-            if object_raw.obj_type == "Metalbowl":
+            if object_raw.obj_type in ["Metalbowl", ObjectType.BOWL]:
                 grasp_set = Grasp.TOP
 
             # noteme this saves the group
@@ -624,7 +629,8 @@ def process_pick_up_objects(talk_bool):
         while not park:
             print("waiting for park")
             rospy.sleep(0.1)
-        giskard.update_from_giskard(robot, park)
+        if demo_mode == real_robot:
+            giskard.update_from_giskard(robot, park)
         if demo_mode == real_robot:
             if grasp_listener.check_grasp():
                 talk_pub("Grasped a object")
@@ -669,7 +675,11 @@ def process_objects_in_shelf(talk_bool):
     for value in dictionary.values():
 
         try:
-            group = find_group(value.obj_type)
+            if demo_mode == real_robot:
+                obj_lower = value.obj_type.lower()
+            else:
+                obj_lower = value.obj_type.name.lower()
+            group = find_group(obj_lower)
             link = get_closet_link_to_pose(value.pose)
             groups_in_shelf[group] = [value.pose, link, value]
 
@@ -687,7 +697,11 @@ def process_objects_in_shelf(talk_bool):
     for value in dictionary.values():
 
         try:
-            group = find_group(value.obj_type)
+            if demo_mode == real_robot:
+                obj_lower = value.obj_type.lower()
+            else:
+                obj_lower = value.obj_type.name.lower()
+            group = find_group(obj_lower)
             link = get_closet_link_to_pose(value.pose)
             groups_in_shelf[group] = [value.pose, link, value]
 
@@ -715,7 +729,8 @@ def demo(step):
         while not park:
             print("waiting for park")
             rospy.sleep(0.1)
-        giskard.update_from_giskard(robot, park)
+            if demo_mode == real_robot:
+                giskard.update_from_giskard(robot, park)
 
         if step <= 1:
             talk_pub("driving", True)
@@ -747,7 +762,11 @@ def demo(step):
 
         if step <= 3:
             bowl = None
-            if any(cereal_type.lower() in object_raw.obj_type.lower() for cereal_type in cereal_types):
+            if demo_mode == real_robot:
+                obj_type = object_raw.obj_type.lower()
+            else:
+                obj_type = object_raw.obj_type.name.lower()
+            if any(cereal_type.lower() in obj_type for cereal_type in cereal_types):
                 navigate_to(table_pose)
                 if demo_mode == simulated_robot:
                     obj_type = ObjectType.BOWL
@@ -767,7 +786,8 @@ def demo(step):
                 while not park:
                     print("waiting for park")
                     rospy.sleep(0.1)
-                giskard.update_from_giskard(robot, park)
+                if demo_mode == real_robot:
+                    giskard.update_from_giskard(robot, park)
                 navigate_to(table_pose_pre)
                 placeorpark(object.name, object, grasp, talk_bool, original_pose, pick_table_link, False)
 
@@ -780,11 +800,8 @@ def demo(step):
                 placeorpark(object.name, object, grasp, talk_bool, place_pose, link, False)
             demo(2)
 
-        print()
-
-
 # previous_value = fts.get_last_value()
 #
 # monitor_func_place()
-demo(2)
+demo(0)
 
