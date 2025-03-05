@@ -41,7 +41,7 @@ def create_robot(robot: ROBOTS, pose=None):
         return Object("armar6", ObjectType.ROBOT, "armar6.urdf", pose=pose)
 
     elif robot == ROBOTS.STRETCH:
-        return Object("stretch", ObjectType.ROBOT, "stretch.urdf", pose=pose)
+        return Object("stretch", ObjectType.ROBOT, "stretch_description.urdf", pose=pose)
 
     elif robot == ROBOTS.ICUB:
         return Object("iCub", ObjectType.ROBOT, "iCub.urdf", pose=pose)
