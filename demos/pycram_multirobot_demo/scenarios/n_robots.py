@@ -12,9 +12,17 @@ from pycram.process_module import simulated_robot
 
 def create_default_spawn_poses(amount_of_robots: int) -> List[Pose]:
     poses = []
+    x_offset = 0
+
+    row_break = 4
+
 
     for i in range(amount_of_robots):
-        poses.append(Pose([0, i + 2, 0]))
+        if i == row_break:
+            x_offset += 2
+
+        y_position = ((i % row_break) * 2) - 5
+        poses.append(Pose([x_offset, y_position, 0]))
 
     return poses
 
