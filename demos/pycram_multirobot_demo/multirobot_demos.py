@@ -5,6 +5,7 @@ from ipywidgets import HTML
 
 from demos.pycram_multirobot_demo.scenarios.move_and_park import move_and_park
 from demos.pycram_multirobot_demo.scenarios.multithread_testing import multithreaded_testing
+from demos.pycram_multirobot_demo.scenarios.n_robots import n_robots
 from demos.pycram_multirobot_demo.scenarios.party_apartment import party_apartment
 from demos.pycram_multirobot_demo.scenarios.transporting_apartment import transporting_apartment
 from demos.pycram_multirobot_demo.scenarios.transporting_kitchen import transporting_kitchen
@@ -31,6 +32,8 @@ def multirobot_demo(robots: List[ROBOTS], demo=DEMOS.APARTMENT, mode=WorldMode.G
         multithreaded_testing(robots=robots, launch_robots=launch_robots)
     elif demo == DEMOS.PARTY:
         party_apartment(robots=robots, launch_robots=launch_robots)
+    elif demo == DEMOS.N_ROBOTS:
+        n_robots(robots=robots, launch_robots=launch_robots)
 
 
 def multirobot_demo_binder(robots, environment, mode=WorldMode.DIRECT, launch_robots=False):
@@ -59,7 +62,7 @@ if __name__ == '__main__':
         ROBOTS.ICUB
     ]
 
-    demo = DEMOS.PARTY
+    demo = DEMOS.N_ROBOTS
     mode = WorldMode.DIRECT
 
     multirobot_demo(robots=robots, demo=demo, mode=mode)

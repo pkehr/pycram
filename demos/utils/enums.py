@@ -25,6 +25,7 @@ class ENVIRONMENTS(Enum):
 
 class DEMOS(Enum):
     SIMPLE = auto()
+    N_ROBOTS = auto()
     APARTMENT = auto()
     KITCHEN = auto()
     TRIPLE = auto()
