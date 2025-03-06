@@ -59,7 +59,11 @@ if __name__ == '__main__':
         ROBOTS.PR2,
         ROBOTS.TIAGO,
         ROBOTS.JUSTIN,
-        ROBOTS.ICUB
+        ROBOTS.ICUB,
+        ROBOTS.ARMAR6,
+        ROBOTS.HSRB,
+        ROBOTS.DONBOT,
+        ROBOTS.STRETCH
     ]
 
     demo = DEMOS.N_ROBOTS
