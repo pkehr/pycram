@@ -1,3 +1,4 @@
+import rospy
 from typing_extensions import Optional
 
 from demos.pycram_hsrb_real_test_demos.utils.startup import startup
@@ -264,6 +265,12 @@ def navigate_and_detect(location_name: NavigatePose):
     :return: tupel of State and dictionary of found objects in the FOV
     """
     # TalkingMotion("Navigating").perform()
+    annotator = get_used_annotator_list(Demos.CLEAN_THE_TABLE)
+    isp = ImageSendPublisher(sub_topic=annotator[0])
+
+    text_to_speech_publisher.pub_now("look at my screen please")
+    rospy.sleep(0.5)
+    image_switch_publisher.pub_now(ImageEnum.GENERATED_TEXT.value)
 
     if location_name == NavigatePose.SHELF:
         NavigateAction([NavigatePose.SHELF.value]).resolve().perform()
@@ -276,21 +283,19 @@ def navigate_and_detect(location_name: NavigatePose):
                               NavigatePose.POPCORN_TABLE.value.pose.position.y, 0],
                              NavigatePose.POPCORN_TABLE.value.pose.orientation)]).resolve().perform()
         MoveTorsoAction([0.12]).resolve().perform()
+        image_switch_publisher.pub_now(ImageEnum.SEARCH.value)
+        isp.activate_subscriber()
         object_desig1 = try_detect(Pose([robot.get_pose().pose.position.x, 4.9, 0.35], [0, 0, 0.7, 0.7]))
         objects_list1 = get_objects(object_desig1)
-        annotator = get_used_annotator_list(Demos.CLEAN_THE_TABLE)
-        isp = ImageSendPublisher(sub_topic=annotator[0])
-        isp.activate_subscriber()
         image_switch_publisher.pub_now(ImageEnum.PERCEPTION_RESULT.value)
         NavigateAction([Pose([NavigatePose.POPCORN_TABLE.value.pose.position.x + 0.4,
                               NavigatePose.POPCORN_TABLE.value.pose.position.y, 0],
                              NavigatePose.POPCORN_TABLE.value.pose.orientation)]).resolve().perform()
         MoveTorsoAction([0.12]).resolve().perform()
+        image_switch_publisher.pub_now(ImageEnum.SEARCH.value)
+        isp.activate_subscriber()
         object_desig2 = try_detect(Pose([robot.get_pose().pose.position.x, 4.9, 0.35], [0, 0, 0.7, 0.7]))
         objects_list2 = get_objects(object_desig2)
-        annotator = get_used_annotator_list(Demos.CLEAN_THE_TABLE)
-        isp = ImageSendPublisher(sub_topic=annotator[0])
-        isp.activate_subscriber()
         image_switch_publisher.pub_now(ImageEnum.PERCEPTION_RESULT.value)
         objects_list = []
         for object in objects_list1 + objects_list2:

@@ -45,8 +45,8 @@ KitchenStateUpdater("/tf", "/iai_kitchen/joint_states")
 # thus they have to commented out in the sync_worlds function. When in the simulated mode, these
 # functions have to be called, in order to move the robot inside giskard.
 # I have marked all lines that need to be adjusted.
-demo_mode = simulated_robot
-# demo_mode = real_robot
+# demo_mode = simulated_robot
+demo_mode = real_robot
 
 # Enable or disable the talk functionality
 talk_bool: bool = True
@@ -58,8 +58,8 @@ shelf_left_door_handle = "shelf_billy:shelf_billy:shelf_door_left:handle"
 shelf_left_door_joint = "shelf_billy:shelf_billy:shelf_door_left:joint"
 
 # Variables needed for the right shelf door opening
-shelf_right_door_exists = False
-start_with_right_shelf_door_open = False
+shelf_right_door_exists = True
+start_with_right_shelf_door_open = True
 shelf_right_door_handle = "shelf_billy:shelf_billy:shelf_door_right:handle"
 shelf_right_door_joint = "shelf_billy:shelf_billy:shelf_door_right:joint"
 shelf_door_open_state = -1.7
@@ -144,7 +144,7 @@ objects = ["Fork", "Pitcher", "Bleachcleanserbottle", "Crackerbox", "Minisoccerb
 config_for_placing = {'arm_flex_joint': 0.20, 'arm_lift_joint': 0.6, 'arm_roll_joint': 0,
                       'wrist_flex_joint': -1.6, 'wrist_roll_joint': 0, }
 perceive_config = {'arm_lift_joint': 0.25, 'arm_roll_joint': 1.5, 'wrist_flex_joint': -1.5, }
-park_config = {'arm_flex_joint': -1.1, 'arm_lift_joint': 0, 'arm_roll_joint': 0,
+park_config = {'arm_flex_joint': 0, 'arm_lift_joint': 0, 'arm_roll_joint': 0,
                'wrist_flex_joint': -1.9, 'wrist_roll_joint': 0}
 pickup_config = {'arm_flex_joint': -1.1, 'arm_lift_joint': 1.15, 'arm_roll_joint': 0,
                  'wrist_flex_joint': -1.6, 'wrist_roll_joint': 0, }
@@ -439,21 +439,21 @@ def place_object(object_name, object, grasp, target_location, talk_bool):
     # of the odom problem me and simon faced, comment out the second one and use the first one instead
     ############################
     ########## No sequence goals
-    # giskard_return = giskard.achieve_sequence_pick_up([object_to_map_grasp_prepose], demo_mode)
-    # while not giskard_return:
-    #     rospy.sleep(0.1)
-    # giskard.update_from_giskard(robot, giskard_return)
-    #
-    # giskard_return = giskard.achieve_sequence_pick_up([object_to_map_grasp], demo_mode)
-    # while not giskard_return:
-    #     rospy.sleep(0.1)
-    # giskard.update_from_giskard(robot, giskard_return)
-    ############################
-    ########## Sequence goals
-    giskard_return = giskard.achieve_sequence_pick_up([object_to_map_grasp_prepose, object_to_map_grasp], demo_mode)
+    giskard_return = giskard.achieve_sequence_pick_up([object_to_map_grasp_prepose], demo_mode)
     while not giskard_return:
         rospy.sleep(0.1)
     giskard.update_from_giskard(robot, giskard_return)
+
+    giskard_return = giskard.achieve_sequence_pick_up([object_to_map_grasp], demo_mode)
+    while not giskard_return:
+        rospy.sleep(0.1)
+    giskard.update_from_giskard(robot, giskard_return)
+    ############################
+    ########## Sequence goals
+    # giskard_return = giskard.achieve_sequence_pick_up([object_to_map_grasp_prepose, object_to_map_grasp], demo_mode)
+    # while not giskard_return:
+    #     rospy.sleep(0.1)
+    # giskard.update_from_giskard(robot, giskard_return)
     ##########################################################
 
     # config_after_place = {'arm_lift_joint': 0.0}
@@ -741,7 +741,10 @@ def process_objects_in_shelf(talk_bool):
 
     talk_pub("perceiving", talk_bool=talk_bool)
 
-    shelf_obj = DetectAction(technique='all').resolve().perform()
+    try:
+        shelf_obj = DetectAction(technique='all').resolve().perform()
+    except PerceptionObjectNotFound:
+        shelf_obj = {}
     giskard.sync_worlds()
     dictionary = shelf_obj
     for value in dictionary.values():
@@ -762,7 +765,10 @@ def process_objects_in_shelf(talk_bool):
 
     talk_pub("perceiving", talk_bool=talk_bool)
 
-    shelf_obj = DetectAction(technique='all').resolve().perform()
+    try:
+        shelf_obj = DetectAction(technique='all').resolve().perform()
+    except PerceptionObjectNotFound:
+        shelf_obj = {}
     giskard.sync_worlds()
     dictionary = shelf_obj
     for value in dictionary.values():
@@ -797,8 +803,8 @@ def demo(step):
         while not park:
             print("waiting for park")
             rospy.sleep(0.1)
-            if demo_mode == real_robot:
-                giskard.update_from_giskard(robot, park)
+        if demo_mode == real_robot:
+            giskard.update_from_giskard(robot, park)
 
         if step <= 1:
             talk_pub("driving", talk_bool)
@@ -814,6 +820,7 @@ def demo(step):
                 giskard_return = giskard.open_doorhandle(shelf_left_door_handle)
                 giskard.update_from_giskard(robot, giskard_return)
                 MoveGripperMotion(GripperState.OPEN, Arms.LEFT).perform()
+                # giskard.billy_shelf_open(shelf_pose)
 
             if not start_with_right_shelf_door_open and shelf_right_door_exists:
                 offset = Vector3()
@@ -828,6 +835,12 @@ def demo(step):
                 MoveGripperMotion(GripperState.OPEN, Arms.LEFT).perform()
 
             groups_in_shelf = process_objects_in_shelf(talk_bool)
+            park = park_arms()
+            while not park:
+                print("waiting for park")
+                rospy.sleep(0.1)
+            if demo_mode == real_robot:
+                giskard.update_from_giskard(robot, park)
             navigate_to(shelf_pose_drive_back, interrupt_bool=False)
 
         if step <= 2:

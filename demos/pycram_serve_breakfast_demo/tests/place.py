@@ -71,9 +71,8 @@ with (real_robot):
         obj_list.append(value)
     # obj_list = sort_objects(object_desig,  wished_sorted_obj_list=["Milkpack"])
 
-    MoveJointsMotion(list(pre_pick_place_config.keys()), list(pre_pick_place_config.values())).perform()
-
-    PickUpAction(obj_list[0], [Arms.LEFT], [Grasp.FRONT]).resolve().perform()
+    # MoveJointsMotion(list(pre_pick_place_config.keys()), list(pre_pick_place_config.values())).perform()
+    PickUpAction(obj_list[0], [Arms.LEFT], [Grasp.TOP]).resolve().perform()
 
     if pickup == "shelf":
         # shelf pickup
