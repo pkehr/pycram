@@ -60,10 +60,10 @@ def demo(step: int):
         # NavigateAction([greet_guest_pose]).resolve().perform()
 
         # set neutral pose
-        image_switch_publisher.pub_now(ImageEnum.HI.value)
-        MoveJointsMotion(["head_tilt_joint"], [0.0]).perform()
-        MoveJointsMotion(["head_pan_joint"], [0.0]).perform()
-        ParkArmsAction([Arms.LEFT]).resolve().perform()
+        # image_switch_publisher.pub_now(ImageEnum.HI.value)
+        # MoveJointsMotion(["head_tilt_joint"], [0.0]).perform()
+        # MoveJointsMotion(["head_pan_joint"], [0.0]).perform()
+        # ParkArmsAction([Arms.LEFT]).resolve().perform()
 
         if step <= 1:
 
@@ -113,6 +113,7 @@ def demo(step: int):
             LookAtAction([look_person_drinks]).resolve().perform()
             DetectAction(technique='human', state="start").resolve().perform()
             HeadFollowMotion(state="start").perform()
+            image_switch_publisher.pub_now(ImageEnum.CLOCK.value)
             TalkingMotion("what do you do in your free time?").perform()
             rospy.sleep(1.5)
             nlp.store_and_answer_hobby(guest1)
@@ -241,6 +242,7 @@ def demo(step: int):
             rospy.sleep(1)
             TalkingMotion("i love cleaning up this table").perform()
             rospy.sleep(1.5)
+            image_switch_publisher.pub_now(ImageEnum.CLOCK.value)
             TalkingMotion("what do you do in your free time?").perform()
             rospy.sleep(1.5)
             nlp.store_and_answer_hobby(guest2)
@@ -291,4 +293,4 @@ def demo(step: int):
             MoveGripperMotion(GripperState.OPEN, Arms.LEFT).perform()
 
 
-demo(0)
+demo(4)

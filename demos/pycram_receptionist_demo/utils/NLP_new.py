@@ -70,7 +70,7 @@ class NLP_Helper:
         rospy.loginfo("nlp start")
         self.nlp_pub.publish("start listening")
         rospy.sleep(2.1)
-        self.image_switch_publisher.pub_now(ImageEnum.TALK.value)
+        self.image_switch_publisher.pub_now(ImageEnum.TALKING_DUMMIES.value)
 
         # wait for nlp answer
         start_time = time.time()
@@ -110,12 +110,13 @@ class NLP_Helper:
         trys = 0
 
         while trys < 2:
+            self.image_switch_publisher.pub_now(ImageEnum.CLOCK.value)
             TalkingMotion("i am sorry, please repeat your name").perform()
             rospy.sleep(1.2)
 
             self.nlp_pub.publish("start")
             rospy.sleep(2.5)
-            self.image_switch_publisher.pub_now(ImageEnum.TALK.value)
+            self.image_switch_publisher.pub_now(ImageEnum.TALKING_DUMMIES.value)
 
             # wait for response
             start_time = time.time()
@@ -142,7 +143,7 @@ class NLP_Helper:
         rospy.loginfo("nlp start")
         self.nlp_pub.publish("start listening")
         rospy.sleep(2.2)
-        self.image_switch_publisher.pub_now(ImageEnum.TALK.value)
+        self.image_switch_publisher.pub_now(ImageEnum.TALKING_DUMMIES.value)
 
         # wait for nlp answer
         start_time = time.time()
@@ -166,7 +167,7 @@ class NLP_Helper:
             rospy.loginfo("nlp start")
             self.nlp_pub.publish("start listening")
             rospy.sleep(2.2)
-            self.image_switch_publisher.pub_now(ImageEnum.TALK.value)
+            self.image_switch_publisher.pub_now(ImageEnum.TALKING_DUMMIES.value)
 
             # wait for nlp answer
             start_time = time.time()
@@ -200,7 +201,7 @@ class NLP_Helper:
         self.nlp_pub.publish("start listening")
         rospy.loginfo("nlp start")
         rospy.sleep(2.2)
-        self.image_switch_publisher.pub_now(ImageEnum.TALK.value)
+        self.image_switch_publisher.pub_now(ImageEnum.TALKING_DUMMIES.value)
 
         # wait for nlp answer
         start_time = time.time()
@@ -231,13 +232,14 @@ class NLP_Helper:
 
         while trys < 2:
             TalkingMotion("i am sorry, please repeat your drink loud and clear").perform()
+            self.image_switch_publisher.pub_now(ImageEnum.CLOCK.value)
             rospy.sleep(3.5)
             TalkingMotion("please use the sentence my favorite drink is").perform()
             rospy.sleep(3)
 
             self.nlp_pub.publish("start")
             rospy.sleep(2.5)
-            self.image_switch_publisher.pub_now(ImageEnum.TALK.value)
+            self.image_switch_publisher.pub_now(ImageEnum.TALKING_DUMMIES.value)
 
             # wait for response
             start_time = time.time()
