@@ -271,6 +271,9 @@ def introduce(human1: HumanDescription, human2: HumanDescription):
     rospy.sleep(2)
     if human1.interests:
         TalkingMotion(f" {human1.name} likes {human1.interests[0]}").perform()
+        if human2.interests:
+            if human1.interests[0] == human2.interests[0]:
+                TalkingMotion(f" both of you like {human1.interests[0]}").perform()
 
     rospy.sleep(1)
 

@@ -84,6 +84,8 @@ def demo(step: int):
             TalkingMotion("i will show you around now").perform()
             rospy.sleep(2)
             TalkingMotion("please step out of the way and follow me").perform()
+            # MoveJointsMotion(["arm_flex_joint"], [-0.25]).perform()
+            ParkArmsAction([Arms.LEFT]).resolve().perform()
             image_switch_publisher.pub_now(ImageEnum.HI.value)
 
         if step <= 3:
@@ -92,7 +94,7 @@ def demo(step: int):
             NavigateAction([beverage_pose]).resolve().perform()
 
             TalkingMotion("here you can get yourself a drink").perform()
-            MoveJointsMotion(["arm_flex_joint"], [-0.25]).perform()
+            MoveJointsMotion(["arm_flex_joint"], [-0.15]).perform()
             MoveJointsMotion(["torso_lift_joint"], [0.1]).perform()
 
             # TODO: look at person pose
@@ -133,6 +135,7 @@ def demo(step: int):
         if step <= 5:
             # lead to living room
             MoveJointsMotion(["torso_lift_joint"], [0.0]).perform()
+            MoveJointsMotion(["arm_flex_joint"], [0.0]).perform()
             TalkingMotion("i will show you the living room now").perform()
             rospy.sleep(1.5)
             image_switch_publisher.pub_now(ImageEnum.HI.value)
@@ -148,7 +151,6 @@ def demo(step: int):
 
             # find host in living room
             TalkingMotion("welcome to the living room").perform()
-            MoveJointsMotion(["torso_lift_joint"], [0.2]).perform()
 
             # try to find face (of host) in living room
             counter = 0
@@ -218,7 +220,7 @@ def demo(step: int):
             NavigateAction([greet_guest_pose]).resolve().perform()
             ParkArmsAction([Arms.LEFT]).resolve().perform()
             TalkingMotion("waiting for new guest").perform()
-            MoveJointsMotion(["head_tilt_joint"], [0.0]).perform()
+            MoveJointsMotion(["head_tilt_joint"], [0.1]).perform()
             image_switch_publisher.pub_now(ImageEnum.HI.value)
 
         if step <= 10:
@@ -227,6 +229,7 @@ def demo(step: int):
             display_info(f"guest name is: {guest1.name}")
 
             MoveJointsMotion(["torso_lift_joint"], [0.0]).perform()
+            MoveJointsMotion(["arm_flex_joint"], [0.0]).perform()
             TalkingMotion("i will show you around").perform()
             rospy.sleep(1)
             TalkingMotion("please step out of the way and follow me").perform()
@@ -282,6 +285,7 @@ def demo(step: int):
             rospy.sleep(1.5)
             DetectAction(technique='human', state="stop").resolve().perform()
             TalkingMotion("please step out of the way and follow me").perform()
+            ParkArmsAction([Arms.LEFT]).resolve().perform()
             MoveJointsMotion(["head_pan_joint"], [0]).perform()
 
             # TODO: navigate to living room
@@ -323,6 +327,10 @@ def demo(step: int):
             rospy.sleep(3)
             describe(guest1)
             MoveGripperMotion(GripperState.OPEN, Arms.LEFT).perform()
+            rospy.sleep(2)
+            describe(guest1)
+            rospy.sleep(2)
+
 
 
 demo(4)

@@ -49,6 +49,7 @@ class NLP_Helper:
         """
 
         TalkingMotion("Welcome, please step in front of me and come close").perform()
+        rospy.sleep(2)
 
         # look for human and position higher
         DetectAction(technique='human').resolve().perform()
