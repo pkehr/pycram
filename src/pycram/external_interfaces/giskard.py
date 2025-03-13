@@ -6,12 +6,13 @@ from threading import Lock, RLock
 import numpy as np
 import rospy
 import tf
-from geometry_msgs.msg import PoseStamped, PointStamped, QuaternionStamped, Vector3Stamped, Vector3, Point
+from geometry_msgs.msg import PoseStamped, PointStamped, QuaternionStamped, Vector3Stamped, Vector3, Point, Quaternion
 from giskardpy.data_types.exceptions import PreemptedException, \
     ObjectForceTorqueThresholdException, ExecutionException
 from giskardpy.data_types.suturo_types import ForceTorqueThresholds
 from giskardpy.motion_graph.monitors.force_torque_monitor import PayloadForceTorque
 from giskardpy_ros.ros1 import tfwrapper as giskard_tf
+from giskardpy.utils.math import quaternion_from_axis_angle
 from typing_extensions import List, Dict, Callable, Optional
 
 from ..datastructures.dataclasses import MeshVisualShape
@@ -1363,6 +1364,42 @@ def turning_around():
                                                            name='rotation left goal')
 
     giskard_wrapper.monitors.add_end_motion(start_condition=rot_left_monitor)
+    giskard_wrapper.execute()
+
+@init_giskard_interface
+def turning_left_and_back(angle: float = 45):
+    rot_left = QuaternionStamped()
+    rot_left.header.frame_id = 'base_footprint'
+    rot_left.quaternion = Quaternion(*quaternion_from_axis_angle(axis=(0, 0, 1), angle=angle))
+
+    rot_back = QuaternionStamped()
+    rot_back.header.frame_id = 'base_footprint'
+    rot_back.quaternion = Quaternion(*quaternion_from_axis_angle(axis=(0, 0, 1), angle=(angle*-1)))
+
+    rot_left_monitor = giskard_wrapper.monitors.add_cartesian_orientation(goal_orientation=rot_left,
+                                                                          root_link='map',
+                                                                          tip_link='base_footprint',
+                                                                          name='rotation left monitor',
+                                                                          start_condition='')
+    rot_back_monitor = giskard_wrapper.monitors.add_cartesian_orientation(goal_orientation=rot_back,
+                                                                          root_link='map',
+                                                                          tip_link='base_footprint',
+                                                                          name='rotation back monitor',
+                                                                          start_condition=rot_left_monitor)
+    giskard_wrapper.motion_goals.add_cartesian_orientation(goal_orientation=rot_left,
+                                                           root_link='map',
+                                                           tip_link='base_footprint',
+                                                           start_condition='',
+                                                           end_condition=rot_left_monitor,
+                                                           name='rotation left goal')
+    giskard_wrapper.motion_goals.add_cartesian_orientation(goal_orientation=rot_back,
+                                                           root_link='map',
+                                                           tip_link='base_footprint',
+                                                           start_condition=rot_left_monitor,
+                                                           end_condition=rot_back_monitor,
+                                                           name='rotation back goal')
+
+    giskard_wrapper.monitors.add_end_motion(start_condition=rot_back_monitor)
     giskard_wrapper.execute()
 
 @init_giskard_interface
