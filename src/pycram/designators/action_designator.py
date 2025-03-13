@@ -21,7 +21,7 @@ from .location_designator import CostmapLocation
 from .motion_designator import MoveJointsMotion, MoveGripperMotion, MoveArmJointsMotion, MoveTCPMotion, MoveMotion, \
     LookingMotion, DetectingMotion, OpeningMotion, ClosingMotion, HeadFollowMotion, TalkingMotion, \
     MoveTCPForceTorqueMotion, GraspingDishwasherHandleMotion, HalfOpeningDishwasherMotion, MoveArmAroundMotion, \
-    FullOpeningDishwasherMotion, MoveArmDownForceTorqueMotion, OpenDishwasherDoorMotion
+    FullOpeningDishwasherMotion, MoveArmDownForceTorqueMotion
 from .object_designator import ObjectDesignatorDescription, BelieveObject, ObjectPart
 from ..datastructures.enums import Arms, Grasp, GripperState, GiskardStateFTS
 from ..datastructures.pose import Pose
@@ -1017,13 +1017,16 @@ class PickUpActionPerformable(ActionAbstract):
 
         grasp_rotation = RobotDescription.current_robot_description.grasps[self.grasp]
         oTb = lt.transform_pose(oTm, robot.get_link_tf_frame("base_link"))
+
+        oTb.pose.position.x += 0.01
         # Set pose to the grasp rotation
         oTb.orientation = grasp_rotation
         # Transform the pose to the map frame
         oTmG = lt.transform_pose(oTb, "map")
 
-        pre_pose_oTmG = oTmG
-        pre_pose_oTmG.pose.position.y -= 0.1
+        pre_pose_oTb = oTb
+        pre_pose_oTb.pose.position.x -= 0.1
+        pre_pose_oTmG = lt.transform_pose(pre_pose_oTb, "map")
 
         # Open the gripper before picking up the object
         rospy.logwarn("Opening Gripper")
@@ -1047,7 +1050,7 @@ class PickUpActionPerformable(ActionAbstract):
         if robot.name == "hsrb":
             if self.grasp == Grasp.TOP:
                 if self.object_designator.obj_type in ["Spoon", "Fork", "Knife", "Plasticknife"]:
-                    special_knowledge_offset.pose.position.y -= 0.05
+                    special_knowledge_offset.pose.position.y -= 0.07
                 if self.object_designator.obj_type == "Metalbowl":
                     special_knowledge_offset.pose.position.y -= 0.065
                     special_knowledge_offset.pose.position.x += 0.045
@@ -1058,7 +1061,7 @@ class PickUpActionPerformable(ActionAbstract):
         if robot.name == "hsrb":
             z = 0.04
             if self.grasp == Grasp.TOP:
-                z = 0.035
+                z = 0.036
                 # if self.object_designator.obj_type == "Metalbowl":
                 #     z = 0.035
             push_base.pose.position.z += z
@@ -1184,8 +1187,9 @@ class PlaceActionPerformable(ActionAbstract):
         # Transform the pose to the map frame
         oTmG = lt.transform_pose(oTb, "map")
 
-        pre_pose_oTmG = oTmG
-        pre_pose_oTmG.pose.position.y -= 0.1
+        pre_pose_oTb = oTb
+        pre_pose_oTb.pose.position.x -= 0.1
+        pre_pose_oTmG = lt.transform_pose(pre_pose_oTb, "map")
 
         rospy.logwarn("Placing now")
         World.current_world.add_vis_axis(oTmG)
@@ -1219,20 +1223,20 @@ class PlaceActionPerformable(ActionAbstract):
             if execute:
                 MoveTCPMotion(push_baseTm, self.arm).perform()
 
-            if self.object_designator.obj_type == "Metalplate":
-                # rTb = Pose([0,-0.1,0], [0,0,0,1],"base_link")
-                rospy.logwarn("sidepush monitoring")
-                TalkingMotion("sidepush.").perform()
-                side_push = Pose(
-                    [push_baseTm.pose.position.x, push_baseTm.pose.position.y + 0.08, push_baseTm.pose.position.z],
-                    [push_baseTm.orientation.x, push_baseTm.orientation.y, push_baseTm.orientation.z,
-                     push_baseTm.orientation.w])
-                try:
-                    plan = MoveTCPMotion(side_push, self.arm) >> Monitor(monitor_func)
-                    plan.perform()
-                except SensorMonitoringCondition:
-                    rospy.logwarn("Open Gripper")
-                    MoveGripperMotion(motion=GripperState.OPEN, gripper=self.arm).perform()
+            # if self.object_designator.obj_type == "Metalplate":
+            #     # rTb = Pose([0,-0.1,0], [0,0,0,1],"base_link")
+            #     rospy.logwarn("sidepush monitoring")
+            #     TalkingMotion("sidepush.").perform()
+            #     side_push = Pose(
+            #         [push_baseTm.pose.position.x, push_baseTm.pose.position.y + 0.08, push_baseTm.pose.position.z],
+            #         [push_baseTm.orientation.x, push_baseTm.orientation.y, push_baseTm.orientation.z,
+            #          push_baseTm.orientation.w])
+            #     try:
+            #         plan = MoveTCPMotion(side_push, self.arm) >> Monitor(monitor_func)
+            #         plan.perform()
+            #     except SensorMonitoringCondition:
+            #         rospy.logwarn("Open Gripper")
+            #         MoveGripperMotion(motion=GripperState.OPEN, gripper=self.arm).perform()
 
         # Finalize the placing by opening the gripper and lifting the arm
         rospy.logwarn("Open Gripper")
@@ -1914,8 +1918,9 @@ class PlaceGivenObjectPerformable(ActionAbstract):
             # Transform the pose to the map frame
             oTmG = lt.transform_pose(oTb, "map")
 
-            pre_pose_oTmG = oTmG
-            pre_pose_oTmG.pose.position.y -= 0.1
+            pre_pose_oTb = oTb
+            pre_pose_oTb.pose.position.x -= 0.1
+            pre_pose_oTmG = lt.transform_pose(pre_pose_oTb, "map")
 
             logwarn("Placing now")
             World.current_world.add_vis_axis(oTmG)
@@ -1948,20 +1953,20 @@ class PlaceGivenObjectPerformable(ActionAbstract):
                 World.current_world.add_vis_axis(push_baseTm)
                 if execute:
                     MoveTCPMotion(push_baseTm, self.arm).perform()
-                if self.object_type == "Metalplate":
-                    # rTb = Pose([0,-0.1,0], [0,0,0,1],"base_link")
-                    rospy.logwarn("sidepush monitoring")
-                    TalkingMotion("sidepush.").perform()
-                    side_push = Pose(
-                        [push_baseTm.pose.position.x, push_baseTm.pose.position.y + 0.08, push_baseTm.pose.position.z],
-                        [push_baseTm.orientation.x, push_baseTm.orientation.y, push_baseTm.orientation.z,
-                         push_baseTm.orientation.w])
-                    try:
-                        plan = MoveTCPMotion(side_push, self.arm) >> Monitor(monitor_func)
-                        plan.perform()
-                    except SensorMonitoringCondition:
-                        rospy.logwarn("Open Gripper")
-                        MoveGripperMotion(motion=GripperState.OPEN, gripper=self.arm).perform()
+                # if self.object_type == "Metalplate":
+                #     # rTb = Pose([0,-0.1,0], [0,0,0,1],"base_link")
+                #     rospy.logwarn("sidepush monitoring")
+                #     TalkingMotion("sidepush.").perform()
+                #     side_push = Pose(
+                #         [push_baseTm.pose.position.x, push_baseTm.pose.position.y + 0.08, push_baseTm.pose.position.z],
+                #         [push_baseTm.orientation.x, push_baseTm.orientation.y, push_baseTm.orientation.z,
+                #          push_baseTm.orientation.w])
+                #     try:
+                #         plan = MoveTCPMotion(side_push, self.arm) >> Monitor(monitor_func)
+                #         plan.perform()
+                #     except SensorMonitoringCondition:
+                #         rospy.logwarn("Open Gripper")
+                #         MoveGripperMotion(motion=GripperState.OPEN, gripper=self.arm).perform()
 
             # Finalize the placing by opening the gripper and lifting the arm
             logwarn("Open Gripper")

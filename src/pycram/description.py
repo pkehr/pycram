@@ -91,6 +91,30 @@ class JointDescription(EntityDescription):
 
     @property
     @abstractmethod
+    def mimic_of(self) -> Union[str, None]:
+        """
+        :return: The name of the joint that this joint is a mimic of, or None if this joint is not a mimic.
+        """
+        pass
+
+    @property
+    @abstractmethod
+    def mimic_multiplier(self) -> Union[float, None]:
+        """
+        :return: The multiplier of the mimic joint, or None if this joint is not a mimic.
+        """
+        pass
+
+    @property
+    @abstractmethod
+    def mimic_offset(self) -> Union[float, None]:
+        """
+        :return: The offset of the mimic joint, or None if this joint is not a mimic.
+        """
+        pass
+
+    @property
+    @abstractmethod
     def has_limits(self) -> bool:
         """
         :return: True if the joint has limits, False otherwise.

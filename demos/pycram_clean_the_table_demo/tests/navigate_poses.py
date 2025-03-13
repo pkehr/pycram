@@ -60,4 +60,10 @@ class NavigateOrientation(Enum):
 # TODO: change postions of navigating, pickup, placing, etc.
 with (real_robot):
     print(robot.get_pose().pose)
+    # ParkArmsAction([Arms.LEFT]).resolve().perform()
+    # MoveTorsoAction([0.8]).resolve().perform()
+    # NavigateAction([Pose([3.65, -2.35, 0], [0, 0, 1, 0])]).resolve().perform()
+    PlaceGivenObjectAction(["Metalmug"], [Arms.LEFT], [Pose([2.92, -2.62, 0.488])],
+                           [Grasp.FRONT], [False], False).resolve().perform()
     # NavigateAction([Pose([2.8, -2.1, 0], [0, 0, -1, 1])]).resolve().perform()
+    # object_desig = DetectAction(technique='all').resolve().perform()

@@ -738,8 +738,7 @@ class SemanticCostmap(Costmap):
     table surface.
     """
 
-    def __init__(self, object, urdf_link_name, size=100, resolution=0.02, world=None, margin_cm=0.2,
-                 inner_margin_cm=0.1):
+    def __init__(self, object, urdf_link_name, size=100, resolution=0.02, world=None, margin_cm=20):
         """
         Creates a semantic costmap for the given parameter. The semantic costmap will be on top of the link of the given
         Object.
@@ -753,6 +752,7 @@ class SemanticCostmap(Costmap):
         self.object: Object = object
         self.link: Link = object.get_link(urdf_link_name)
         self.resolution: float = resolution
+        self.margin_cm = margin_cm
         self.origin: Pose = object.get_link_pose(urdf_link_name)
         self.height: int = 0
         self.width: int = 0
@@ -767,8 +767,8 @@ class SemanticCostmap(Costmap):
         for the link name will be used. Height and width of the final Costmap will be the x and y sizes of the AABB.
         """
         min_p, max_p = self.get_aabb_for_link().get_min_max_points()
-        self.height = int((max_p.x - min_p.x) // self.resolution)
-        self.width = int((max_p.y - min_p.y) // self.resolution)
+        self.height = int(((max_p.x - min_p.x) - self.margin_cm / 100) // self.resolution)
+        self.width = int(((max_p.y - min_p.y) - self.margin_cm / 100) // self.resolution)
         self.map = np.ones((self.height, self.width))
 
     def get_aabb_for_link(self) -> AxisAlignedBoundingBox:
