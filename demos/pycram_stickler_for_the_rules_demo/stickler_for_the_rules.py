@@ -5,6 +5,8 @@ from collections import OrderedDict
 from cv_bridge import CvBridge, CvBridgeError
 import cv2
 import cv_bridge
+from robokudo_msgs.msg import QueryGoal, QueryAction
+
 import pycram.external_interfaces.giskard as giskardpy
 
 import pycram
@@ -17,7 +19,7 @@ from sensor_msgs.msg import LaserScan, Image
 from std_msgs.msg import String
 from nav_msgs.msg import Odometry
 
-from pycram.demos.pycram_restaurant_demo.restaurant import human_pose
+# from pycram.demos.pycram_restaurant_demo.restaurant import human_pose
 from pycram.designators.motion_designator import *
 from demos.pycram_hsrb_real_test_demos.utils.startup import startup
 from pycram.datastructures.enums import Arms, ImageEnum
@@ -32,6 +34,7 @@ from pycram.language import Code, Monitor
 from pycram.process_module import real_robot
 from pycram.robot_description import RobotDescription
 from pycram.failures import SensorMonitoringCondition, HumanNotFoundCondition
+from pycram.ros.action_lib import create_action_client
 from pycram.ros_utils.force_torque_sensor import ForceTorqueSensor
 
 from pycram.utilities.robocup_utils import pakerino, TextToImagePublisher, ImageSendPublisher
@@ -54,10 +57,16 @@ human_pose = None
 humanInRoom = False
 cooperating = False
 
+rkclient = create_action_client('robokudo/query', QueryAction)
+rospy.loginfo("Waiting for action server")
+rkclient.wait_for_server()
+rospy.loginfo("You can start your demo now")
+
 nlp_pub = rospy.Publisher('/startListener', String, queue_size=16)
 
 global sub_nlp
 global human_pose_sub
+
 
 response = [""]
 callback = False
@@ -256,7 +265,19 @@ def search_for_person_in_forbidden_room(robotPose:Pose, step: int, forbiddenRoom
             tries += 1
 
 
+def send_and_process_query():
+    goal_msg = QueryGoal()
+    goal_msg.obj.location = "bedroom"
+    x = rkclient.send_goal(goal_msg)
+    print(type(x))
+    print(x)
+    y = x.res[0].pose
+    print(y)
+
+
 def demo(step: int):
+    send_and_process_query()
+    rospy.sleep(9)
     global sub_nlp
     human_pose_sub = rospy.Subscriber("/human_pose", PointStamped, human_cb)
     sub_nlp = rospy.Subscriber("nlp_out", String, data_cb)
@@ -316,6 +337,7 @@ def demo(step: int):
 
 
 
+demo(0)
 
 
 
