@@ -50,7 +50,7 @@ human = Human()
 first_timer_pose = None
 second_timer_pose = None
 start_time = time.time()
-timeout1 = 12
+timeout1 = 14
 
 
 def demo(step: int, clear_path: Optional[bool] = True):
@@ -80,7 +80,8 @@ def demo(step: int, clear_path: Optional[bool] = True):
             # ParkArmsAction([Arms.LEFT]).resolve().perform()
             MoveJointsMotion(["head_tilt_joint"], [0.2]).perform()
             # MoveJointsMotion(["head_pan_joint"], [0.0]).perform()
-            # MoveJointsMotion(["wrist_flex_joint"], [-1.6]).perform()
+
+           # MoveJointsMotion(["wrist_flex_joint"], [-1.6]).perform()
             # MoveGripperMotion(GripperState.OPEN, Arms.LEFT).perform()
 
             # wait for human and hand to be pushed down
@@ -105,6 +106,7 @@ def demo(step: int, clear_path: Optional[bool] = True):
             except SensorMonitoringCondition:
                 MoveJointsMotion(["wrist_flex_joint"], [-1.6]).perform()
                 TalkingMotion("We have arrived.").perform()
+                MoveJointsMotion(["torso_lift_joint"], [0.1]).perform()
                 text_to_img_publisher.pub_now("please hand the bag in my gripper")
                 rospy.sleep(1)
                 img.pub_now(ImageEnum.GENERATED_TEXT.value)
@@ -129,6 +131,7 @@ def demo(step: int, clear_path: Optional[bool] = True):
 
                         TalkingMotion("back at starting position").perform()
                         img.pub_now(ImageEnum.HI.value)
+                        MoveJointsMotion(["torso_lift_joint"], [0.0]).perform()
 
             except giskardpy.ExecutionException:
                 TalkingMotion("Wait").perform()
@@ -183,14 +186,12 @@ def demo_start(human: Human):
         rospy.sleep(2)
         return
 
-
 def monitor_func_no_timer():
     """
     monitors force torque sensor of robot and throws
     Condition if a significant force is detected (e.g. the gripper is pushed down)
     """
     der = fts.get_last_value()
-    print(der.wrench.force.x)
     if abs(der.wrench.force.x) > 18.50:
         rospy.logwarn("sensor exception, gripper pushed")
         return SensorMonitoringCondition
