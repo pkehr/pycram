@@ -351,7 +351,14 @@ class HSRBDetectingReal(ProcessModule):
 
             print(detected_drinks)
             return detected_drinks
-
+        elif desig.technique == "human_forbidden":
+            query_result = query_for_forbidden_room()
+            for i in range(0, len(query_result.res)):
+                try:
+                    human_pose = Pose.from_pose_stamped(query_result.res[i].pose[0])
+                except IndexError:
+                    human_pose = Pose.from_pose_stamped(query_result.res[i].pose)
+                    pass
         elif desig.technique == 'waving':
             query_result = query_waving_human()
             for i in range(0, len(query_result.res)):

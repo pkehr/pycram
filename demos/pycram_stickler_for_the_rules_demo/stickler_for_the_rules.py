@@ -42,13 +42,23 @@ tf_listener, marker, world, v, text_to_speech_publisher, image_switch_publisher,
 
 fts = ForceTorqueSensor(robot_name='hsrb')
 
+#start demo point
+start_pose = Pose([6.26, 3.07, 0])
+
 # Room Look Around Poses
 kitchen_pose = Pose([8.81, 1.08, 0])
+kitchen_pose_2 = Pose([8.49, 1.3, 0], [0, 0, 0, 1])
+kitchen_pose_3 = Pose([7.79, -0.11, 0], [0, 0, 0, -1])
 sub_office_kitchen_pose = Pose([6.71,0.22,0])
 office_pose = Pose([3.65, 0.87, 0])
+office_pose_1 = Pose([3.99, 0.51, 0], [0, 0, 0, 1])
+office_pose_2 = Pose([2.25, 0.39, 0], [0, 0, 0, -1])
 living_room_pose = Pose([5.81, 2.69, 0])
+living_room_middle_pose = Pose([7.02, 3.21,0])
 sub_kitchen_living_room_pose = Pose([7.6, 2.83, 0])
 bedroom_pose = Pose([2.42, 1.96, 0])
+bedroom_door_pose = Pose([2.67, 3.01,0])
+bedroom_middle_pose = Pose([2.55, 4.41])
 sub_living_room_bedroom_pose = Pose([4.34, 2.65, 0])
 
 # Lol variables
@@ -56,7 +66,9 @@ notFound = False
 human_pose = None
 humanInRoom = False
 cooperating = False
-
+foundObj = []
+litteringHuman = None
+overallTries = 0
 rkclient = create_action_client('robokudo/query', QueryAction)
 rospy.loginfo("Waiting for action server")
 rkclient.wait_for_server()
@@ -103,6 +115,21 @@ def data_cb(self, data):
     response.append("None")
     print(response)
     self.callback = True
+
+def look_down_around(increase:float, start_pose:PoseStamped, _tilt:float):
+    MoveJointsMotion(["head_tilt_joint"], [_tilt]).perform()
+    global foundObj
+    foundObj = None
+    x = -0.5
+    while x <=1:
+        MoveJointsMotion(["head_oan_joint"], [x]).perform()
+        try:
+            foundObj = DetectAction(technique='all').resolve().perform()
+        except pycram.failures.PerceptionObjectNotFound:
+            foundObj = []
+        if len(foundObj) > 0:
+            break
+        x += increase
 def look_around(increase: float, star_pose: PoseStamped):
     """
     Function to make Toya look continuous from left to right. It stops if Toya perceives a human.
@@ -116,18 +143,17 @@ def look_around(increase: float, star_pose: PoseStamped):
     tmp_z = star_pose.pose.position.z
     x = -0.5
     while x <= 1:
-        notFound = False
+        #notFound = False
         MoveJointsMotion(["head_pan_joint"], [x]).perform()
         try:
-            human_pose = DetectAction(technique='human', state='start').resolve().perform()
+            human_pose = DetectAction(technique='human_forbidden', state='start').resolve().perform()
         except pycram.failures.PerceptionObjectNotFound:
             print("oh no, no waving human was found")
         if human_pose : # TODO: Einfügen, dass breaked wird wenn human in wrong room
             break
 
         x += increase
-        if x == 1:
-            notFound = True
+
 
 
 def change_orientation_given_angle(startPose: Pose, angle: int) -> Pose:
@@ -176,74 +202,40 @@ def transform_camera_to_x(pose, frame_x):
 
     return tPm
 
-def confirm_offender_follows():
-    global callback, timeout, cooperating
-    HeadFollowMotion(state='start').perform()
-    rospy.sleep(2)
-    TalkingMotion("Confirm that you will follow me, after my display changes").perform()
-    rospy.sleep(2)
-    rospy.loginfo("nlp start")
-    nlp_pub.publish("start listening")
-    rospy.sleep(2)
-    image_switch_publisher.pub_now(ImageEnum.TALK.value)
+def detect_littering_offender(start: Pose):
+    global litteringHuman
+    litteringHuman = None
+    x = -0.5
+    while x <= 1:
+        MoveJointsMotion(["head_pan_joint"], [x]).perform()
+        try:
+            litteringHuman = DetectAction(technique='human', state='start').resolve().perform()
+        except pycram.failures.PerceptionObjectNotFound:
+            print("oh no, no  human was found")
+        if litteringHuman : # TODO: Einfügen, dass breaked wird wenn human in wrong room
+            break
+        x += 0.5
 
-    start_time = time.time()
-    while not callback:
-        rospy.sleep(1)
-        if int(time.time()) - start_time == timeout:
-            rospy.logwarn("Guest needs to repeat")
-            image_switch_publisher.pub_now(ImageEnum.JREPEAT.value)
-    callback = False
-    if response[0] == "<CONFIRM>":
-        HeadFollowMotion(state='stop').perform()
-        TalkingMotion("Thank you, please follow me now").perform()
-        rospy.sleep(2)
-        cooperating =  True
-    elif response[0] == "<DENY>":
-        cooperating = False
-    else:
-        tries = 0
-        while tries <= 2:
-            rospy.sleep(2.3)
-
-            nlp_pub.publish("start")
-            image_switch_publisher.pub_now(ImageEnum.JREPEAT.value)
-
-            start_time_rep = time.time()
-            while not callback:
-                rospy.sleep(1)
-                if int(time.time() - start_time_rep) == timeout:
-                    rospy.logwarn("guest needs to repeat")
-                    image_switch_publisher.pub_now(ImageEnum.JREPEAT.value)
-                    rospy.sleep(2)
-            callback = False
-            if response[0] == "<CONFIRM>":
-                HeadFollowMotion(state='stop').perform()
-                cooperating=  True
-            elif response[0] == "<DENY>":
-                cooperating= False
-            else:
-                tries += 1
-
-def lead_offender_to(goal: Pose):
-    move.pub_now(navpose=goal).perform()
-
-def talk_to_offender(forbiddenRoom:str, triesToCorrect:int):
-    if triesToCorrect <= 1:
-        TalkingMotion(f"Dear human, you are in {forbiddenRoom}, which is the forbidden room. Please leave immediately ").perform()
-        rospy.sleep(2)
-    else:
-        TalkingMotion(f"Please leave {forbiddenRoom}").perform()
-        rospy.sleep(2)
-    TalkingMotion("Please follow me to the other guests. ").perform()
-    rospy.sleep(2)
-    confirm_offender_follows()
-    if cooperating:
-        closest_pose = find_nearest_room_to_offender(robot.get_pose)
-        lead_offender_to(closest_pose)
+def talk_littering_offender():
+    TalkingMotion("Please pick up your trash because you broke the No Littering rule.").perform()
     rospy.sleep(2)
 
+def lead_offender_to():
+    move.pub_now(navpose=bedroom_door_pose)
+    rospy.sleep(2)
+    move.pub_now(navpose=living_room_middle_pose)
+    TalkingMotion("We arrived. Please have fun at the party").perform()
+    rospy.sleep(2)
 
+def talk_to_offender_forbidden():
+    TalkingMotion("Please follow me, you broke the forbidden room rule.").perform()
+    rospy.sleep(2)
+    giskardpy.turning_around()
+    rospy.sleep(1)
+    lead_offender_to()
+    rospy.sleep(2)
+
+# TODO: Check only in forbidden room for human anpassen
 def search_for_person_in_forbidden_room(robotPose:Pose, step: int, forbiddenRoom:str):
     global notFound, human_pose, humanInRoom
     look_around(0.5, robotPose)
@@ -261,7 +253,7 @@ def search_for_person_in_forbidden_room(robotPose:Pose, step: int, forbiddenRoom
         move.pub_now(navpose=drive_pose)
         tries = 0
         while humanInRoom and tries <= 2:
-            talk_to_offender(forbiddenRoom, tries)
+            talk_to_offender_forbidden(forbiddenRoom, tries)
             tries += 1
 
 
@@ -276,13 +268,10 @@ def send_and_process_query():
 
 
 def demo(step: int):
-    send_and_process_query()
-    rospy.sleep(9)
-    global sub_nlp
-    human_pose_sub = rospy.Subscriber("/human_pose", PointStamped, human_cb)
-    sub_nlp = rospy.Subscriber("nlp_out", String, data_cb)
+    global human_pose, litteringHuman, overallTries
     global notFound, humanInRoom
     with real_robot:
+
         TalkingMotion("start stickler for the rules demo").perform()
         rospy.sleep(2)
         TalkingMotion("Please push down my gripper to start the demo ").perform()
@@ -295,45 +284,100 @@ def demo(step: int):
             image_switch_publisher.pub_now(ImageEnum.HI.value)
 
         if step <= 0:
-         # Office Space
-            move.pub_now(navpose=office_pose)
-            giskardpy.turning_around()
-
-            # look around
-            search_for_person_in_forbidden_room(robot.get_pose(), 1, "bedroom")
-
-
-
-        if step <= 1:
-            # Kitchen
-            move.pub_now(navpose=sub_office_kitchen_pose)
+            rospy.sleep(2)
+            move.pub_now(navpose=start_pose)
             rospy.sleep(1)
-            move.pub_now(navpose=kitchen_pose)
-            giskardpy.turning_around()
+            move.pub_now(navpose=bedroom_door_pose)
+            look_around(0.5, robot.get_pose())
+            if human_pose is not None:
+                drive_pose = transform_camera_to_x(human_pose, "head_rgbd_sensor_link")
+                move.pub_now(navpose=drive_pose)
+                rospy.sleep(2)
+                talk_to_offender_forbidden()
+            elif human_pose is None:
+                move.pub_now(navpose=bedroom_middle_pose)
+                rospy.sleep(1)
+                look_around(0.5, robot.get_pose())
+                if human_pose is not None:
+                    drive_pose = transform_camera_to_x(human_pose, "head_rgbd_sensor_link")
+                    move.pub_now(navpose=drive_pose)
+                    rospy.sleep(2)
+                    talk_to_offender_forbidden()
+        if step <= 1:
+            move.pub_now(navpose=bedroom_door_pose)
+            rospy.sleep(1)
+            move.pub_now(navpose=living_room_middle_pose)
+            change_Pose_living= change_orientation_given_angle(robot.get_pose(), 45)
+            NavigateAction([change_Pose_living]).resolve().perform()
+            look_down_around(0.5, robot.get_pose(), -0.2)
+            if len(foundObj) != 0:
+                detect_littering_offender(robot.get_pose())
+                if litteringHuman is not None:
+                    drive_pose = transform_camera_to_x(litteringHuman, "head_rgbd_sensor_link")
+                    move.pub_now(navpose=drive_pose)
+                    talk_to_offender_forbidden()
+                else:
+                    TalkingMotion("I can not find the offender of the broken No Littering rule").perform()
+                    rospy.sleep(2)
 
-            search_for_person_in_forbidden_room(robot.get_pose(), 2, "bedroom")
 
 
 
         if step <= 2:
-            # Living Room
-            move.pub_now(navpose=sub_kitchen_living_room_pose)
             rospy.sleep(1)
-            move.pub_now(navpose=living_room_pose)
-            giskardpy.turning_around()
-
-            search_for_person_in_forbidden_room(robot.get_pose(), 3, "bedroom")
-
-
+            move.pub_now(navpose=kitchen_pose_2)
+            if len(foundObj) != 0:
+                detect_littering_offender(robot.get_pose())
+                if litteringHuman is not None:
+                    drive_pose = transform_camera_to_x(litteringHuman, "head_rgbd_sensor_link")
+                    move.pub_now(navpose=drive_pose)
+                    talk_to_offender_forbidden()
+                else:
+                    TalkingMotion("I can not find the offender of the broken No Littering rule").perform()
+                    rospy.sleep(2)
+            rospy.sleep(1)
+            move.pub_now(navpose=kitchen_pose_3)
+            if len(foundObj) != 0:
+                detect_littering_offender(robot.get_pose())
+                if litteringHuman is not None:
+                    drive_pose = transform_camera_to_x(litteringHuman, "head_rgbd_sensor_link")
+                    move.pub_now(navpose=drive_pose)
+                    talk_to_offender_forbidden()
+                else:
+                    TalkingMotion("I can not find the offender of the broken No Littering rule").perform()
+                    rospy.sleep(2)
         if step <= 3:
-            #bedroom
-            move.pub_now(navpose=sub_living_room_bedroom_pose)
             rospy.sleep(1)
-            move.pub_now(navpose=bedroom_pose)
-            giskardpy.turning_around()
+            move.pub_now(navpose=office_pose_1)
+            if len(foundObj) != 0:
+                detect_littering_offender(robot.get_pose())
+                if litteringHuman is not None:
+                    drive_pose = transform_camera_to_x(litteringHuman, "head_rgbd_sensor_link")
+                    move.pub_now(navpose=drive_pose)
+                    talk_to_offender_forbidden()
+                else:
+                    TalkingMotion("I can not find the offender of the broken No Littering rule").perform()
+                    rospy.sleep(2)
+            rospy.sleep(1)
+            move.pub_now(navpose=office_pose_2)
+            overallTries += 1
+            if len(foundObj) != 0:
+                detect_littering_offender(robot.get_pose())
+                if litteringHuman is not None:
+                    drive_pose = transform_camera_to_x(litteringHuman, "head_rgbd_sensor_link")
+                    move.pub_now(navpose=drive_pose)
+                    talk_to_offender_forbidden()
+                else:
+                    TalkingMotion("I can not find the offender of the broken No Littering rule").perform()
+                    rospy.sleep(2)
+                while overallTries > 4:
+                    demo(0)
 
 
-            search_for_person_in_forbidden_room(robot.get_pose(), 0, "bedroom")
+
+
+
+
 
 
 
