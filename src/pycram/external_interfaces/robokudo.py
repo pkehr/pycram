@@ -147,6 +147,7 @@ def query_object(obj_desc: ObjectDesignatorDescription) -> dict:
     return pose_candidates
 
 
+
 @init_robokudo_interface
 def query_human() -> PointStamped:
     """Query RoboKudo for human detection and return the detected human's pose."""
@@ -188,6 +189,12 @@ def query_human_attributes() -> Any:
     else:
         return None
 
+
+@init_robokudo_interface
+def query_for_forbidden_room():
+    result = send_query(obj_type='human', region='bedroom')
+    if result:
+        return result
 
 @init_robokudo_interface
 def query_waving_human() -> Pose:
