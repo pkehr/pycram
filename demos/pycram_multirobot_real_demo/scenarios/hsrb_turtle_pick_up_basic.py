@@ -1,5 +1,7 @@
-from demos.pycram_multirobot_real_demo.methods.actions import turtle_drive_to_table, hsrb_transport_object
+from demos.pycram_multirobot_real_demo.methods.actions import turtle_drive_to_table, hsrb_transport_object, \
+    hsrb_drive_to_table_two, drive_with_multiple_points
 from demos.pycram_multirobot_real_demo.methods.spawn import spawn_robot, setup_demo_objects
+from demos.pycram_multirobot_real_demo.utils import rotated_quaternion
 from pycram.datastructures.enums import ROBOTS
 from pycram.datastructures.enums import WorldMode
 from pycram.designators.action_designator import *
@@ -119,7 +121,17 @@ def demo():
     if navigate_table_two_turtle:
         with real_robot(robot_turtle):
             # TODO: This hast to be more points, as navigation tries to run against the wall otherwise
-            turtle_drive_to_table()
+            goal_position = [1.7, 3.7, 0.0]
+            goal_orientation = rotated_quaternion(angle=-90)
+
+            goal_pose = Pose(position=goal_position, orientation=goal_orientation)
+
+            turtle_nav_poses = [
+                # TODO: Add more poses
+                goal_pose
+            ]
+
+            drive_with_multiple_points(poses=turtle_nav_poses)
             rospy.loginfo("Turtlebot at Table 2")
 
     '''
@@ -144,7 +156,12 @@ def demo():
     if navigate_table_two_hsrb:
         with real_robot(robot_hsrb):
             # TODO: This has to be more points, as navigation tries to run against the wall otherwise
-            NavigateAction(target_locations=[table_two_nav_pose]).resolve().perform()
+
+            hsrb_nav_poses = [
+                # TODO: Add more poses
+                table_two_nav_pose
+            ]
+            drive_with_multiple_points(poses=hsrb_nav_poses)
             rospy.loginfo("Moved to Table 2")
 
     '''
@@ -155,7 +172,7 @@ def demo():
     '''
     if transport_chips:
         with real_robot(robot_hsrb):
-            PlaceAction(chips_desig, target_locations=[table_two_nav_pose], arms=[Arms.LEFT], grasps=[Grasp.FRONT],
+            PlaceAction(chips_desig, target_locations=[chips_placing_pose], arms=[Arms.LEFT], grasps=[Grasp.FRONT],
                         with_force_torque=[False]).resolve().perform()
             ParkArmsAction(arms=[Arms.LEFT]).resolve().perform()
             rospy.loginfo("Object 3 placed on Table 2")

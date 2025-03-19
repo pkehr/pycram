@@ -38,10 +38,6 @@ def turtle_turn_right():
 def turtle_turn_left():
     turtle_turn(angle=-90)
 
-
-def turtle_drive_to_table():
-    goal_position = [1.7, 3.7, 0.0]
-    goal_orientation = rotated_quaternion(angle=-90)
-
-    goal_pose = Pose(position=goal_position, orientation=goal_orientation)
-    NavigateAction(target_locations=[goal_pose]).resolve().perform()
+def drive_with_multiple_points(poses):
+    for pose in poses:
+        NavigateAction(target_locations=[pose]).resolve().perform()
