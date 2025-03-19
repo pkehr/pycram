@@ -36,8 +36,16 @@ def demo():
      coffee_object, coffee_desig, coffee_placing_pose,
      chips_object, chips_desig, chips_placing_pose) = setup_demo_objects()
 
+    navigate_start_turtle = True
+    navigate_start_hsrb = True
+    navigate_table_one_hsrb = True
+
     transport_milk = True
     transport_coffee = False
+    transport_chips = True
+
+    navigate_table_two_turtle = True
+    navigate_table_two_hsrb = True
 
     print("starting_demo")
 
@@ -47,9 +55,10 @@ def demo():
     From:       Anywhere
     To:         starting_pose 
     '''
-    with real_robot(robot_hsrb):
-        NavigateAction(target_locations=[starting_pose_hsrb]).resolve().perform()
-    rospy.loginfo("HSRB is at starting position")
+    if navigate_start_hsrb:
+        with real_robot(robot_hsrb):
+            NavigateAction(target_locations=[starting_pose_hsrb]).resolve().perform()
+        rospy.loginfo("HSRB is at starting position")
 
     '''
     Navigate
@@ -57,9 +66,10 @@ def demo():
     From:       Anywhere
     To:         starting_pose (Table 1)
     '''
-    with real_robot(robot_turtle):
-        NavigateAction(target_locations=[starting_pose_turtle]).resolve().perform()
-    rospy.loginfo("Turtle is at starting position")
+    if navigate_start_turtle:
+        with real_robot(robot_turtle):
+            NavigateAction(target_locations=[starting_pose_turtle]).resolve().perform()
+        rospy.loginfo("Turtle is at starting position")
 
     '''
     Navigate
@@ -67,9 +77,10 @@ def demo():
     From:       starting_pose
     To:         Table#1 
     '''
-    with real_robot(robot_hsrb):
-        NavigateAction(target_locations=[table_one_nav_pose]).resolve().perform()
-    rospy.loginfo("HSRB is at the first table")
+    if navigate_table_one_hsrb:
+        with real_robot(robot_hsrb):
+            NavigateAction(target_locations=[table_one_nav_pose]).resolve().perform()
+        rospy.loginfo("HSRB is at the first table")
 
     '''
     Transport
@@ -101,20 +112,44 @@ def demo():
     From:       Table#1
     To:         Table#2 
     '''
-    with real_robot(robot_turtle):
-        turtle_drive_to_table()
-        rospy.loginfo("Turtlebot at Table 2")
+    if navigate_table_two_turtle:
+        with real_robot(robot_turtle):
+            turtle_drive_to_table()
+            rospy.loginfo("Turtlebot at Table 2")
 
     '''
-    Transport
-    Object:     Chips
+    Pickup
+    Object:     Object 3 (Chips)
+    From:       Table#1
+    Robot:      HSRB 
+    '''
+    if transport_chips:
+        with real_robot(robot_hsrb):
+            # TODO: Make this to only Pickup
+            hsrb_transport_object(object_desig=chips_desig, placing_nav_pose=table_two_nav_pose,
+                                  placing_pose=chips_placing_pose)
+            rospy.loginfo("Object 3 transported to Table 2")
+
+    '''
+    Navigate
+    Robot:      HSRB
     From:       Table#1
     To:         Table#2 
     '''
-    with real_robot(robot_hsrb):
-        hsrb_transport_object(object_desig=chips_desig, placing_nav_pose=table_two_nav_pose,
-                              placing_pose=chips_placing_pose)
-        rospy.loginfo("Object 3 transported to Table 2")
+    if navigate_table_two_hsrb:
+        with real_robot(robot_hsrb):
+            NavigateAction(target_locations=[table_two_nav_pose]).resolve().perform()
+
+    '''
+    Place
+    Object:     Object 3 (Chips)
+    To:         Table#2
+    Robot:      HSRB 
+    '''
+    if transport_chips:
+        # TODO: Make this to place chips on table 2
+        pass
+
 
     '''
     Transport
