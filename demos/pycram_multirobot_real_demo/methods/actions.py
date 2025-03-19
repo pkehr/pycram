@@ -1,10 +1,12 @@
+from typing import List, Optional
+
 from demos.pycram_multirobot_real_demo.utils import rotated_quaternion
 from pycram.datastructures.enums import Grasp, Arms
 from pycram.datastructures.pose import Pose
 from pycram.designators.action_designator import ParkArmsAction, PickUpAction, NavigateAction, PlaceAction
 
 
-def hsrb_transport_object(object_desig, placing_pose, placing_nav_pose=None):
+def hsrb_transport_object(object_desig, nav_poses: Optional[List] = None, placing_pose: Optional[Pose] = None):
     # table_obj = DetectAction(technique='all').resolve().perform()
 
     ParkArmsAction(arms=[Arms.LEFT]).resolve().perform()
@@ -14,8 +16,9 @@ def hsrb_transport_object(object_desig, placing_pose, placing_nav_pose=None):
 
     ParkArmsAction(arms=[Arms.LEFT]).resolve().perform()
 
-    if placing_nav_pose is not None:
-        NavigateAction(target_locations=[placing_nav_pose]).resolve().perform()
+    if nav_poses is not None:
+        for pose in nav_poses:
+            NavigateAction(target_locations=[pose]).resolve().perform()
 
     PlaceAction(object_desig, [placing_pose], [Grasp.FRONT], [Arms.LEFT], [False]).resolve().perform()
 
@@ -37,6 +40,7 @@ def turtle_turn_right():
 
 def turtle_turn_left():
     turtle_turn(angle=-90)
+
 
 def drive_with_multiple_points(poses):
     for pose in poses:
