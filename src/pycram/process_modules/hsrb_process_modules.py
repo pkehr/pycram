@@ -10,6 +10,7 @@ from ..external_interfaces.ik import request_ik
 from ..external_interfaces.navigate import PoseNavigator
 from ..external_interfaces.robokudo import *
 from ..external_interfaces.tmc import tmc_gripper_control, tmc_talk
+from ..multirobot import RobotManager
 from ..robot_description import RobotDescription
 from ..process_module import ProcessModule
 from ..local_transformer import LocalTransformer
@@ -261,7 +262,12 @@ class HSRBNavigationReal(ProcessModule):
             logdebug(f"Sending goal to giskard to Move the robot")
             giskard.achieve_cartesian_goal(designator.target, RobotDescription.current_robot_description.base_link, "map")
         else:
-            nav = PoseNavigator()
+            nav = None
+
+            if RobotManager.multiple_robots_active():
+                nav = PoseNavigator(ROBOTS.HSRB)
+            else:
+                nav = PoseNavigator()
             nav.pub_now(designator.target)
 
 
