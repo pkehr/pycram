@@ -32,7 +32,15 @@ image_switch_publisher = ImageSwitchPublisher()
 
 def demo():
     # Setup demo objects
-    starting_pose_hsrb, starting_pose_turtle, table_one_nav_pose, table_two_nav_pose, milk_desig, milk_placing_pose, chips_desig, chips_placing_pose = setup_demo_objects()
+    (starting_pose_hsrb, starting_pose_turtle,
+     table_one_nav_pose, table_two_nav_pose,
+     milk_object, milk_desig, milk_placing_pose,
+     coffee_object, coffee_desig, coffee_placing_pose,
+     chips_object, chips_desig, chips_placing_pose) = setup_demo_objects()
+
+    transport_milk = True
+    transport_coffee = False
+
     print("starting_demo")
 
     '''
@@ -43,15 +51,17 @@ def demo():
     '''
     with real_robot(robot_hsrb):
         NavigateAction(target_locations=[starting_pose_hsrb]).resolve().perform()
+    rospy.loginfo("HSRB is at starting position")
 
     '''
         Navigate
         Robot:      Turtlebot
         From:       Anywhere
-        To:         starting_pose 
+        To:         starting_pose (Table 1)
         '''
     with real_robot(robot_turtle):
         NavigateAction(target_locations=[starting_pose_turtle]).resolve().perform()
+    rospy.loginfo("Turtle is at starting position")
 
     '''
     Navigate
@@ -61,16 +71,31 @@ def demo():
     '''
     with real_robot(robot_hsrb):
         NavigateAction(target_locations=[table_one_nav_pose]).resolve().perform()
+    rospy.loginfo("HSRB is at the first table")
 
     '''
     Transport
-    Object:     Milk
+    Object:     Object 1 (Milk)
     From:       Table#1
     To:         Turtlebot 
     '''
-    with real_robot(robot_hsrb):
-        hsrb_transport_object(object_desig=milk_desig, placing_pose=milk_placing_pose)
-        NavigateAction(target_locations=[table_one_nav_pose]).resolve().perform()
+    if transport_milk:
+        with real_robot(robot_hsrb):
+            hsrb_transport_object(object_desig=milk_desig, placing_pose=milk_placing_pose)
+            NavigateAction(target_locations=[table_one_nav_pose]).resolve().perform()
+        rospy.loginfo("Object 1 transported on turtlebot")
+
+    '''
+    Transport
+    Object:     Object 2 (Coffee)
+    From:       Table#1
+    To:         Turtlebot 
+    '''
+    if transport_coffee:
+        with real_robot(robot_hsrb):
+            hsrb_transport_object(object_desig=coffee_desig, placing_pose=coffee_placing_pose)
+            NavigateAction(target_locations=[table_one_nav_pose]).resolve().perform()
+        rospy.loginfo("Object 2 transported on turtlebot")
 
     '''
     Navigate
@@ -80,6 +105,7 @@ def demo():
     '''
     with real_robot(robot_turtle):
         turtle_drive_to_table()
+        rospy.loginfo("Turtlebot at Table 2")
 
     '''
     Transport
@@ -90,18 +116,34 @@ def demo():
     with real_robot(robot_hsrb):
         hsrb_transport_object(object_desig=chips_desig, placing_nav_pose=table_two_nav_pose,
                               placing_pose=chips_placing_pose)
+        rospy.loginfo("Object 3 transported to Table 2")
 
     '''
     Transport
-    Object:     Milk
+    Object:     Object 1 (Milk)
     From:       Turtlebot
     To:         Table#2 
     '''
-    with real_robot(robot_hsrb):
-        hsrb_transport_object(object_desig=milk_desig, placing_pose=milk_placing_pose)
-        ParkArmsAction(arms=[Arms.LEFT]).resolve().perform()
+    if transport_milk:
+        with real_robot(robot_hsrb):
+            hsrb_transport_object(object_desig=milk_desig, placing_pose=milk_placing_pose)
+            ParkArmsAction(arms=[Arms.LEFT]).resolve().perform()
 
-    print("end")
+        rospy.loginfo("Object 1 transported to Table 2")
+
+    '''
+    Transport
+    Object:     Object 2 (Coffee)
+    From:       Turtlebot
+    To:         Table#2 
+    '''
+    if transport_coffee:
+        with real_robot(robot_hsrb):
+            hsrb_transport_object(object_desig=coffee_desig, placing_pose=coffee_placing_pose)
+            ParkArmsAction(arms=[Arms.LEFT]).resolve().perform()
+        rospy.loginfo("Object 2 transported on turtlebot")
+
+    rospy.loginfo("End")
 
 
 if __name__ == "__main__":

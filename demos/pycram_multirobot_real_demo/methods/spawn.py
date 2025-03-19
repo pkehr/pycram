@@ -22,6 +22,7 @@ def spawn_robot(robot: ROBOTS, name: str):
 
 
 def setup_demo_objects():
+    # Nav poses
     starting_position_hsrb = [2.4, 4.0, 0.0]
     starting_orientation_hsrb = rotated_quaternion(angle=90)
     starting_pose_hsrb = Pose(position=starting_position_hsrb, orientation=starting_orientation_hsrb)
@@ -38,6 +39,7 @@ def setup_demo_objects():
     table_two_nav_orientation = rotated_quaternion(angle=-90)
     table_two_nav_pose = Pose(position=table_two_nav_position, orientation=table_two_nav_orientation)
 
+    # Objects
     milk_position = [2.585, 5.85, 0.8]
     milk_pickup_orientation = rotated_quaternion(angle=90)
     milk_starting_pose = Pose(position=milk_position, orientation=milk_pickup_orientation)
@@ -47,6 +49,16 @@ def setup_demo_objects():
 
     milk_object = Object("milk", ObjectType.MILK, "milk.stl", pose=milk_starting_pose)
     milk_desig = ObjectDesignatorDescription.Object(milk_object.name, ObjectType.MILK, milk_object)
+
+    coffee_position = [2.585, 5.85, 0.8]
+    coffee_pickup_orientation = rotated_quaternion(angle=90)
+    coffee_starting_pose = Pose(position=coffee_position, orientation=coffee_pickup_orientation)
+
+    coffee_place_orientation = rotated_quaternion(angle=180)
+    coffee_placing_pose = Pose(position=[1.87, 5.24, 0.45], orientation=coffee_place_orientation)
+
+    coffee_object = Object("milk", ObjectType.MILK, "milk.stl", pose=coffee_starting_pose)
+    coffee_desig = ObjectDesignatorDescription.Object(milk_object.name, ObjectType.MILK, coffee_object)
 
     chips_position = [2.885, 5.85, 0.78]
     chips_pickup_orientation = rotated_quaternion(angle=90)
@@ -58,4 +70,8 @@ def setup_demo_objects():
     chips_object = Object("chips", ObjectType.MILK, "milk.stl", pose=chips_starting_pose)
     chips_desig = ObjectDesignatorDescription.Object(milk_object.name, ObjectType.MILK, chips_object)
 
-    return starting_pose_hsrb, starting_pose_turtle, table_one_nav_pose, table_two_nav_pose, milk_desig, milk_placing_pose, chips_desig, chips_placing_pose
+    return (starting_pose_hsrb, starting_pose_turtle,
+            table_one_nav_pose, table_two_nav_pose,
+            milk_object, milk_desig, milk_placing_pose,
+            coffee_object, coffee_desig, coffee_placing_pose,
+            chips_object, chips_desig, chips_placing_pose)
