@@ -1,5 +1,4 @@
-from demos.pycram_multirobot_real_demo.methods.actions import turtle_drive_to_table, hsrb_transport_object, \
-    hsrb_drive_to_table_two, drive_with_multiple_points
+from demos.pycram_multirobot_real_demo.methods.actions import hsrb_transport_object, drive_with_multiple_points
 from demos.pycram_multirobot_real_demo.methods.spawn import spawn_robot, setup_demo_objects
 from demos.pycram_multirobot_real_demo.utils import rotated_quaternion
 from pycram.datastructures.enums import ROBOTS
@@ -16,6 +15,8 @@ from pycram.worlds.bullet_world import BulletWorld
 # TODO: Make this available for real robot and simulation
 
 # TODO: Make this available for single / multi-robot execution
+
+# TODO: Fix Giskard ForceTorque Error
 
 world = BulletWorld(WorldMode.DIRECT)
 gripper = HSRBMoveGripperReal()
