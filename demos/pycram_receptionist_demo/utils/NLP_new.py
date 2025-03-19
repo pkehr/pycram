@@ -10,7 +10,8 @@ from pycram.utilities.robocup_utils import ImageSwitchPublisher
 
 response = [None, None, None]
 callback = False
-timeout = 10
+timeout = 12
+timeout2 = 17
 
 
 class NLP_Helper:
@@ -47,10 +48,11 @@ class NLP_Helper:
         :param guest: variable to store new information about human
         """
 
-        TalkingMotion("Welcome, please step in front of me and come close").perform()
+        TalkingMotion("Waiting for guests").perform()
 
         # look for human and position higher
         DetectAction(technique='human').resolve().perform()
+        TalkingMotion("Welcome, please step in front of me and come close").perform()
         rospy.sleep(1)
         MoveJointsMotion(["arm_flex_joint"], [-0.25]).perform()
         MoveJointsMotion(["torso_lift_joint"], [0.2]).perform()
@@ -63,14 +65,16 @@ class NLP_Helper:
         rospy.sleep(1.1)
         TalkingMotion("What is your name?").perform()
         rospy.sleep(1.1)
-        TalkingMotion("please answer me when my display changes").perform()
+        TalkingMotion("please use the sentence my name is").perform()
+        rospy.sleep(1.5)
+        TalkingMotion("answer me when my display changes").perform()
         rospy.sleep(2.3)
 
         # signal to start listening
         rospy.loginfo("nlp start")
         self.nlp_pub.publish("start listening")
         rospy.sleep(2.1)
-        self.image_switch_publisher.pub_now(ImageEnum.TALK.value)
+        self.image_switch_publisher.pub_now(ImageEnum.TALKING_DUMMIES.value)
 
         # wait for nlp answer
         start_time = time.time()
@@ -80,6 +84,10 @@ class NLP_Helper:
             if int(time.time() - start_time) == timeout:
                 rospy.logwarn("guest needs to repeat")
                 self.image_switch_publisher.pub_now(ImageEnum.JREPEAT.value)
+            if int(time.time() - start_time) == timeout2:
+                print("listen again")
+                self.nlp_pub.publish("start listening")
+                start_time = time.time()
 
         self.callback = False
 
@@ -96,9 +104,7 @@ class NLP_Helper:
             # two chances to get name and drink
             guest.set_name(self.name_repeat())
 
-        HeadFollowMotion(state="stop").perform()
-        DetectAction(technique='human', state="stop").resolve().perform()
-        TalkingMotion("Nice to meet you").perform()
+        TalkingMotion(f"Nice to meet you {guest.name}").perform()
         return guest
 
     def name_repeat(self):
@@ -110,12 +116,16 @@ class NLP_Helper:
         trys = 0
 
         while trys < 2:
+            self.image_switch_publisher.pub_now(ImageEnum.CLOCK.value)
             TalkingMotion("i am sorry, please repeat your name").perform()
+            self.image_switch_publisher.pub_now(ImageEnum.CLOCK.value)
+            rospy.sleep(2)
+            TalkingMotion("use the sentence my name is").perform()
             rospy.sleep(1.2)
 
             self.nlp_pub.publish("start")
             rospy.sleep(2.5)
-            self.image_switch_publisher.pub_now(ImageEnum.TALK.value)
+            self.image_switch_publisher.pub_now(ImageEnum.TALKING_DUMMIES.value)
 
             # wait for response
             start_time = time.time()
@@ -124,6 +134,10 @@ class NLP_Helper:
                 if time.time() - start_time == timeout:
                     rospy.logwarn("guest needs to repeat")
                     self.image_switch_publisher.pub_now(ImageEnum.JREPEAT.value)
+                if int(time.time() - start_time) == timeout2:
+                    print("listen again")
+                    self.nlp_pub.publish("start listening")
+                    start_time = time.time()
 
             self.image_switch_publisher.pub_now(ImageEnum.HI.value)
             self.callback = False
@@ -131,7 +145,7 @@ class NLP_Helper:
             if self.response[0] == "<GUEST>" and self.response[1].strip() != "None":
                 return self.response[1]
 
-        trys += 1
+            trys += 1
 
     def listen_return_answer(self):
         """
@@ -142,7 +156,7 @@ class NLP_Helper:
         rospy.loginfo("nlp start")
         self.nlp_pub.publish("start listening")
         rospy.sleep(2.2)
-        self.image_switch_publisher.pub_now(ImageEnum.TALK.value)
+        self.image_switch_publisher.pub_now(ImageEnum.TALKING_DUMMIES.value)
 
         # wait for nlp answer
         start_time = time.time()
@@ -165,8 +179,8 @@ class NLP_Helper:
             # signal to start listening
             rospy.loginfo("nlp start")
             self.nlp_pub.publish("start listening")
-            rospy.sleep(2.2)
-            self.image_switch_publisher.pub_now(ImageEnum.TALK.value)
+            rospy.sleep(2.1)
+            self.image_switch_publisher.pub_now(ImageEnum.TALKING_DUMMIES.value)
 
             # wait for nlp answer
             start_time = time.time()
@@ -176,6 +190,10 @@ class NLP_Helper:
                 if int(time.time() - start_time) == timeout:
                     rospy.logwarn("guest needs to repeat")
                     self.image_switch_publisher.pub_now(ImageEnum.JREPEAT.value)
+                if int(time.time() - start_time) == timeout2:
+                    print("listen again")
+                    self.nlp_pub.publish("start listening")
+                    start_time = time.time()
 
             self.callback = False
             if self.response[0] == "<INTERESTS>" and self.response[1].strip() != "None":
@@ -194,13 +212,13 @@ class NLP_Helper:
         TalkingMotion("What is your favorite drink?").perform()
         rospy.sleep(2)
         TalkingMotion("please answer me when my display changes").perform()
-        rospy.sleep(2.5)
+        rospy.sleep(2)
 
         # signal to start listening
         self.nlp_pub.publish("start listening")
         rospy.loginfo("nlp start")
-        rospy.sleep(2.2)
-        self.image_switch_publisher.pub_now(ImageEnum.TALK.value)
+        rospy.sleep(2.1)
+        self.image_switch_publisher.pub_now(ImageEnum.TALKING_DUMMIES.value)
 
         # wait for nlp answer
         start_time = time.time()
@@ -210,6 +228,10 @@ class NLP_Helper:
             if int(time.time() - start_time) == timeout:
                 rospy.logwarn("guest needs to repeat")
                 self.image_switch_publisher.pub_now(ImageEnum.JREPEAT.value)
+            if int(time.time() - start_time) == timeout2:
+                print("listen again")
+                self.nlp_pub.publish("start listening")
+                start_time = time.time()
 
         self.callback = False
 
@@ -218,6 +240,8 @@ class NLP_Helper:
             guest.set_drink(self.response[2])
         else:
             guest.set_drink(self.drink_repeat())
+        TalkingMotion(f"your favorite drink is {guest.fav_drink}").perform()
+
 
     def drink_repeat(self):
         """
@@ -227,15 +251,16 @@ class NLP_Helper:
         self.callback = False
         trys = 0
 
-        while trys < 2:
+        while trys < 1:
             TalkingMotion("i am sorry, please repeat your drink loud and clear").perform()
+            self.image_switch_publisher.pub_now(ImageEnum.CLOCK.value)
             rospy.sleep(3.5)
             TalkingMotion("please use the sentence my favorite drink is").perform()
             rospy.sleep(3)
 
             self.nlp_pub.publish("start")
             rospy.sleep(2.5)
-            self.image_switch_publisher.pub_now(ImageEnum.TALK.value)
+            self.image_switch_publisher.pub_now(ImageEnum.TALKING_DUMMIES.value)
 
             # wait for response
             start_time = time.time()
@@ -243,6 +268,10 @@ class NLP_Helper:
                 if time.time() - start_time == timeout:
                     rospy.logwarn("guest needs to repeat")
                     self.image_switch_publisher.pub_now(ImageEnum.JREPEAT.value)
+                if int(time.time() - start_time) == timeout2:
+                    print("listen again")
+                    self.nlp_pub.publish("start listening")
+                    start_time = time.time()
 
             self.image_switch_publisher.pub_now(ImageEnum.HI.value)
             self.callback = False
@@ -268,12 +297,14 @@ class NLP_Helper:
             if hobby_list[0] == 'playing':
                 hobby_list.remove('playing')
             guest.add_interests(hobby_list[0])
-
-        for indx in range(len(hobby_list)):
-            hobby_list[indx] = hobby_list[indx].lower()
+        if hobby_list:
+            for indx in range(len(hobby_list)):
+                hobby_list[indx] = hobby_list[indx].lower()
 
 
         # answer specifically
         toya_text = self.res_loader.predict_response(hobby_list)
-        print(toya_text)
+        print(guest.interests)
+        if guest.interests:
+            TalkingMotion(f"you like {guest.interests[0]}").perform()
         TalkingMotion(toya_text).perform()

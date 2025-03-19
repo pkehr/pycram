@@ -47,7 +47,7 @@ def pickerino(object_desig, grasp, arm, talk):
     liftingTm = push_baseTm
     liftingTm.pose.position.z += 0.03
     talk.pub_now("Pick Up now!" + object.type)
-    giskardpy.achieve_sequence_pick_up(oTmG, special_knowledge_offsetTm, push_baseTm, liftingTm)
+    giskardpy.achieve_sequence_pick_up([oTmG], special_knowledge_offsetTm, push_baseTm, liftingTm)
     # MoveGripperMotion(motion="open", gripper=arm, allow_gripper_collision=True).resolve().perform()
 
     tool_frame = robot_description.get_tool_frame(arm)

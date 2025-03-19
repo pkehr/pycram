@@ -182,6 +182,10 @@ class ImageEnum(Enum):
     INSPECT = 18
     CHAIR = 37
     GENERATED_TEXT = 40
+    PERCEPTION_RESULT = 41
+    CLOCK = 42
+    TALKING_DUMMIES = 43
+
 
 
 class VirtualMobileBaseJointName(Enum):
@@ -310,7 +314,11 @@ class ROBOTS(Enum):
 
 class RobokudoAnnotator(Enum):
     YOLOANNOTATOR = "YoloAnnotator"
+    WAVING = "/robokudo/Restaurant/WavingResult/output_image"
 
 
 class Demos(Enum):
     STORING_GROCERIES = auto()
+    RECEPTIONIST = auto()
+    CLEAN_THE_TABLE = auto()
+    RESTAURANT = auto()

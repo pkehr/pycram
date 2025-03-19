@@ -2,6 +2,7 @@ import numpy as np
 from threading import Lock
 
 import rospy
+import tf
 from typing_extensions import Any
 
 from ..datastructures.dataclasses import Color
@@ -43,6 +44,24 @@ def _park_arms(arm):
         for joint, pose in robot_description.get_static_joint_chain("left", "park").items():
             robot.set_joint_position(joint, pose)
 
+def _update_from_giskard(robot, result):
+    last_point = result.trajectory.points[-1]
+    joint_names = result.trajectory.joint_names
+    joint_states = dict(zip(joint_names, last_point.positions))
+
+    non_fixed_or_mimic_joints = list(
+        filter(lambda joint: joint.type != JointType.FIXED and joint.mimic_of, robot.joints.values()))
+
+    for joint in non_fixed_or_mimic_joints:
+        joint_states[joint.name] = joint_states.get(joint.mimic_of) * joint.mimic_multiplier + joint.mimic_offset
+
+    orientation = list(tf.transformations.quaternion_from_euler(0, 0, joint_states["odom_t"], axes="sxyz"))
+    pose = Pose([joint_states["odom_x"], joint_states["odom_y"], 0], orientation)
+
+    robot_joint_states = {k: v for k, v in joint_states.items() if k in robot.joints.keys()}
+
+    robot.set_multiple_joint_positions(robot_joint_states)
+    robot.set_pose(pose)
 
 def _move_arm_tcp(target: Pose, robot: Object, arm: Arms) -> None:
     gripper = RobotDescription.current_robot_description.get_arm_tool_frame(arm)
@@ -74,7 +93,7 @@ class HSRBDetecting(ProcessModule):
         loginfo("Detecting technique: {}".format(desig.technique))
         robot = World.robot
         object_type = desig.object_type
-        cam_frame_name = RobotDescription.current_robot_description.get_camera_frame()
+        cam_frame_name = RobotDescription.current_robot_description.get_camera_link()
         front_facing_axis = RobotDescription.current_robot_description.get_default_camera().front_facing_axis
         if desig.technique == 'all':
             loginfo("Fake detecting all generic objects")
@@ -119,8 +138,10 @@ class HSRBMoveTCP(ProcessModule):
             giskard.avoid_all_collisions()
             if designator.allow_gripper_collision:
                 giskard.allow_gripper_collision(designator.arm)
-            giskard.achieve_cartesian_goal(pose_in_map, RobotDescription.current_robot_description.get_arm_chain(
+            result = giskard.achieve_cartesian_goal(pose_in_map, RobotDescription.current_robot_description.get_arm_chain(
                 designator.arm).get_tool_frame(), "map")
+            robot = World.robot
+            _update_from_giskard(robot, result)
         else:
             _move_arm_tcp(designator.target, World.robot, designator.arm)
 
@@ -137,7 +158,9 @@ class HSRBMoveArmJoints(ProcessModule):
             if designator.left_arm_poses:
                 joint_goals.update(designator.left_arm_poses)
             giskard.avoid_all_collisions()
-            giskard.achieve_joint_goal(joint_goals)
+            result = giskard.achieve_joint_goal(joint_goals)
+            robot = World.robot
+            _update_from_giskard(robot, result)
         else:
             robot = World.robot
             if designator.right_arm_poses:
@@ -155,7 +178,9 @@ class HSRBMoveJoints(ProcessModule):
         if use_giskard:
             name_to_position = dict(zip(designator.names, designator.positions))
             giskard.avoid_all_collisions()
-            giskard.achieve_joint_goal(name_to_position)
+            result = giskard.achieve_joint_goal(name_to_position)
+            robot = World.robot
+            _update_from_giskard(robot, result)
         else:
             robot = World.robot
             robot.set_multiple_joint_positions(dict(zip(designator.names, designator.positions)))
@@ -224,7 +249,7 @@ class HSRBMoveHead(ProcessModule):
         pose_in_tilt = local_transformer.transform_pose(target, robot.get_link_tf_frame("head_tilt_link"))
 
         new_pan = np.arctan2(pose_in_pan.position.y, pose_in_pan.position.x)
-        new_tilt = np.arctan2(pose_in_tilt.position.z, pose_in_tilt.position.x ** 2 + pose_in_tilt.position.y ** 2) * -1
+        new_tilt = np.arctan2(pose_in_tilt.position.z, np.sqrt(pose_in_tilt.position.x ** 2 + pose_in_tilt.position.y ** 2))
 
         current_pan = robot.get_joint_position("head_pan_joint")
         current_tilt = robot.get_joint_position("head_tilt_joint")
@@ -313,6 +338,8 @@ class HSRBDetectingReal(ProcessModule):
         """
 
         # ToDo: at the moment perception ignores searching for a specific object type so we do that as well on real
+        global human_pose
+        human_pose = None
         if desig.state == "stop":
             print("I am here")
             stop_query()
@@ -330,7 +357,14 @@ class HSRBDetectingReal(ProcessModule):
 
             print(detected_drinks)
             return detected_drinks
-
+        elif desig.technique == "human_forbidden":
+            query_result = query_for_forbidden_room()
+            for i in range(0, len(query_result.res)):
+                try:
+                    human_pose = Pose.from_pose_stamped(query_result.res[i].pose[0])
+                except IndexError:
+                    human_pose = Pose.from_pose_stamped(query_result.res[i].pose)
+                    pass
         elif desig.technique == 'waving':
             query_result = query_waving_human()
             for i in range(0, len(query_result.res)):
@@ -471,9 +505,13 @@ class HSRBDetectingReal(ProcessModule):
                 try:
                     obj_pose = Pose.from_pose_stamped(query_result.res[i].pose[0])
                 except IndexError:
-                    obj_pose = Pose.from_pose_stamped(query_result.res[i].pose)
+                    query_pose = query_result.res[i].pose
+                    if not query_pose:
+                        continue
+                    obj_pose = Pose.from_pose_stamped(query_pose)
                     pass
                 obj_type = query_result.res[i].type
+                obj_uid = query_result.res[i].uid # empty string???
                 obj_size = None
                 try:
                     obj_size = query_result.res[i].shape_size[0].dimensions
@@ -501,15 +539,23 @@ class HSRBDetectingReal(ProcessModule):
                 color = color_switch.get(obj_color)
                 if color is None:
                     color = Color(0, 0, 0, 1)
-
+                obj_pose.set_orientation(World.robot.get_orientation_as_list())
                 hsize = [obj_size.x / 2, obj_size.y / 2, obj_size.z / 2]
                 osize = [obj_size.x, obj_size.y, obj_size.z]
-                id = World.current_world.add_rigid_box(obj_pose, hsize, color)
+                # id = World.current_world.add_rigid_box(obj_pose, hsize, color)
                 path = translate_obj(obj_type)
                 box_object = Object(obj_type + "_" + str(rospy.get_time()), obj_type, pose=obj_pose, color=color,
-                                    custom_id=id,
+                                    custom_id=obj_uid,
                                     custom_geom={"size": osize}, path=path)
+                obj_id = box_object.id
                 box_object.set_pose(obj_pose)
+                safety_distance = 0.1
+                for existing_object in World.current_world.objects:
+                    if existing_object.obj_type == obj_type and existing_object.id != obj_id:
+                        min_distance = World.current_world.calculate_min_distance(box_object, existing_object, safety_distance)
+                        if abs(min_distance) < safety_distance:
+                            World.current_world.remove_object(existing_object)
+
                 box_desig = ObjectDesignatorDescription.Object(box_object.name, box_object.obj_type, box_object)
 
                 perceived_objects.append(box_desig)
@@ -532,8 +578,9 @@ class HSRBMoveTCPForceTorqueReal(ProcessModule):
         giskard.avoid_all_collisions()
         if designator.allow_gripper_collision:
             giskard.allow_gripper_collision(designator.arm)
-        giskard.achieve_cartesian_goal_w_fts(pose_in_map, RobotDescription.current_robot_description.get_arm_chain(
-            designator.arm).get_tool_frame(), 'map', designator.object_type, designator.threshold)
+        giskard.achieve_cartesian_goal_w_fts(goal_pose=pose_in_map, tip_link=RobotDescription.current_robot_description.get_arm_chain(
+            designator.arm).get_tool_frame(), root_link='map', threshold_name=designator.threshold,
+                                             object_type=designator.object_type)
         # giskard.achieve_cartesian_goal(pose_in_map, RobotDescription.current_robot_description.get_arm_chain(
         #     designator.arm).get_tool_frame(), "map")
 

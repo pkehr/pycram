@@ -10,7 +10,8 @@ from dataclasses import dataclass, field
 import numpy as np
 import rospy
 import sqlalchemy
-from geometry_msgs.msg import PointStamped
+from geometry_msgs.msg import PointStamped, WrenchStamped
+from giskardpy.data_types.exceptions import ObjectForceTorqueThresholdException
 from owlready2 import Thing
 from sqlalchemy.orm import Session
 from tf import transformations
@@ -29,7 +30,7 @@ from ..designator import ActionDesignatorDescription
 from ..external_interfaces import giskard
 from ..failures import ObjectUnfetchable, ReachabilityFailure, SensorMonitoringCondition, ManipulationFTSCheckNoObject
 from ..helper import multiply_quaternions
-from ..language import Monitor
+from ..language import Monitor, Code
 from ..local_transformer import LocalTransformer
 from ..luca_helper import adjust_grasp_for_object_rotation, calculate_object_faces
 from ..multirobot import RobotManager
@@ -765,7 +766,7 @@ class PlaceGivenObjectAction(ActionDesignatorDescription):
 
     def __init__(self,
                  object_types: List[str], arms: List[Arms], target_locations: List[Pose], grasps: List[Grasp],
-                 on_table: Optional[bool] = True, used_robot: Optional[Object] = None, resolver=None):
+                 with_force_torque: List[bool], on_table: Optional[bool] = True, used_robot: Optional[Object] = None, resolver=None):
         """
         Lets the robot place a human given object. The description needs an object type describing the object that
         should be placed, an arm that should be used as well as the target location where the object should be placed
@@ -783,6 +784,7 @@ class PlaceGivenObjectAction(ActionDesignatorDescription):
         self.grasps: List[Grasp] = grasps
         self.target_locations: List[Pose] = target_locations
         self.on_table: bool = on_table
+        self.with_force_torque: List[bool] = with_force_torque
         self.used_robot = used_robot
 
     def ground(self) -> PlaceGivenObjectPerformable:
@@ -791,7 +793,8 @@ class PlaceGivenObjectAction(ActionDesignatorDescription):
         parameter.
         :return: A performable designator
         """
-        return PlaceGivenObjectPerformable(self.object_types[0], self.arms[0], self.target_locations[0], self.grasps[0], self.on_table, used_robot=self.used_robot)
+        return PlaceGivenObjectPerformable(self.object_types[0], self.arms[0], self.target_locations[0], self.grasps[0],
+                                           self.with_force_torque[0], self.on_table, used_robot=self.used_robot)
 
 # ----------------------------------------------------------------------------
 # ---------------- Performables ----------------------------------------------
@@ -1026,6 +1029,9 @@ class PickUpActionPerformable(ActionAbstract):
 
     @with_tree
     def perform(self) -> None:
+        pre_pick_place_config = {'arm_flex_joint': 0.0, 'arm_roll_joint': 0, 'wrist_flex_joint': -1.5,
+                                 'wrist_roll_joint': 0.0}
+        MoveJointsMotion(list(pre_pick_place_config.keys()), list(pre_pick_place_config.values())).perform()
         # Initialize the local transformer and robot reference
         lt = LocalTransformer()
         robot = RobotManager.get_active_robot(robot=self.used_robot)
@@ -1051,10 +1057,16 @@ class PickUpActionPerformable(ActionAbstract):
 
         grasp_rotation = robot_description.grasps[self.grasp]
         oTb = lt.transform_pose(oTm, robot.get_link_tf_frame("base_link"))
+
+        oTb.pose.position.x += 0.01
         # Set pose to the grasp rotation
         oTb.orientation = grasp_rotation
         # Transform the pose to the map frame
         oTmG = lt.transform_pose(oTb, "map")
+
+        pre_pose_oTb = oTb
+        pre_pose_oTb.pose.position.x -= 0.1
+        pre_pose_oTmG = lt.transform_pose(pre_pose_oTb, "map")
 
         # Open the gripper before picking up the object
         rospy.logwarn("Opening Gripper")
@@ -1065,7 +1077,7 @@ class PickUpActionPerformable(ActionAbstract):
         World.current_world.add_vis_axis(oTmG)
         # Execute Bool, because sometimes u only want to visualize the poses to pp.py things
         if execute:
-            MoveTCPMotion(oTmG, self.arm, allow_gripper_collision=False, used_robot=self.used_robot).perform()
+            MoveTCPMotion(pre_pose_oTmG, self.arm, allow_gripper_collision=False, used_robot=self.used_robot).perform()
             MoveTCPMotion(oTmG, self.arm, allow_gripper_collision=False, used_robot=self.used_robot).perform()
 
         # Calculate and apply any special knowledge offsets based on the robot and object type
@@ -1078,7 +1090,7 @@ class PickUpActionPerformable(ActionAbstract):
         if robot.name == "hsrb":
             if self.grasp == Grasp.TOP:
                 if self.object_designator.obj_type in ["Spoon", "Fork", "Knife", "Plasticknife"]:
-                    special_knowledge_offset.pose.position.y -= 0.05
+                    special_knowledge_offset.pose.position.y -= 0.07
                 if self.object_designator.obj_type == "Metalbowl":
                     special_knowledge_offset.pose.position.y -= 0.065
                     special_knowledge_offset.pose.position.x += 0.045
@@ -1089,7 +1101,7 @@ class PickUpActionPerformable(ActionAbstract):
         if robot.name == "hsrb":
             z = 0.04
             if self.grasp == Grasp.TOP:
-                z = 0.035
+                z = 0.036
                 # if self.object_designator.obj_type == "Metalbowl":
                 #     z = 0.035
             push_base.pose.position.z += z
@@ -1129,7 +1141,7 @@ class PickUpActionPerformable(ActionAbstract):
                 try:
                     MoveTCPForceTorqueMotion(liftingTm, Arms.LEFT, object_type, GiskardStateFTS.GRASP,
                                              allow_gripper_collision=False, used_robot=self.used_robot).perform()
-                except ForceTorqueThresholdException:
+                except ObjectForceTorqueThresholdException:
                     raise ManipulationFTSCheckNoObject(f"Could not pickup object after checking force-torque values")
         tool_frame = robot_description.get_arm_tool_frame(arm=self.arm)
         robot.attach(child_object=self.object_designator.world_object, parent_link=tool_frame)
@@ -1171,14 +1183,29 @@ class PlaceActionPerformable(ActionAbstract):
     orm_class: Type[ActionAbstract] = field(init=False, default=ORMPlaceAction)
 
     """
-    Pose in the world at which the object should be placed
+    If placing should be done with usage of force torque or not
     """
-    with_force_torque: bool = True
+    with_force_torque: bool
 
     used_robot: Optional[Object] = None
 
     @with_tree
     def perform(self) -> None:
+        fts = ForceTorqueSensor(robot_name='hsrb')
+
+        def monitor_func():
+            der: WrenchStamped() = fts.get_last_value()
+            print(abs(der.wrench.force.y))
+            if abs(der.wrench.force.y) > 0.45:
+                print(abs(der.wrench.force.y))
+                print(abs(der.wrench.torque.y))
+                return SensorMonitoringCondition
+            return False
+
+        pre_pick_place_config = {'arm_flex_joint': 0.0, 'arm_roll_joint': 0, 'wrist_flex_joint': -1.5,
+                                 'wrist_roll_joint': 0.0}
+        MoveJointsMotion(list(pre_pick_place_config.keys()), list(pre_pick_place_config.values())).perform()
+
         lt = LocalTransformer()
         execute = True
         robot = RobotManager.get_active_robot(robot=self.used_robot)
@@ -1203,10 +1230,14 @@ class PlaceActionPerformable(ActionAbstract):
         # Transform the pose to the map frame
         oTmG = lt.transform_pose(oTb, "map")
 
+        pre_pose_oTb = oTb
+        pre_pose_oTb.pose.position.x -= 0.1
+        pre_pose_oTmG = lt.transform_pose(pre_pose_oTb, "map")
+
         rospy.logwarn("Placing now")
         World.current_world.add_vis_axis(oTmG)
         if execute:
-            MoveTCPMotion(oTmG, self.arm, used_robot=self.used_robot).perform()
+            MoveTCPMotion(pre_pose_oTmG, self.arm, used_robot=self.used_robot).perform()
             MoveTCPMotion(oTmG, self.arm, used_robot=self.used_robot).perform()
 
         if self.with_force_torque:
@@ -1217,30 +1248,25 @@ class PlaceActionPerformable(ActionAbstract):
             try:
                 # MoveArmDownForceTorqueMotion(down_distance=0.3, object_type=object_type, speed_multi=0.1)
                 giskard.arm_down_ft(down_distance=0.3, object_type=object_type, speed_multi=0.1)
-            except ForceTorqueThresholdException:
+            except ObjectForceTorqueThresholdException:
                 raise ManipulationFTSCheckNoObject(f"Could not place object after checking force-torque values")
-        # else:
-        #     tool_frame = RobotDescription.current_robot_description.get_arm_tool_frame(self.arm)
-        #     push_base = lt.transform_pose(oTmG, robot.get_link_tf_frame(tool_frame))
-        #     if robot.name == "hsrb":
-        #         z = 0.03
-        #         if self.grasp == Grasp.TOP:
-        #             z = 0.07
-        #         push_base.pose.position.z += z
-        #     # todo: make this for other robots
-        #     push_baseTm = lt.transform_pose(push_base, "map")
-        #
-        #     rospy.logwarn("Pushing now")
-        #     World.current_world.add_vis_axis(push_baseTm)
-        #     if execute:
-        #         MoveTCPMotion(push_baseTm, self.arm).perform()
+        else:
+            tool_frame = RobotDescription.current_robot_description.get_arm_tool_frame(self.arm)
+            push_base = lt.transform_pose(oTmG, robot.get_link_tf_frame(tool_frame))
+            if robot.name == "hsrb":
+                z = 0.03
+                if self.grasp == Grasp.TOP:
+                    z = 0.07
+                push_base.pose.position.z += z
+            # todo: make this for other robots
+            push_baseTm = lt.transform_pose(push_base, "map")
+
+            rospy.logwarn("Pushing now")
+            World.current_world.add_vis_axis(push_baseTm)
+            if execute:
+                MoveTCPMotion(push_baseTm, self.arm).perform()
 
             # if self.object_designator.obj_type == "Metalplate":
-            #     loweringTm = push_baseTm
-            #     loweringTm.pose.position.z -= 0.08
-            #     World.current_world.add_vis_axis(loweringTm)
-            #     if execute:
-            #         MoveTCPMotion(loweringTm, self.arm).perform()
             #     # rTb = Pose([0,-0.1,0], [0,0,0,1],"base_link")
             #     rospy.logwarn("sidepush monitoring")
             #     TalkingMotion("sidepush.").perform()
@@ -1712,7 +1738,7 @@ class PouringActionPerformable(ActionAbstract):
         # Determine the grasp orientation and transform the pose to the base link frame
         grasp_rotation = robot_description.grasps[Grasp.FRONT]
         oTbs = lt.transform_pose(oTm, robot.get_link_tf_frame("base_link"))
-        oTbs.pose.position.x += 0.009  # was 0,009
+        oTbs.pose.position.x += 0.0  # was +0,009
         oTbs.pose.position.z += 0.17  # was 0.13
 
         if self.direction == "right":
@@ -1721,13 +1747,16 @@ class PouringActionPerformable(ActionAbstract):
             oTbs.pose.position.y += 0.125
 
         oTms = lt.transform_pose(oTbs, "map")
-        World.current_world.add_vis_axis(oTms)
+        # World.current_world.add_vis_axis(oTms)
 
         #
         oTog = lt.transform_pose(oTms, robot.get_link_tf_frame("base_link"))
         oTog.orientation = grasp_rotation
+        oTog_prepose = oTog.copy()
+        oTog_prepose.set_position([oTog.position.x-0.3, oTog.position.y, oTog.position.z+0.05])
         oTgm = lt.transform_pose(oTog, "map")
-        World.current_world.add_vis_axis(oTgm)
+        oTgm_prepose = lt.transform_pose(oTog_prepose, "map")
+        # World.current_world.add_vis_axis(oTgm)
 
         if self.direction == "right":
             new_q = axis_angle_to_quaternion([0, 0, 1], -self.angle)
@@ -1741,12 +1770,15 @@ class PouringActionPerformable(ActionAbstract):
         oTmsp.pose.orientation.y = new_ori[1]
         oTmsp.pose.orientation.z = new_ori[2]
         oTmsp.pose.orientation.w = new_ori[3]
-        World.current_world.add_vis_axis(oTmsp)
+        # World.current_world.add_vis_axis(oTmsp)
 
         if execute:
+            MoveTCPMotion(oTgm_prepose, self.arm, allow_gripper_collision=False, used_robot=self.used_robot).perform()
             MoveTCPMotion(oTgm, self.arm, allow_gripper_collision=False, used_robot=self.used_robot).perform()
             MoveTCPMotion(oTmsp, self.arm, allow_gripper_collision=False, used_robot=self.used_robot).perform()
             MoveTCPMotion(oTgm, self.arm, allow_gripper_collision=False, used_robot=self.used_robot).perform()
+            MoveTCPMotion(oTgm_prepose, self.arm, allow_gripper_collision=False, used_robot=self.used_robot).perform()
+
 
 
 @dataclass
@@ -1875,6 +1907,11 @@ class PlaceGivenObjectPerformable(ActionAbstract):
     Grasp that defines how to place the given object
     """
 
+    with_force_torque: bool
+    """
+    If placing should be done with usage of force torque or not
+    """
+
     on_table: Optional[bool]
     """
     When placing a plate needed to differentiate between placing in a dishwasher and placing on the table. 
@@ -1885,6 +1922,21 @@ class PlaceGivenObjectPerformable(ActionAbstract):
 
     @with_tree
     def perform(self) -> None:
+        fts = ForceTorqueSensor(robot_name='hsrb')
+
+        def monitor_func():
+            der: WrenchStamped() = fts.get_last_value()
+            print(abs(der.wrench.force.y))
+            if abs(der.wrench.force.y) > 0.45:
+                print(abs(der.wrench.force.y))
+                print(abs(der.wrench.torque.y))
+                return SensorMonitoringCondition
+            return False
+
+        pre_pick_place_config = {'arm_flex_joint': 0.0, 'arm_roll_joint': 0, 'wrist_flex_joint': -1.5,
+                                 'wrist_roll_joint': 0.0}
+        MoveJointsMotion(list(pre_pick_place_config.keys()), list(pre_pick_place_config.values())).perform()
+
         lt = LocalTransformer()
         robot = RobotManager.get_active_robot(robot=self.used_robot)
         robot_description = RobotManager.get_robot_description(robot=robot)
@@ -1931,8 +1983,14 @@ class PlaceGivenObjectPerformable(ActionAbstract):
 
         # placing everything else or the Metalplate in the dishwasher
         else:
-            if self.grasp == Grasp.TOP:
-                oTm.pose.position.z += 0.05
+            if self.with_force_torque:
+                if self.grasp == Grasp.TOP:
+                    oTm.pose.position.z += 0.12
+                else:
+                    oTm.pose.position.z += 0.2
+            else:
+                if self.grasp == Grasp.TOP:
+                    oTm.pose.position.z += 0.05
 
             # Determine the grasp orientation and transform the pose to the base link frame
             grasp_rotation = robot_description.grasps[self.grasp]
@@ -1942,52 +2000,62 @@ class PlaceGivenObjectPerformable(ActionAbstract):
             # Transform the pose to the map frame
             oTmG = lt.transform_pose(oTb, "map")
 
+            pre_pose_oTb = oTb
+            pre_pose_oTb.pose.position.x -= 0.1
+            pre_pose_oTmG = lt.transform_pose(pre_pose_oTb, "map")
+
             logwarn("Placing now")
             World.current_world.add_vis_axis(oTmG)
             if execute:
-                MoveTCPMotion(oTmG, self.arm, used_robot=self.used_robot).perform()
+                MoveTCPMotion(pre_pose_oTmG, self.arm, used_robot=self.used_robot).perform()
                 MoveTCPMotion(oTmG, self.arm, used_robot=self.used_robot).perform()
 
-            tool_frame = robot_description.get_arm_tool_frame(self.arm)
-            push_base = lt.transform_pose(oTmG, robot.get_link_tf_frame(tool_frame))
-            if robot.name == "hsrb":
-                z = 0.03
-                if self.grasp == Grasp.TOP:
-                    z = 0.07
-                push_base.pose.position.z += z
-            # todo: make this for other robots
-            push_baseTm = lt.transform_pose(push_base, "map")
-
-            logwarn("Pushing now")
-            World.current_world.add_vis_axis(push_baseTm)
-            if execute:
-                MoveTCPMotion(push_baseTm, self.arm, used_robot=self.used_robot).perform()
-            if self.object_type == "Metalplate":
-                loweringTm = push_baseTm
-                loweringTm.pose.position.z -= 0.08
-                World.current_world.add_vis_axis(loweringTm)
-                if execute:
-                    MoveTCPMotion(loweringTm, self.arm, used_robot=self.used_robot).perform()
-                # rTb = Pose([0,-0.1,0], [0,0,0,1],"base_link")
-                logwarn("sidepush monitoring")
-                TalkingMotion("sidepush.").perform()
-                side_push = Pose(
-                    [push_baseTm.pose.position.x, push_baseTm.pose.position.y + 0.125, loweringTm.pose.position.z],
-                    [push_baseTm.orientation.x, push_baseTm.orientation.y, push_baseTm.orientation.z,
-                     push_baseTm.orientation.w])
+            if self.with_force_torque:
+                if self.object_type != "Metalbowl":
+                    object_type = "Default"
+                else:
+                    object_type = "Bowl"
                 try:
-                    plan = MoveTCPMotion(side_push, self.arm, used_robot=self.used_robot) >> Monitor(fts.monitor_func)
-                    plan.perform()
-                except (SensorMonitoringCondition):
-                    logwarn("Open Gripper")
-                    MoveGripperMotion(motion=GripperState.OPEN, gripper=self.arm, used_robot=self.used_robot).perform()
+                    # MoveArmDownForceTorqueMotion(down_distance=0.3, object_type=object_type, speed_multi=0.1)
+                    giskard.arm_down_ft(down_distance=0.3, object_type=object_type, speed_multi=0.1)
+                except ObjectForceTorqueThresholdException:
+                    raise ManipulationFTSCheckNoObject(f"Could not place object after checking force-torque values")
+            else:
+                tool_frame = robot_description.current_robot_description.get_arm_tool_frame(self.arm)
+                push_base = lt.transform_pose(oTmG, robot.get_link_tf_frame(tool_frame))
+                if robot.name == "hsrb":
+                    z = 0.03
+                    if self.grasp == Grasp.TOP:
+                        z = 0.07
+                    push_base.pose.position.z += z
+                # todo: make this for other robots
+                push_baseTm = lt.transform_pose(push_base, "map")
+
+                logwarn("Pushing now")
+                World.current_world.add_vis_axis(push_baseTm)
+                if execute:
+                    MoveTCPMotion(push_baseTm, self.arm, used_robot=self.used_robot).perform()
+                # if self.object_type == "Metalplate":
+                #     # rTb = Pose([0,-0.1,0], [0,0,0,1],"base_link")
+                #     rospy.logwarn("sidepush monitoring")
+                #     TalkingMotion("sidepush.").perform()
+                #     side_push = Pose(
+                #         [push_baseTm.pose.position.x, push_baseTm.pose.position.y + 0.08, push_baseTm.pose.position.z],
+                #         [push_baseTm.orientation.x, push_baseTm.orientation.y, push_baseTm.orientation.z,
+                #          push_baseTm.orientation.w])
+                #     try:
+                #         plan = MoveTCPMotion(side_push, self.arm) >> Monitor(monitor_func)
+                #         plan.perform()
+                #     except SensorMonitoringCondition:
+                #         rospy.logwarn("Open Gripper")
+                #         MoveGripperMotion(motion=GripperState.OPEN, gripper=self.arm).perform()
 
             # Finalize the placing by opening the gripper and lifting the arm
             logwarn("Open Gripper")
             MoveGripperMotion(motion=GripperState.OPEN, gripper=self.arm, used_robot=self.used_robot).perform()
 
             logwarn("Lifting now")
-            liftingTm = push_baseTm
+            liftingTm = oTmG
             liftingTm.pose.position.z += 0.08
             World.current_world.add_vis_axis(liftingTm)
             if execute:

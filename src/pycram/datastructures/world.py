@@ -344,7 +344,7 @@ class World(StateEntity, ABC):
         :return: A list of all Objects except robot and environment.
         """
         return list(filter
-                    (lambda obj: (obj.type != ObjectType.ROBOT and obj.type != ObjectType.ENVIRONMENT), self.objects))
+                    (lambda obj: (obj.obj_type != ObjectType.ROBOT and obj.obj_type != ObjectType.ENVIRONMENT), self.objects))
 
     def get_object_by_id(self, obj_id: int) -> Object:
         """

@@ -1,14 +1,16 @@
-from typing import Optional
-
 import rospy
 from geometry_msgs.msg import PointStamped, PoseStamped
+
+from pycram.datastructures.enums import ImageEnum
 from pycram.designators.action_designator import *
 from pycram.designators.motion_designator import PointingMotion
 from pycram.designators.object_designator import HumanDescription
 from pycram.failures import PerceptionObjectNotFound
+from pycram.utilities.robocup_utils import TextToImagePublisher, ImageSwitchPublisher
 
-look_couch = Pose([4.9, -2.4, 0.75])
-
+look_couch = Pose([8.8, 6.6, 0.65]) # done
+text_to_img_publisher = TextToImagePublisher()
+img = ImageSwitchPublisher()
 
 def get_attributes(guest: HumanDescription, trys: Optional[int] = 0):
     """
@@ -29,6 +31,7 @@ def get_attributes(guest: HumanDescription, trys: Optional[int] = 0):
             keys = DetectAction(technique='human', state='face').resolve().perform()
             new_id = keys["keys"][0]
             guest.set_id(new_id)
+            rospy.loginfo(new_id)
 
             # get 4 different attributes
             attr_list = DetectAction(technique='attributes', state='start').resolve().perform()
@@ -63,47 +66,45 @@ def detect_point_to_seat(robot, no_sofa: Optional[bool] = False):
 
     # detect free seat
     try:
-        print("before")
         seat = DetectAction(technique='location', state="sofa").resolve().perform()
     except PerceptionObjectNotFound:
         rospy.logerr("i hate perception lol")
         return None
     free_seat = False
+    print(seat)
 
     # loop through all seating options detected by perception
     if not no_sofa:
         for place in seat:
             # found a place that is not occupied
-            print(place)
-            print(place[1])
+            rospy.logerr(place)
             if place[1] == ' False' or place[1] == 'False':
 
-                if not float(place[2])-4.62 < 0.25:
+                pose_in_map = Pose([float(place[2]), float(place[3]), 0.85])
+                rospy.loginfo("place: " + str(place))
 
-                    pose_in_map = Pose([float(place[2]), float(place[3]), 0.85])
-                    rospy.loginfo("place: " + str(place))
+                # transform poses to find out position relative to robot
+                lt = LocalTransformer()
+                pose_in_robot_frame = lt.transform_pose(pose_in_map, robot.get_link_tf_frame("base_link"))
+                print(pose_in_robot_frame.pose.position.y)
+                if pose_in_robot_frame.pose.position.y > 0.45:
+                    TalkingMotion("please take a seat to the left from me").perform()
+                    # move pose more to the left for clear pointing pose
+                    pose_in_robot_frame.pose.position.y += 0.6
 
-                    # transform poses to find out position relative to robot
-                    lt = LocalTransformer()
-                    pose_in_robot_frame = lt.transform_pose(pose_in_map, robot.get_link_tf_frame("base_link"))
+                elif pose_in_robot_frame.pose.position.y < -0.09:
+                    TalkingMotion("please take a seat to the right from me").perform()
+                    # move pose more to the right for clear pointing pose
+                    pose_in_robot_frame.pose.position.y -= 0.5
 
-                    if pose_in_robot_frame.pose.position.y > 0.25:
-                        TalkingMotion("please take a seat to the left from me").perform()
-                        # move pose more to the left for clear pointing pose
-                        pose_in_robot_frame.pose.position.y += 0.6
 
-                    elif pose_in_robot_frame.pose.position.y < -0.15:
-                        TalkingMotion("please take a seat to the right from me").perform()
-                        # move pose more to the right for clear pointing pose
-                        pose_in_robot_frame.pose.position.y -= 0.6
+                else:
+                    TalkingMotion("please take a seat in front of me").perform()
 
-                    else:
-                        TalkingMotion("please take a seat in front of me").perform()
-
-                    # get pose in map
-                    pose_in_map = lt.transform_pose(pose_in_robot_frame, "map")
-                    free_seat = True
-                    break
+                # get pose in map
+                pose_in_map = lt.transform_pose(pose_in_robot_frame, "map")
+                free_seat = True
+                break
     else:
         rospy.loginfo("find free chairs")
         for place in seat:
@@ -168,18 +169,23 @@ def identify_faces(host: HumanDescription, guest1: HumanDescription):
     while True:
         unknown = []
         try:
-            if counter > 4 or (found_guest and found_host):
+            if counter > 5 or (found_guest and found_host):
                 break
 
             elif counter == 2:
                 TalkingMotion("sitting people please look at me").perform()
-                rospy.sleep(2.5)
+                rospy.sleep(2)
 
             elif counter == 3:
                 # look to the side to find faces
                 MoveJointsMotion(["head_pan_joint"], [-0.8]).perform()
                 TalkingMotion("sitting people please look at me").perform()
                 rospy.sleep(2.5)
+            elif counter == 4:
+                # look to the side to find faces
+                MoveJointsMotion(["head_pan_joint"], [0.8]).perform()
+                TalkingMotion("sitting people please look at me").perform()
+                rospy.sleep(2.2)
 
             human_dict = DetectAction(technique='human', state='face').resolve().perform()
             rospy.loginfo("faces detect: " + str(human_dict))
@@ -209,6 +215,10 @@ def identify_faces(host: HumanDescription, guest1: HumanDescription):
             counter += 1
             if counter == 3:
                 MoveJointsMotion(["head_pan_joint"], [-0.8]).perform()
+                TalkingMotion("please look at me").perform()
+                rospy.sleep(2.5)
+            if counter == 4:
+                MoveJointsMotion(["head_pan_joint"], [0.8]).perform()
                 TalkingMotion("please look at me").perform()
                 rospy.sleep(2.5)
 
@@ -270,6 +280,9 @@ def introduce(human1: HumanDescription, human2: HumanDescription):
     rospy.sleep(2)
     if human1.interests:
         TalkingMotion(f" {human1.name} likes {human1.interests[0]}").perform()
+        if human2.interests:
+            if human1.interests[0] == human2.interests[0]:
+                TalkingMotion(f" both of you like {human1.interests[0]}").perform()
 
     rospy.sleep(1)
 
@@ -298,29 +311,27 @@ def describe(human: HumanDescription):
     
     if human.attributes != "False" and human.attributes is not None:
         print(human.attributes)
-
-        if human.pose:
-            pub_pose2.publish(human.pose)
-
+        TalkingMotion(f"another guest called {human.name} arrived before you").perform()
+        rospy.sleep(2.5)
         TalkingMotion(f"I will describe {human.name} further now").perform()
         rospy.sleep(1.5)
 
         # gender
-        TalkingMotion(f"i think your gender is {human.attributes[0]}").perform()
+        TalkingMotion(f"their gender is {human.attributes[0]}").perform()
         rospy.sleep(1.5)
 
         # headgear or not
-        TalkingMotion(f"you are not wearing a hat").perform()
+        TalkingMotion(f"they are not wearing a hat").perform()
         rospy.sleep(1)
 
         # kind of clothes
-        TalkingMotion(f"you are  {human.attributes[2]}").perform()
-        rospy.sleep(1)
+        # TalkingMotion(f"they are  {human.attributes[2]}").perform()
+        # rospy.sleep(1)
 
         # brightness of clothes
-        TalkingMotion(f"you are wearing {human.attributes[3]}").perform()
-        rospy.sleep(2.5)
-        TalkingMotion("have fun at the party").perform()
+        TalkingMotion(f"they are wearing {human.attributes[3]}").perform()
+        rospy.sleep(1)
+
 
 
 def check_drink_available(guest: HumanDescription):
@@ -341,9 +352,21 @@ def check_drink_available(guest: HumanDescription):
         if drink[0] == robokudo_name:
             TalkingMotion("your favorite drink stands on the table").perform()
             return True
+        if robokudo_name == "Milkpack":
+            if drink[0] == "MilkpackLactoseFree":
+                TalkingMotion("your favorite drink stands on the table").perform()
+                return True
 
     TalkingMotion("i can not find that drink here").perform()
     return False
+
+
+def display_info(info: str):
+    text_to_img_publisher.pub_now(info)
+    rospy.sleep(1.5)
+    img.pub_now(ImageEnum.GENERATED_TEXT.value)
+    img.pub_now(ImageEnum.GENERATED_TEXT.value)
+
 
 
 hobby_verbs = {
@@ -383,7 +406,11 @@ hobby_verbs = {
 nlp_drink_to_robokudo = {
     "milk": "Milkpack",
     "red boys": "RedBullCan",
-    "red boi": "RedBullCan"
+    "red boi": "RedBullCan",
+    "red bull": "RedBullCan",
+    "milk1": "MilkpackLactoseFree",
+    "cola": "Colacan",
+    "red oil": "RedBullCan"
 }
 
 

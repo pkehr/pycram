@@ -147,6 +147,7 @@ def query_object(obj_desc: ObjectDesignatorDescription) -> dict:
     return pose_candidates
 
 
+
 @init_robokudo_interface
 def query_human() -> PointStamped:
     """Query RoboKudo for human detection and return the detected human's pose."""
@@ -190,6 +191,12 @@ def query_human_attributes() -> Any:
 
 
 @init_robokudo_interface
+def query_for_forbidden_room():
+    result = send_query(obj_type='human', region='bedroom')
+    if result:
+        return result
+
+@init_robokudo_interface
 def query_waving_human() -> Pose:
     """Query RoboKudo for detecting a waving human."""
     result = send_query(obj_type='waving')
@@ -202,7 +209,34 @@ def query_beverages() -> Any:
     return send_query(obj_type='beverage')
 
 
-def create_used_annotator_list(annotators: Union[List[RobokudoAnnotator], Demos]) -> List[str]:
+def get_annotator_topic(annotator_name: str, is_rwpipeline_path=True) -> str:
+    """
+    Returns the whole ROS topic for a given annotator output name of robokudo.
+
+    Note: It does not check if the topic actually exists. The name is just appended.
+    """
+    if is_rwpipeline_path:
+        return f"/robokudo/RWPipeline/{annotator_name}/output_image"
+
+    return annotator_name
+
+def get_annotators_of_demo(demo: Demos):
+    demo_name = demo.name
+    if demo == Demos.STORING_GROCERIES:
+        annotator_result: List[RobokudoAnnotator] = [RobokudoAnnotator.YOLOANNOTATOR]
+    elif demo == Demos.RECEPTIONIST:
+        annotator_result: List[RobokudoAnnotator] = [RobokudoAnnotator.YOLOANNOTATOR]
+    elif demo == Demos.CLEAN_THE_TABLE:
+        annotator_result: List[RobokudoAnnotator] = [RobokudoAnnotator.YOLOANNOTATOR]
+    elif demo == Demos.RESTAURANT:
+        annotator_result: List[RobokudoAnnotator] = [RobokudoAnnotator.WAVING]
+    else:
+        logwarn(f"Demo {demo_name} does not have assigned annotators yet")
+        return []
+
+    return annotator_result
+
+def get_used_annotator_list(annotators: Union[List[RobokudoAnnotator], Demos], as_topic_names=True) -> List[str]:
     if not annotators:
         logwarn("No annotators or demo preset provided for annotator names")
         return []
@@ -215,16 +249,13 @@ def create_used_annotator_list(annotators: Union[List[RobokudoAnnotator], Demos]
             annotator_result: List[RobokudoAnnotator] = annotators
 
     if isinstance(annotators, Demos):
-        demo_name = annotators.name
-
-        if annotators == Demos.STORING_GROCERIES:
-            annotator_result: List[RobokudoAnnotator] = [RobokudoAnnotator.YOLOANNOTATOR]
-        else:
-            logwarn(f"Demo {demo_name} does not have assigned annotators yet")
-            return []
-
-        loginfo(f"Setting preset for: {demo_name}")
+        loginfo(f"Setting preset for: {annotators.name}")
+        annotator_result = get_annotators_of_demo(annotators)
 
     annotator_strings: List[str] = [ann.value for ann in annotator_result]
+
+    if as_topic_names:
+        annotator_topics = [get_annotator_topic(annotator) for annotator in annotator_strings]
+        annotator_strings = annotator_topics
 
     return annotator_strings

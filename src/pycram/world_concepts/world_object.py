@@ -104,7 +104,15 @@ class Object(WorldEntity):
             self.path = self.world.preprocess_object_file_and_get_its_cache_path(path, ignore_cached_files,
                                                                                  self.description, self.name,
                                                                                  scale_mesh=scale_mesh)
-
+            # currently "self.description.get_root()" for any object type will always be the root of the first object
+            # of that type that was perceived.
+            # For Example:
+            #   - Our first bowl may get the root 'Metalbowl_1739370318.2181559_main'.
+            #   - If we add a new bowl at a later point in time, the root of that new bowl
+            #     will also be 'Metalbowl_1739370318.2181559_main'.
+            # This is probably caused by caching inside URDF.from_xml_string(file.read()), which is
+            # used in pycram.object_descriptors.urdf.ObjectDescription.load_description
+            # I haven't encountered a problem with it yet, but it may cause some in the future
             self.description.update_description_from_file(self.path)
 
         if self.obj_type == ObjectType.ROBOT and not self.world.is_prospection_world:
