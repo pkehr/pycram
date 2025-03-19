@@ -1,11 +1,11 @@
 from demos.pycram_multirobot_real_demo.utils import rotated_quaternion
 from pycram.datastructures.dataclasses import Color
-from pycram.datastructures.enums import Arms
+from pycram.datastructures.enums import Arms, ROBOTS
 from pycram.datastructures.enums import ObjectType, WorldMode
 from pycram.designators.action_designator import *
 from pycram.designators.object_designator import *
 from pycram.external_interfaces.navigate import PoseNavigator
-# new imports
+
 from pycram.object_descriptors.urdf import ObjectDescription
 from pycram.process_module import real_robot
 from pycram.ros_utils.robot_state_updater import RobotStateUpdater
@@ -18,22 +18,23 @@ extension = ObjectDescription.get_file_extension()
 world = BulletWorld(WorldMode.DIRECT)
 gripper = HSRBMoveGripperReal()
 
+def spawn_robot(robot: ROBOTS, name: str):
+    robot_object = Object(name, ObjectType.ROBOT, f"{name}{extension}")
+    robot_desig = ObjectDesignatorDescription(names=[name]).resolve()
+    robot_color = Color(R=0.6, G=0.6, B=0.6, A=1)
+    robot_object.set_color(robot_color)
+    # RobotStateUpdater("/tf", "/hsrb/robot_state/joint_states", multirobot_name='hsrb')
+    robot_move = PoseNavigator(robot)
+
+    return robot_object, robot_desig, robot_move
+
 # Spawn HSRB
-robot_hsrb = Object("hsrb", ObjectType.ROBOT, f"hsrb{extension}")
-robot_desig_hsrb = ObjectDesignatorDescription(names=["hsrb"]).resolve()
-robot_color = Color(R=0.6, G=0.6, B=0.6, A=1)
-robot_hsrb.set_color(robot_color)
-RobotStateUpdater("/tf", "/hsrb/robot_state/joint_states", multirobot_name='hsrb')
-hsrb_move = PoseNavigator()
+robot_hsrb, hsrb_desig, hsrb_move = spawn_robot(ROBOTS.HSRB, name='hsrb')
 
 # Spawn Turtle
-#robot_turtle = Object("turtlebot", ObjectType.ROBOT, f"turtlebot{extension}")
-#robot_desig_turtle = ObjectDesignatorDescription(names=["turtlebot"]).resolve()
-#robot_color = Color(R=0.6, G=0.6, B=0.6, A=1)
-#robot_turtle.set_color(robot_color)
-#turtle_move = PoseNavigator(namespace='turtle')
+robot_turtle, robot_desig_turtle, turtle_move = spawn_robot(ROBOTS.TURTLE, name='turtlebot')
 
-kitchen = Object("kitchen", ObjectType.ENVIRONMENT, "pre_robocup_5.urdf")
+kitchen = Object("kitchen", ObjectType.ENVIRONMENT, "suturo_lab_2024_1.urdf")
 kitchen_desig = ObjectDesignatorDescription(names=["kitchen"])
 
 # important Publishers
