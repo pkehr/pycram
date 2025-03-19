@@ -11,6 +11,10 @@ from pycram.utilities.robocup_utils import TextToSpeechPublisher, ImageSwitchPub
 from pycram.world_concepts.world_object import Object
 from pycram.worlds.bullet_world import BulletWorld
 
+# TODO: Make this available for real robot and simulation
+
+# TODO: Make this available for single / multi-robot execution
+
 world = BulletWorld(WorldMode.DIRECT)
 gripper = HSRBMoveGripperReal()
 
@@ -36,15 +40,15 @@ def demo():
      coffee_object, coffee_desig, coffee_placing_pose,
      chips_object, chips_desig, chips_placing_pose) = setup_demo_objects()
 
-    navigate_start_turtle = True
+    navigate_start_turtle = False
     navigate_start_hsrb = True
     navigate_table_one_hsrb = True
 
-    transport_milk = True
+    transport_milk = False
     transport_coffee = False
-    transport_chips = True
+    transport_chips = False
 
-    navigate_table_two_turtle = True
+    navigate_table_two_turtle = False
     navigate_table_two_hsrb = True
 
     print("starting_demo")
@@ -114,6 +118,7 @@ def demo():
     '''
     if navigate_table_two_turtle:
         with real_robot(robot_turtle):
+            # TODO: This hast to be more points, as navigation tries to run against the wall otherwise
             turtle_drive_to_table()
             rospy.loginfo("Turtlebot at Table 2")
 
@@ -127,6 +132,7 @@ def demo():
         with real_robot(robot_hsrb):
             PickUpAction(object_designator_description=chips_desig, arms=[Arms.LEFT],
                          grasps=[Grasp.FRONT]).resolve().perform()
+            ParkArmsAction(arms=[Arms.LEFT]).resolve().perform()
             rospy.loginfo("Pickup Object 3")
 
     '''
@@ -137,6 +143,7 @@ def demo():
     '''
     if navigate_table_two_hsrb:
         with real_robot(robot_hsrb):
+            # TODO: This has to be more points, as navigation tries to run against the wall otherwise
             NavigateAction(target_locations=[table_two_nav_pose]).resolve().perform()
             rospy.loginfo("Moved to Table 2")
 
@@ -150,6 +157,7 @@ def demo():
         with real_robot(robot_hsrb):
             PlaceAction(chips_desig, target_locations=[table_two_nav_pose], arms=[Arms.LEFT], grasps=[Grasp.FRONT],
                         with_force_torque=[False]).resolve().perform()
+            ParkArmsAction(arms=[Arms.LEFT]).resolve().perform()
             rospy.loginfo("Object 3 placed on Table 2")
 
     '''
