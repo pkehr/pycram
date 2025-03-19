@@ -54,11 +54,11 @@ def demo():
     rospy.loginfo("HSRB is at starting position")
 
     '''
-        Navigate
-        Robot:      Turtlebot
-        From:       Anywhere
-        To:         starting_pose (Table 1)
-        '''
+    Navigate
+    Robot:      Turtlebot
+    From:       Anywhere
+    To:         starting_pose (Table 1)
+    '''
     with real_robot(robot_turtle):
         NavigateAction(target_locations=[starting_pose_turtle]).resolve().perform()
     rospy.loginfo("Turtle is at starting position")
