@@ -24,7 +24,7 @@ def spawn_robot(robot: ROBOTS, name: str):
 
 def setup_demo_objects():
     # Nav poses
-    starting_position_hsrb = [2.4, 4.0, 0.0]
+    starting_position_hsrb = [2.4, 3.0, 0.0]
     starting_orientation_hsrb = rotated_quaternion(angle=90)
     starting_pose_hsrb = Pose(position=starting_position_hsrb, orientation=starting_orientation_hsrb)
 
@@ -32,7 +32,7 @@ def setup_demo_objects():
     starting_orientation_turtle = rotated_quaternion(angle=90)
     starting_pose_turtle = Pose(position=starting_position_turtle, orientation=starting_orientation_turtle)
 
-    table_one_nav_position = [2.4, 4.4, 0.0]
+    table_one_nav_position = [2.4, 4.2, 0.0]
     table_one_nav_orientation = rotated_quaternion(angle=90)
     table_one_nav_pose = Pose(position=table_one_nav_position, orientation=table_one_nav_orientation)
 
