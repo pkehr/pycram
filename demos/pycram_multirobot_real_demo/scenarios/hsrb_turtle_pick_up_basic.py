@@ -125,10 +125,9 @@ def demo():
     '''
     if transport_chips:
         with real_robot(robot_hsrb):
-            # TODO: Make this to only Pickup
-            hsrb_transport_object(object_desig=chips_desig, placing_nav_pose=table_two_nav_pose,
-                                  placing_pose=chips_placing_pose)
-            rospy.loginfo("Object 3 transported to Table 2")
+            PickUpAction(object_designator_description=chips_desig, arms=[Arms.LEFT],
+                         grasps=[Grasp.FRONT]).resolve().perform()
+            rospy.loginfo("Pickup Object 3")
 
     '''
     Navigate
@@ -139,6 +138,7 @@ def demo():
     if navigate_table_two_hsrb:
         with real_robot(robot_hsrb):
             NavigateAction(target_locations=[table_two_nav_pose]).resolve().perform()
+            rospy.loginfo("Moved to Table 2")
 
     '''
     Place
@@ -147,9 +147,10 @@ def demo():
     Robot:      HSRB 
     '''
     if transport_chips:
-        # TODO: Make this to place chips on table 2
-        pass
-
+        with real_robot(robot_hsrb):
+            PlaceAction(chips_desig, target_locations=[table_two_nav_pose], arms=[Arms.LEFT], grasps=[Grasp.FRONT],
+                        with_force_torque=[False]).resolve().perform()
+            rospy.loginfo("Object 3 placed on Table 2")
 
     '''
     Transport
