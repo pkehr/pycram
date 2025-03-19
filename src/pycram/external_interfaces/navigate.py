@@ -13,6 +13,7 @@ class PoseNavigator:
     def __init__(self, ros_namespace: Union[ROBOTS, str] = None):
 
         name = ros_namespace
+        self.is_action_client = True
 
         if isinstance(ros_namespace, ROBOTS):
             name = ros_namespace.name
@@ -20,10 +21,14 @@ class PoseNavigator:
                 self.move_base_name = '/move_base/move'
                 self.initial_pose_name = '/initialpose'
                 self.amcl_pose_name = '/amcl_pose'
+
+                self.is_action_client = True
             elif ros_namespace == ROBOTS.TURTLE:
-                self.move_base_name = '/turtle/move_base/move'
+                self.move_base_name = '/turtle/move_base/goal'
                 self.initial_pose_name = '/turtle/initialpose'
                 self.amcl_pose_name = '/turtle/amcl_pose'
+
+                self.is_action_client = False
             else:
                 rospy.logerr(f"Robot {ros_namespace.value} does not have a preset yet. Defaulting to no namespace")
                 ros_namespace = None
@@ -44,11 +49,14 @@ class PoseNavigator:
         rospy.loginfo(f"Initialize move base for {name}")
         global move_client
 
-        self.client = actionlib.SimpleActionClient(self.move_base_name, MoveBaseAction)
-        rospy.loginfo("Waiting for move_base ActionServer at: " + self.move_base_name)
-        if self.client.wait_for_server():
-            rospy.loginfo("Done")
-        # self.pub = rospy.Publisher('goal', PoseStamped, queue_size=10, latch=True)
+        if self.is_action_client:
+            self.client = actionlib.SimpleActionClient(self.move_base_name, MoveBaseAction)
+            rospy.loginfo("Waiting for move_base ActionServer at: " + self.move_base_name)
+            if self.client.wait_for_server():
+                rospy.loginfo("Done")
+        else:
+            rospy.loginfo("Created publisher for move_base at: " + self.move_base_name)
+            self.pub = rospy.Publisher(self.move_base_name, PoseStamped, queue_size=10, latch=True)
         self.toya_pose = None
         self.goal_pose = None
         self.pose_pub = rospy.Publisher(self.initial_pose_name, PoseWithCovarianceStamped, queue_size=100)
@@ -71,7 +79,8 @@ class PoseNavigator:
 
     def interrupt(self):
         print("interrupting hehe")
-        self.client.cancel_all_goals()
+        if self.is_action_client:
+            self.client.cancel_all_goals()
 
     def pub_now(self, navpose: PoseStamped, interrupt_bool: bool = True) -> bool:
         self.goal_pose = navpose
@@ -80,16 +89,19 @@ class PoseNavigator:
         goal.target_pose.header.stamp = rospy.Time.now()
         goal.target_pose.header.frame_id = "map"
         goal.target_pose.pose = navpose.pose
+        if self.is_action_client:
+            self.client.send_goal(goal)
+            wait = self.client.wait_for_result()
+            if not wait:
+                rospy.logerr("Action server not available!")
+                return False
 
-        self.client.send_goal(goal)
-        wait = self.client.wait_for_result()
-        if not wait:
-            rospy.logerr("Action server not available!")
-            return False
+            rospy.loginfo(f"Publishing navigation pose")
+            rospy.loginfo("Waiting for subscribers to connect...")
+            self.client.send_goal(goal)
 
-        rospy.loginfo(f"Publishing navigation pose")
-        rospy.loginfo("Waiting for subscribers to connect...")
-        self.client.send_goal(goal)
+        else:
+            self.pub.publish(goal)
 
         while not rospy.is_shutdown():
             near_goal = False
