@@ -5,14 +5,12 @@ from pycram.datastructures.enums import WorldMode
 from pycram.designators.action_designator import *
 from pycram.designators.object_designator import *
 
-from pycram.object_descriptors.urdf import ObjectDescription
 from pycram.process_module import real_robot
 from pycram.utilities.robocup_utils import TextToSpeechPublisher, ImageSwitchPublisher, \
     HSRBMoveGripperReal
 from pycram.world_concepts.world_object import Object
 from pycram.worlds.bullet_world import BulletWorld
 
-extension = ObjectDescription.get_file_extension()
 world = BulletWorld(WorldMode.DIRECT)
 gripper = HSRBMoveGripperReal()
 
