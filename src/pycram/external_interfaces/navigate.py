@@ -2,7 +2,7 @@ import math
 
 import actionlib
 import rospy
-from geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped
+from geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped, Pose
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 from typing_extensions import Union
 
@@ -24,7 +24,7 @@ class PoseNavigator:
 
                 self.is_action_client = True
             elif ros_namespace == ROBOTS.TURTLE:
-                self.move_base_name = '/turtle/move_base/goal'
+                self.move_base_name = '/turtle/move_base_simple/goal'
                 self.initial_pose_name = '/turtle/initialpose'
                 self.amcl_pose_name = '/turtle/amcl_pose'
 
@@ -84,12 +84,13 @@ class PoseNavigator:
 
     def pub_now(self, navpose: PoseStamped, interrupt_bool: bool = True) -> bool:
         self.goal_pose = navpose
-        goal = MoveBaseGoal()
-        goal.target_pose.header.seq = 0
-        goal.target_pose.header.stamp = rospy.Time.now()
-        goal.target_pose.header.frame_id = "map"
-        goal.target_pose.pose = navpose.pose
         if self.is_action_client:
+            goal = MoveBaseGoal()
+            goal.target_pose.header.seq = 0
+            goal.target_pose.header.stamp = rospy.Time.now()
+            goal.target_pose.header.frame_id = "map"
+            goal.target_pose.pose = navpose.pose
+
             self.client.send_goal(goal)
             wait = self.client.wait_for_result()
             if not wait:
@@ -101,7 +102,13 @@ class PoseNavigator:
             self.client.send_goal(goal)
 
         else:
-            self.pub.publish(goal)
+            # navpose is only a Pose
+            goal = PoseStamped()
+            goal.header.frame_id = "map"
+            goal.header.stamp = rospy.Time.now()
+            goal.header.seq = 0
+            goal.pose = navpose
+            self.pub.publish(navpose)
 
         while not rospy.is_shutdown():
             near_goal = False
@@ -115,8 +122,9 @@ class PoseNavigator:
                     self.interrupt()
                     return True
                 else:
-                    self.client.wait_for_result()
-                    rospy.logerr("robot needs more time")
+                    if self.is_action_client:
+                        self.client.wait_for_result()
+                        rospy.logerr("robot needs more time")
                     return True
             else:
                 rospy.logerr("something is wrong with navigation")
