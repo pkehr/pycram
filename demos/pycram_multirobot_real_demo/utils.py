@@ -15,6 +15,7 @@ def rotated_quaternion(angle):
 
     return quaternion
 
+
 def get_robot_mode(execution_type):
     if ExecutionType.SIMULATED == execution_type:
         return simulated_robot

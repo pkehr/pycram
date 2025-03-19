@@ -1,22 +1,19 @@
-import rospy
-
 from demos.pycram_multirobot_real_demo.methods.actions import hsrb_transport_object, drive_with_multiple_points
 from demos.pycram_multirobot_real_demo.methods.spawn import spawn_robot, setup_demo_objects
-from demos.pycram_multirobot_real_demo.utils import rotated_quaternion, get_robot_mode
+from demos.pycram_multirobot_real_demo.utils import get_robot_mode
 from pycram.datastructures.enums import ROBOTS, ExecutionType
 from pycram.datastructures.enums import WorldMode
 from pycram.designators.action_designator import *
 from pycram.designators.object_designator import *
 
-from pycram.process_module import real_robot, simulated_robot, semi_real_robot
 from pycram.utilities.robocup_utils import TextToSpeechPublisher, ImageSwitchPublisher, \
     HSRBMoveGripperReal
 from pycram.world_concepts.world_object import Object
 from pycram.worlds.bullet_world import BulletWorld
 
-# TODO: Make this available for real robot and simulation
+# TODO: Inspect real robot and simulation demo
 
-def demo(execution_type: ExecutionType, world_mode = WorldMode.DIRECT):
+def demo(execution_type: ExecutionType, world_mode=WorldMode.DIRECT):
     world = BulletWorld(world_mode)
     robot_hsrb, hsrb_desig, hsrb_move = spawn_robot(ROBOTS.HSRB, name='hsrb', execution_type=execution_type)
 
