@@ -47,7 +47,7 @@ class RobotStateUpdater:
         :param msg: TransformStamped message published to the topic
         """
 
-        if RobotManager.multiple_robots_active():
+        if self.robot_name is not None:
             base_link = RobotDescriptionManager().descriptions[self.robot_name].base_link
             trans, rot = self.tf_listener.lookupTransform("/map", base_link,
                                                           Time(0))
@@ -69,7 +69,7 @@ class RobotStateUpdater:
         try:
             msg = wait_for_message(self.joint_state_topic, JointState)
             for name, position in zip(msg.name, msg.position):
-                if RobotManager.multiple_robots_active():
+                if self.robot_name is not None:
                     RobotManager.available_robots[self.robot_name].set_joint_position(name, position)
                 else:
                     RobotManager.active_robot.set_joint_position(name, position)
