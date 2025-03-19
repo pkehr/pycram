@@ -18,7 +18,7 @@ from pycram.worlds.bullet_world import BulletWorld
 
 def demo(execution_type: ExecutionType, world_mode = WorldMode.DIRECT):
     world = BulletWorld(world_mode)
-    robot_hsrb, hsrb_desig, hsrb_move = spawn_robot(ROBOTS.HSRB, name='hsrb')
+    robot_hsrb, hsrb_desig, hsrb_move = spawn_robot(ROBOTS.HSRB, name='hsrb', execution_type=execution_type)
 
     # Environment
     kitchen = Object("kitchen", ObjectType.ENVIRONMENT, "suturo_lab_2024_1.urdf")
@@ -130,7 +130,7 @@ def demo(execution_type: ExecutionType, world_mode = WorldMode.DIRECT):
 
 
 if __name__ == "__main__":
-    execution_type = ExecutionType.REAL
-    world_mode = WorldMode.DIRECT
+    execution_type = ExecutionType.SIMULATED
+    world_mode = WorldMode.GUI
 
     demo(execution_type=execution_type, world_mode=world_mode)
