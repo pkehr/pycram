@@ -22,6 +22,14 @@ def spawn_robot(robot: ROBOTS, name: str):
 
 
 def setup_demo_objects():
+    starting_position_hsrb = [2.4, 4.0, 0.0]
+    starting_orientation_hsrb = rotated_quaternion(angle=90)
+    starting_pose_hsrb = Pose(position=starting_position_hsrb, orientation=starting_orientation_hsrb)
+
+    starting_position_turtle = [2.45, 0.969, 0.0]
+    starting_orientation_turtle = rotated_quaternion(angle=90)
+    starting_pose_turtle = Pose(position=starting_position_turtle, orientation=starting_orientation_turtle)
+
     table_one_nav_position = [2.45, 0.969, 0.0]
     table_one_nav_orientation = rotated_quaternion(angle=90)
     table_one_nav_pose = Pose(position=table_one_nav_position, orientation=table_one_nav_orientation)
@@ -50,4 +58,4 @@ def setup_demo_objects():
     chips_object = Object("chips", ObjectType.MILK, "milk.stl", pose=chips_starting_pose)
     chips_desig = ObjectDesignatorDescription.Object(milk_object.name, ObjectType.MILK, chips_object)
 
-    return table_one_nav_pose, table_two_nav_pose, milk_desig, milk_placing_pose, chips_desig, chips_placing_pose
+    return starting_pose_hsrb, starting_pose_turtle, table_one_nav_pose, table_two_nav_pose, milk_desig, milk_placing_pose, chips_desig, chips_placing_pose

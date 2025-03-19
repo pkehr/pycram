@@ -32,8 +32,26 @@ image_switch_publisher = ImageSwitchPublisher()
 
 def demo():
     # Setup demo objects
-    table_one_nav_pose, table_two_nav_pose, milk_desig, milk_placing_pose, chips_desig, chips_placing_pose = setup_demo_objects()
+    starting_pose_hsrb, starting_pose_turtle, table_one_nav_pose, table_two_nav_pose, milk_desig, milk_placing_pose, chips_desig, chips_placing_pose = setup_demo_objects()
     print("starting_demo")
+
+    '''
+    Navigate
+    Robot:      HSRB
+    From:       Anywhere
+    To:         starting_pose 
+    '''
+    with real_robot(robot_hsrb):
+        NavigateAction(target_locations=[starting_pose_hsrb]).resolve().perform()
+
+    '''
+        Navigate
+        Robot:      Turtlebot
+        From:       Anywhere
+        To:         starting_pose 
+        '''
+    with real_robot(robot_turtle):
+        NavigateAction(target_locations=[starting_pose_turtle]).resolve().perform()
 
     '''
     Navigate
