@@ -52,8 +52,8 @@ class NavPoses:
         self.hsrb_poses[NavOptions.TABLE_TWO] = table_two_nav_pose
 
     def set_nav_poses(self):
-        self.hsrb_poses[ROBOTS.HSRB][NavOptions.FROM_ONE_TO_TWO_DIRECT] = [self.hsrb_poses[NavOptions.TABLE_ONE],
-                                                                           self.hsrb_poses[NavOptions.TABLE_TWO]]
+        self.hsrb_poses[NavOptions.FROM_ONE_TO_TWO_DIRECT] = [self.hsrb_poses[NavOptions.TABLE_ONE],
+                                                              self.hsrb_poses[NavOptions.TABLE_TWO]]
 
         table_one_nav_position = [2.4, 4.2, 0.0]
         table_one_rotated_orientation = rotated_quaternion(angle=-90)
