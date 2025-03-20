@@ -1251,7 +1251,7 @@ class PlaceActionPerformable(ActionAbstract):
             except ObjectForceTorqueThresholdException:
                 raise ManipulationFTSCheckNoObject(f"Could not place object after checking force-torque values")
         else:
-            tool_frame = RobotDescription.current_robot_description.get_arm_tool_frame(self.arm)
+            tool_frame = robot_description.get_arm_tool_frame(self.arm)
             push_base = lt.transform_pose(oTmG, robot.get_link_tf_frame(tool_frame))
             if robot.name == "hsrb":
                 z = 0.03
