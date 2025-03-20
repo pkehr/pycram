@@ -1,3 +1,4 @@
+from demos.pycram_multirobot_real_demo.methods.nav_poses import NavPoses
 from demos.pycram_multirobot_real_demo.utils import rotated_quaternion
 from pycram.datastructures.dataclasses import Color
 from pycram.datastructures.enums import ObjectType, ROBOTS, ExecutionType
@@ -26,48 +27,9 @@ def spawn_robot(robot: ROBOTS, name: str, execution_type=ExecutionType.REAL):
     return robot_object, robot_desig, robot_move
 
 
-def get_nav_poses(is_single_robot):
-    starting_position_hsrb = [2.4, 3.0, 0.0]
-    starting_orientation_hsrb = rotated_quaternion(angle=90)
-    starting_pose_hsrb = Pose(position=starting_position_hsrb, orientation=starting_orientation_hsrb)
-
-    starting_position_turtle = [1.54, 4.27, 0.0]
-    starting_orientation_turtle = rotated_quaternion(angle=90)
-    starting_pose_turtle = Pose(position=starting_position_turtle, orientation=starting_orientation_turtle)
-
-    if is_single_robot:
-        starting_pose_turtle = None
-
-    table_one_nav_position = [2.4, 4.2, 0.0]
-    table_one_nav_orientation = rotated_quaternion(angle=90)
-    table_one_nav_pose = Pose(position=table_one_nav_position, orientation=table_one_nav_orientation)
-
-    table_two_nav_position = [2.7, 2.7, 0.0]
-    table_two_nav_orientation = rotated_quaternion(angle=-90)
-    table_two_nav_pose = Pose(position=table_two_nav_position, orientation=table_two_nav_orientation)
-
-    second_nav_position = [2.4, 2.3, 0.0]
-    second_nav_orientation = rotated_quaternion(angle=90)
-    second_nav_pose = Pose(position=second_nav_position, orientation=second_nav_orientation)
-
-    third_nav_position = [3.5, 2.3, 0.0]
-    third_nav_orientation = rotated_quaternion(angle=-90)
-    third_nav_pose = Pose(position=third_nav_position, orientation=third_nav_orientation)
-
-    hsbr_table_one_to_table_two = [table_one_nav_pose, second_nav_pose, third_nav_pose, table_two_nav_pose]
-    # TODO: Add Poses for turtle execution
-    turtle_table_one_to_table_two = []
-
-    return (starting_pose_hsrb, starting_pose_turtle,
-            table_one_nav_pose, table_two_nav_pose,
-            hsbr_table_one_to_table_two, turtle_table_one_to_table_two)
-
-
 def setup_demo_objects(is_single_robot=False):
     # Nav poses
-    (starting_pose_hsrb, starting_pose_turtle,
-     table_one_nav_pose, table_two_nav_pose,
-     hsrb_table_one_to_table_two, turtle_table_one_to_table_two) = get_nav_poses(is_single_robot)
+    nav_poses = NavPoses()
 
     # Objects
     milk_position = [2.585, 5.85, 0.8]
@@ -100,9 +62,7 @@ def setup_demo_objects(is_single_robot=False):
     chips_object = Object("chips", ObjectType.MILK, "milk.stl", pose=chips_starting_pose)
     chips_desig = ObjectDesignatorDescription.Object(milk_object.name, ObjectType.MILK, chips_object)
 
-    return (starting_pose_hsrb, starting_pose_turtle,
-            table_one_nav_pose, table_two_nav_pose,
-            hsrb_table_one_to_table_two, turtle_table_one_to_table_two,
+    return (nav_poses,
             milk_object, milk_desig, milk_placing_pose,
             coffee_object, coffee_desig, coffee_placing_pose,
             chips_object, chips_desig, chips_placing_pose)
