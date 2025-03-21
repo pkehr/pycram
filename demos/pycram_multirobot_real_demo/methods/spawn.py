@@ -27,7 +27,7 @@ def spawn_robot(robot: ROBOTS, name: str, execution_type=ExecutionType.REAL):
     return robot_object, robot_desig, robot_move
 
 
-def setup_demo_objects(is_single_robot=False):
+def setup_demo_objects():
     # Nav poses
     nav_poses = NavPoses()
 
