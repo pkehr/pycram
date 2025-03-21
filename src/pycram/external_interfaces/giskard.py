@@ -19,8 +19,8 @@ from ..datastructures.dataclasses import MeshVisualShape
 from ..datastructures.enums import JointType, ObjectType, Arms, GiskardStateFTS
 from ..datastructures.pose import Pose, Transform
 from ..datastructures.world import World
+from ..multirobot import RobotManager
 from ..process_module import real_robot
-from ..robot_description import RobotDescription
 from ..ros.data_types import Time
 from ..ros.logging import logwarn, loginfo_once
 from ..ros.ros_tools import get_node_names
@@ -109,8 +109,7 @@ def initial_adding_objects(add_environment: bool = False) -> None:
     """
     groups = giskard_wrapper.world.get_group_names()
     for obj in World.current_world.objects:
-        if obj is World.robot or obj is World.current_world.get_prospection_object_for_object(
-                World.robot):
+        if obj.obj_type is ObjectType.ROBOT:
             continue
         if obj.obj_type == ObjectType.ENVIRONMENT:
             continue
@@ -142,11 +141,14 @@ def sync_worlds() -> None:
     add_gripper_groups()
     add_environment = False
     world_object_names = set()
+
+    robot_description = RobotManager.get_robot_description(RobotManager.giskard_robot)
+
     for obj in World.current_world.objects:
-        if (obj.name != RobotDescription.current_robot_description.name and
+        if (obj.name != robot_description.name and
                 obj.obj_type != ObjectType.ROBOT and len(obj.link_name_to_id) != 1):
             world_object_names.add(obj.name)
-        if obj.name == RobotDescription.current_robot_description.name or obj.obj_type == ObjectType.ROBOT:
+        if obj.name == robot_description.name or obj.obj_type == ObjectType.ROBOT:
             joint_config = obj.get_positions_of_all_joints()
             non_fixed_or_mimic_joints = list(
                 filter(lambda joint: joint.type != JointType.FIXED and not joint.mimic_of, obj.joints.values()))
@@ -167,7 +169,7 @@ def sync_worlds() -> None:
     ####### up until here
     ##################################################################################
     giskard_object_names = set(giskard_wrapper.world.get_group_names())
-    robot_name = {RobotDescription.current_robot_description.name}
+    robot_name = {robot_description.name}
     if not world_object_names.union(robot_name).issubset(giskard_object_names):
         giskard_wrapper.world.clear()
     # write how to make sure giskard world wont be added twice @luca
@@ -275,13 +277,15 @@ def _manage_par_motion_goals(goal_func, *args) -> Optional['MoveResult']:
 
             # Check if there are multiple constraints that use the same joint, if this is the case the
             used_joints = set()
+
+            robot_description = RobotManager.get_robot_description(RobotManager.giskard_robot)
             for cmd in giskard_wrapper.motion_goals.get_goals():
                 par_value_pair = json.loads(cmd.kwargs)
                 if "tip_link" in par_value_pair.keys() and "root_link" in par_value_pair.keys():
-                    if par_value_pair["tip_link"] == RobotDescription.current_robot_description.base_link:
+                    if par_value_pair["tip_link"] == robot_description.base_link:
                         continue
-                    chain = World.robot.description.get_chain(par_value_pair["root_link"],
-                                                              par_value_pair["tip_link"])
+                    chain = RobotManager.giskard_robot.description.get_chain(par_value_pair["root_link"],
+                                                                             par_value_pair["tip_link"])
                     if set(chain).intersection(used_joints) != set():
                         giskard_wrapper.motion_goals._goals = tmp_goals
                         giskard_wrapper.monitors._monitors = tmp_monitors
@@ -861,9 +865,11 @@ def add_gripper_groups() -> None:
         for name in giskard_wrapper.world.get_group_names():
             if "gripper" in name:
                 return
-        for description in RobotDescription.current_robot_description.get_manipulator_chains():
+
+        robot_description = RobotManager.get_robot_description(RobotManager.giskard_robot)
+        for description in robot_description.get_manipulator_chains():
             giskard_wrapper.world.register_group(description.name + "_gripper", description.start_link,
-                                                 RobotDescription.current_robot_description.name)
+                                                 robot_description.name)
 
 
 @init_giskard_interface
@@ -1199,13 +1205,14 @@ def set_gripper_state(motion: str):
     """
     Opens or closes the gripper
     """
+    robot_description = RobotManager.get_robot_description(RobotManager.giskard_robot)
     if motion == "open":
         done = giskard_wrapper.monitors.add_set_seed_configuration({"hand_motor_joint": 1.2},
-                                                                   RobotDescription.current_robot_description.name)
+                                                                   robot_description.name)
         giskard_wrapper.monitors.add_end_motion(start_condition=done)
     elif motion == "close":
         done = giskard_wrapper.monitors.add_set_seed_configuration({"hand_motor_joint": 0},
-                                                                   RobotDescription.current_robot_description.name)
+                                                                   robot_description.name)
         giskard_wrapper.monitors.add_end_motion(start_condition=done)
     return giskard_wrapper.execute()
 
@@ -1352,7 +1359,6 @@ def turning_around():
     rot_left.header.frame_id = 'base_footprint'
     rot_left.quaternion.z = 1
 
-
     rot_left_monitor = giskard_wrapper.monitors.add_cartesian_orientation(goal_orientation=rot_left,
                                                                           root_link='map',
                                                                           tip_link='base_footprint',
@@ -1368,6 +1374,7 @@ def turning_around():
     giskard_wrapper.monitors.add_end_motion(start_condition=rot_left_monitor)
     giskard_wrapper.execute()
 
+
 @init_giskard_interface
 def turning_left_and_back(angle: float = 45):
     rot_left = QuaternionStamped()
@@ -1376,7 +1383,7 @@ def turning_left_and_back(angle: float = 45):
 
     rot_back = QuaternionStamped()
     rot_back.header.frame_id = 'base_footprint'
-    rot_back.quaternion = Quaternion(*quaternion_from_axis_angle(axis=(0, 0, 1), angle=(angle*-1)))
+    rot_back.quaternion = Quaternion(*quaternion_from_axis_angle(axis=(0, 0, 1), angle=(angle * -1)))
 
     rot_left_monitor = giskard_wrapper.monitors.add_cartesian_orientation(goal_orientation=rot_left,
                                                                           root_link='map',
@@ -1403,6 +1410,7 @@ def turning_left_and_back(angle: float = 45):
 
     giskard_wrapper.monitors.add_end_motion(start_condition=rot_back_monitor)
     giskard_wrapper.execute()
+
 
 @init_giskard_interface
 def billy_shelf_open(setup_pose):
