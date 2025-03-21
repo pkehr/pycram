@@ -35,6 +35,8 @@ def demo(execution_type: ExecutionType, world_mode=WorldMode.DIRECT):
 
     robot_mode = get_robot_mode(execution_type)
 
+    RobotManager.set_giskard_robot(robot_hsrb.name)
+
     if execution_type == ExecutionType.REAL:
         gripper = HSRBMoveGripperReal()
         talk = TextToSpeechPublisher()
@@ -53,6 +55,9 @@ def demo(execution_type: ExecutionType, world_mode=WorldMode.DIRECT):
 
     navigate_table_two_turtle = False
     navigate_table_two_hsrb = True
+
+    giskard.clear()
+    giskard.sync_worlds()
 
     print("starting_demo")
 
