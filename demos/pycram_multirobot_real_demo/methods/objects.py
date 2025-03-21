@@ -22,7 +22,7 @@ class ObjectManager:
         self.set_objects()
 
     def set_objects(self):
-        milk_position = [2.585, 5.85, 0.8]
+        milk_position = [2.61, 4.8, 0.85]
         milk_pickup_orientation = rotated_quaternion(angle=90)
 
         milk_place_position = [1.87, 5.24, 0.45]
@@ -32,7 +32,7 @@ class ObjectManager:
                            starting_position=milk_position, starting_orientation=milk_pickup_orientation,
                            placing_position=milk_place_position, placing_orientation=milk_place_orientation)
 
-        coffee_position = [2.585, 5.85, 0.8]
+        coffee_position = [2.21, 4.8, 0.85]
         coffee_pickup_orientation = rotated_quaternion(angle=90)
 
         coffee_place_position = [1.87, 5.24, 0.45]
@@ -42,7 +42,7 @@ class ObjectManager:
                            starting_position=coffee_position, starting_orientation=coffee_pickup_orientation,
                            placing_position=coffee_place_position, placing_orientation=coffee_place_orientation)
 
-        chips_position = [2.885, 5.85, 0.78]
+        chips_position = [2.45, 4.8, 0.85]
         chips_pickup_orientation = rotated_quaternion(angle=90)
 
         chips_place_position = [2.7, 2.7, 0.7]

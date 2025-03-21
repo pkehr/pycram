@@ -36,7 +36,7 @@ class NavPoses:
         self.turtle_poses[NavOptions.STARTING] = starting_pose_turtle
 
     def set_object_poses(self):
-        table_one_hsrb_position = [2.4, 4.2, 0.0]
+        table_one_hsrb_position = [2.4, 4.0, 0.0]
         table_one_hsrb_orientation = rotated_quaternion(angle=90)
         table_one_hsrb_pose = Pose(position=table_one_hsrb_position, orientation=table_one_hsrb_orientation)
 
