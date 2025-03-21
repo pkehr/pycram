@@ -1,5 +1,6 @@
 from demos.pycram_multirobot_real_demo.methods.actions import hsrb_transport_object, drive_with_multiple_points
 from demos.pycram_multirobot_real_demo.methods.nav_poses import NavOptions
+from demos.pycram_multirobot_real_demo.methods.objects import ObjectOptions
 from demos.pycram_multirobot_real_demo.methods.spawn import spawn_robot, setup_demo_objects
 from demos.pycram_multirobot_real_demo.utils import get_robot_mode
 from pycram.datastructures.enums import ROBOTS, ExecutionType
@@ -40,10 +41,7 @@ def demo(execution_type: ExecutionType, world_mode=WorldMode.DIRECT):
         image_switch_publisher = ImageSwitchPublisher()
 
     # Setup demo objects
-    (nav_poses,
-     milk_object, milk_desig, milk_placing_pose,
-     coffee_object, coffee_desig, coffee_placing_pose,
-     chips_object, chips_desig, chips_placing_pose) = setup_demo_objects()
+    nav_poses, objects = setup_demo_objects()
 
     navigate_start_turtle = False
     navigate_start_hsrb = True
@@ -105,6 +103,8 @@ def demo(execution_type: ExecutionType, world_mode=WorldMode.DIRECT):
     '''
     if transport_milk:
         table_one_nav_pose = nav_poses.hsrb_poses[NavOptions.TABLE_ONE]
+        milk_desig = objects.desigs[ObjectOptions.MILK]
+        milk_placing_pose = objects.placing_poses[ObjectOptions.MILK]
 
         with robot_mode(robot_hsrb):
             hsrb_transport_object(object_desig=milk_desig, placing_pose=milk_placing_pose)
@@ -119,6 +119,8 @@ def demo(execution_type: ExecutionType, world_mode=WorldMode.DIRECT):
     '''
     if transport_coffee:
         table_one_nav_pose = nav_poses.hsrb_poses[NavOptions.TABLE_ONE]
+        coffee_desig = objects.desigs[ObjectOptions.COFFEE]
+        coffee_placing_pose = objects.placing_poses[ObjectOptions.COFFEE]
 
         with robot_mode(robot_hsrb):
             hsrb_transport_object(object_desig=coffee_desig, placing_pose=coffee_placing_pose)
@@ -132,9 +134,9 @@ def demo(execution_type: ExecutionType, world_mode=WorldMode.DIRECT):
     To:         Table#2 
     '''
     if navigate_table_two_turtle:
-        with robot_mode(robot_turtle):
-            turtle_table_one_to_table_two = nav_poses.turtle_poses[NavOptions.FROM_ONE_TO_TWO_SUBPOINTS]
+        turtle_table_one_to_table_two = nav_poses.turtle_poses[NavOptions.FROM_ONE_TO_TWO_SUBPOINTS]
 
+        with robot_mode(robot_turtle):
             # TODO: This hast to be more points, as navigation tries to run against the wall otherwise
             drive_with_multiple_points(poses=turtle_table_one_to_table_two)
             rospy.loginfo("Turtlebot at Table 2")
@@ -146,6 +148,8 @@ def demo(execution_type: ExecutionType, world_mode=WorldMode.DIRECT):
     Robot:      HSRB 
     '''
     if transport_chips:
+        chips_desig = objects.desigs[ObjectOptions.CHIPS]
+
         with robot_mode(robot_hsrb):
             PickUpAction(object_designator_description=chips_desig, arms=[Arms.LEFT],
                          grasps=[Grasp.FRONT]).resolve().perform()
@@ -172,6 +176,9 @@ def demo(execution_type: ExecutionType, world_mode=WorldMode.DIRECT):
     Robot:      HSRB 
     '''
     if transport_chips:
+        chips_desig = objects.desigs[ObjectOptions.CHIPS]
+        chips_placing_pose = objects.placing_poses[ObjectOptions.CHIPS]
+
         with robot_mode(robot_hsrb):
             PlaceAction(chips_desig, target_locations=[chips_placing_pose], arms=[Arms.LEFT], grasps=[Grasp.FRONT],
                         with_force_torque=[False]).resolve().perform()
@@ -185,6 +192,9 @@ def demo(execution_type: ExecutionType, world_mode=WorldMode.DIRECT):
     To:         Table#2 
     '''
     if transport_milk:
+        milk_desig = objects.desigs[ObjectOptions.MILK]
+        milk_placing_pose = objects.placing_poses[ObjectOptions.MILK]
+
         with robot_mode(robot_hsrb):
             hsrb_transport_object(object_desig=milk_desig, placing_pose=milk_placing_pose)
             ParkArmsAction(arms=[Arms.LEFT]).resolve().perform()
@@ -198,6 +208,9 @@ def demo(execution_type: ExecutionType, world_mode=WorldMode.DIRECT):
     To:         Table#2 
     '''
     if transport_coffee:
+        coffee_desig = objects.desigs[ObjectOptions.COFFEE]
+        coffee_placing_pose = objects.placing_poses[ObjectOptions.COFFEE]
+
         with robot_mode(robot_hsrb):
             hsrb_transport_object(object_desig=coffee_desig, placing_pose=coffee_placing_pose)
             ParkArmsAction(arms=[Arms.LEFT]).resolve().perform()
