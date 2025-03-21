@@ -51,11 +51,6 @@ from ..tasktree import with_tree
 from ..utils import axis_angle_to_quaternion
 from ..world_concepts.world_object import Object
 
-try:
-    from giskardpy.data_types.exceptions import ForceTorqueThresholdException
-except Exception:
-    logwarn("Failed to import Giskard exception")
-
 
 class MoveTorsoAction(ActionDesignatorDescription):
     """

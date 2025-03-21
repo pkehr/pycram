@@ -27,9 +27,6 @@ from ..ros.ros_tools import get_node_names
 from ..world_concepts.world_object import Object
 
 try:
-    from giskardpy_ros.ros1 import tfwrapper as tf
-    from giskardpy.data_types.exceptions import ForceTorqueThresholdException
-
     from giskardpy_ros.python_interface.python_interface import GiskardWrapper
     from giskard_msgs.msg import WorldBody, MoveResult, CollisionEntry
 
