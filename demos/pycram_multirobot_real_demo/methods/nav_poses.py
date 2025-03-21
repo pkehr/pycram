@@ -1,7 +1,6 @@
 from enum import Enum, auto
 
 from demos.pycram_multirobot_real_demo.utils import rotated_quaternion
-from pycram.datastructures.enums import ROBOTS
 from pycram.datastructures.pose import Pose
 
 
