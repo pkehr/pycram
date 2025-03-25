@@ -132,6 +132,9 @@ class Object(WorldEntity):
 
         self.world.add_object(self)
 
+        if self.obj_type == ObjectType.ROBOT:
+            RobotManager.set_active_robot(self.name)
+
     def _resolve_description(self, path: Optional[str] = None, description: Optional[ObjectDescription] = None) -> None:
         """
         Find the correct description type of the object and initialize it and set the description of this object to it.
