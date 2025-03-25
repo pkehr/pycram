@@ -674,7 +674,7 @@ class HSRBNavigationSemiReal(ProcessModule):
 
     def _execute(self, designator: MoveMotion) -> Any:
         logdebug(f"Sending goal to giskard to Move the robot")
-        giskard.teleport_robot(designator.target)
+        giskard.achieve_cartesian_goal(designator.target, 'base_link', 'map')
 
 
 class HSRBTalkSemiReal(ProcessModule):

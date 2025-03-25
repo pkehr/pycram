@@ -30,6 +30,7 @@ class RobotManager(ABC):
     """
     Observer for currently used objects
     """
+    giskard_robot = None
 
     def __new__(cls, *args, **kwargs):
         """
@@ -68,6 +69,7 @@ class RobotManager(ABC):
         rdm = RobotDescriptionManager()
         rdm.load_description(name=robot_name)
         RobotManager.active_robot = RobotManager.available_robots[robot_name] if robot_name else None
+        RobotManager.set_giskard_robot(robot_name) if robot_name else None
         rospy.logdebug(f'Setting active robot. Is now: {robot_name}')
 
     @staticmethod
@@ -130,7 +132,10 @@ class RobotManager(ABC):
         rospy.loginfo(f'Releasing object "{obj.name}" from robot {robot_name}')
         RobotManager.object_observer.release_robot(obj, robot_name)
 
-
     @staticmethod
     def is_object_blocked(obj):
         return RobotManager.object_observer.is_object_blocked(obj=obj)
+
+    @staticmethod
+    def set_giskard_robot(robot_name):
+        RobotManager.giskard_robot = RobotManager.available_robots[robot_name]
