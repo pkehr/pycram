@@ -34,10 +34,10 @@ def sort_objects(found_objects_list: list):
         if object_type in CUTLERY + DRINKS + SILVERWARE:
             first_list.append(obj)
 
-    drinks_items = [item for item in first_list if item in DRINKS]
-    silverware_items = [item for item in first_list if item in SILVERWARE and item != "Metalplate"]
-    cutlery_items = [item for item in first_list if item in CUTLERY]
-    metalplate_item = [item for item in first_list if item == "Metalplate"]
+    drinks_items = [item for item in first_list if item.obj_type in DRINKS]
+    silverware_items = [item for item in first_list if item.obj_type in SILVERWARE and item != "Metalplate"]
+    cutlery_items = [item for item in first_list if item.obj_type in CUTLERY]
+    metalplate_item = [item for item in first_list if item.obj_type == "Metalplate"]
 
     sorted_objects = drinks_items + silverware_items + cutlery_items + metalplate_item
 
