@@ -48,14 +48,14 @@ class NLP_Helper:
         :param guest: variable to store new information about human
         """
 
-        TalkingMotion("Waiting for guests").perform()
+        TalkingMotion("waiting for guests").perform()
 
         # look for human and position higher
-        DetectAction(technique='human').resolve().perform()
-        TalkingMotion("Welcome, please step in front of me and come close").perform()
+        DetectAction(technique='human_receptionist').resolve().perform()
+        TalkingMotion("Hello please come closer").perform()
         rospy.sleep(1)
-        MoveJointsMotion(["arm_flex_joint"], [-0.25]).perform()
-        MoveJointsMotion(["torso_lift_joint"], [0.2]).perform()
+        MoveJointsMotion(["arm_flex_joint"], [-0.1]).perform()
+        MoveJointsMotion(["torso_lift_joint"], [0.15]).perform()
 
         # look at guest and introduce
         HeadFollowMotion(state="start").perform()
@@ -74,7 +74,8 @@ class NLP_Helper:
         rospy.loginfo("nlp start")
         self.nlp_pub.publish("start listening")
         rospy.sleep(2.1)
-        self.image_switch_publisher.pub_now(ImageEnum.TALKING_DUMMIES.value)
+        self.image_switch_publisher.pub_now(ImageEnum.TALK.value)
+        # self.image_switch_publisher.pub_now(ImageEnum.TALKING_DUMMIES.value)
 
         # wait for nlp answer
         start_time = time.time()
@@ -103,7 +104,7 @@ class NLP_Helper:
         else:
             # two chances to get name and drink
             guest.set_name(self.name_repeat())
-
+        self.image_switch_publisher.pub_now(ImageEnum.HI.value)
         TalkingMotion(f"Nice to meet you {guest.name}").perform()
         return guest
 
@@ -156,7 +157,8 @@ class NLP_Helper:
         rospy.loginfo("nlp start")
         self.nlp_pub.publish("start listening")
         rospy.sleep(2.2)
-        self.image_switch_publisher.pub_now(ImageEnum.TALKING_DUMMIES.value)
+        self.image_switch_publisher.pub_now(ImageEnum.TALK.value)
+        # self.image_switch_publisher.pub_now(ImageEnum.TALKING_DUMMIES.value)
 
         # wait for nlp answer
         start_time = time.time()
@@ -180,7 +182,8 @@ class NLP_Helper:
             rospy.loginfo("nlp start")
             self.nlp_pub.publish("start listening")
             rospy.sleep(2.1)
-            self.image_switch_publisher.pub_now(ImageEnum.TALKING_DUMMIES.value)
+            self.image_switch_publisher.pub_now(ImageEnum.TALK.value)
+            # self.image_switch_publisher.pub_now(ImageEnum.TALKING_DUMMIES.value)
 
             # wait for nlp answer
             start_time = time.time()
@@ -218,7 +221,8 @@ class NLP_Helper:
         self.nlp_pub.publish("start listening")
         rospy.loginfo("nlp start")
         rospy.sleep(2.1)
-        self.image_switch_publisher.pub_now(ImageEnum.TALKING_DUMMIES.value)
+        self.image_switch_publisher.pub_now(ImageEnum.TALK.value)
+        #self.image_switch_publisher.pub_now(ImageEnum.TALKING_DUMMIES.value)
 
         # wait for nlp answer
         start_time = time.time()
@@ -240,6 +244,7 @@ class NLP_Helper:
             guest.set_drink(self.response[2])
         else:
             guest.set_drink(self.drink_repeat())
+        self.image_switch_publisher.pub_now(ImageEnum.HI.value)
         TalkingMotion(f"your favorite drink is {guest.fav_drink}").perform()
 
 

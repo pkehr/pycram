@@ -48,31 +48,34 @@ guest2 = HumanDescription("Sarah", fav_drink="Juice")
 guest2.set_attributes(['female', 'with a hat', 'wearing a t-shirt', ' a bright top'])
 
 # important poses
-couch_pose_semantik = Pose(position=[3.8, 2.1, 0], orientation=[0, 0, -0.7, 0.7])
-look_couch = Pose([3.8, 0.3, 0.75])
+couch_pose_semantik = Pose(position=[4.1, 2, 0], orientation=[0, 0, -0.7, 0.7])
+look_couch = Pose([4, 0.3, 0.75])
 look_drinks = Pose([2.15, 4.7, 0.55])
 look_person_drinks = Pose([1.9, 3.8, 1])
 nav_pose_to_drink = Pose([2, 0.6, 0], orientation=[0, 0, 0.7, 0.7])
 nav_pose_to_couch = Pose([2.2, 3.3, 0], orientation=[0, 0, -0.7, 0.7])
-nav_pose_to_couch_from_kitchen = Pose([2.2, -1.3, 0], orientation=[0, 0, 0.7, 0.7])
+nav_pose_to_couch_from_kitchen = Pose([2.2, -0.8, 0], orientation=[0, 0, 0.7, 0.7])
 greet_guest_pose = Pose(position=[1.9, -0.18, 0], orientation=[0, 0, -0.8, 0.5])
 beverage_pose = Pose(position=[2.2, 4, 0], orientation=[0, 0, 0.9, 0.3])
-kitchen_pose = Pose(position=[4.5, -1.9, 0])
+kitchen_pose = Pose(position=[3.5, -2.5, 0], orientation=[0, 0, 1, 0])
 
 
 available_drinks_ba = ["water", "cola", "juice", "apple juice", "soda", "lemonade", "Ice Tea"]
 
 
 def drive_to_drinks(drink: str):
+    drink = drink.strip()
     global drinks
     for i in range(len(available_drinks_ba)):
         if drink == available_drinks_ba[i]:
+            print("yaahy")
             return True
 
     return False
 
 
 def demo(step: int):
+    print(robot.get_pose())
     drinks = False
     kitchen = False
 
@@ -99,8 +102,8 @@ def demo(step: int):
 
         if step <= 2:
             # perceive attributes of guest
+            image_switch_publisher.pub_now(ImageEnum.HI.value)
             MoveJointsMotion(["torso_lift_joint"], [0.0]).perform()
-            get_attributes(guest1)
             TalkingMotion("i will show you around now").perform()
             rospy.sleep(2)
             TalkingMotion("please step out of the way and follow me").perform()
@@ -110,19 +113,27 @@ def demo(step: int):
                 # guide to drinking area
                 NavigateAction([nav_pose_to_drink]).resolve().perform()
                 NavigateAction([beverage_pose]).resolve().perform()
+                MoveJointsMotion(["head_tilt_joint"], [0.1]).perform()
+                LookAtAction([look_person_drinks]).resolve().perform()
+
+                DetectAction(technique='human_receptionist', state="stop").resolve().perform()
+                HeadFollowMotion(state="start").perform()
 
                 TalkingMotion("here you can get yourself a drink").perform()
                 rospy.sleep(1.5)
                 TalkingMotion(f"we have {guest1.fav_drink} here").perform()
-                MoveJointsMotion(["torso_lift_joint"], [0.1]).perform()
-                LookAtAction([look_person_drinks]).resolve().perform()
+                # MoveJointsMotion(["torso_lift_joint"], [0.1]).perform()
+
             if kitchen:
                 # guide to drinking area
                 NavigateAction([kitchen_pose]).resolve().perform()
+                MoveJointsMotion(["head_tilt_joint"], [0.1]).perform()
+                DetectAction(technique='human_receptionist', state="stop").resolve().perform()
+                HeadFollowMotion(state="start").perform()
                 TalkingMotion("this it the kitchen").perform()
                 rospy.sleep(1)
                 TalkingMotion("here you can get yourself a snack").perform()
-                MoveJointsMotion(["torso_lift_joint"], [0.1]).perform()
+                # MoveJointsMotion(["torso_lift_joint"], [0.1]).perform()
 
         if step <= 4:
 
@@ -138,7 +149,7 @@ def demo(step: int):
             MoveJointsMotion(["torso_lift_joint"], [0.0]).perform()
             TalkingMotion("i will show you the living room now").perform()
             rospy.sleep(1.5)
-            DetectAction(technique='human', state="stop").resolve().perform()
+            DetectAction(technique='human_receptionist', state="stop").resolve().perform()
             TalkingMotion("please step out of the way and follow me").perform()
             if drinks:
                 NavigateAction([nav_pose_to_couch]).resolve().perform()
@@ -173,9 +184,8 @@ def demo(step: int):
             # find free place to sit for guest
             LookAtAction([look_couch]).resolve().perform()
             # TODO: change description to you
-            DetectAction(technique='human').resolve().perform()
+            DetectAction(technique='human_receptionist').resolve().perform()
             HeadFollowMotion(state="start").perform()
-            describe(guest1)
 
             if drinks:
                 pose_guest = PointStamped()
@@ -185,17 +195,17 @@ def demo(step: int):
                 pose_guest.point.z = 1.2
                 PointingMotion(pose_guest).perform()
                 TalkingMotion("behind you is the kitchen").perform()
-                rospy.sleep(1)
+                rospy.sleep(2)
                 TalkingMotion("if you want you can get yourself a snack there").perform()
                 rospy.sleep(2)
-                TalkingMotion("thank you for your time").perform()
 
             if kitchen:
                 TalkingMotion("behind me is a table with beverages").perform()
-                rospy.sleep(1)
+                rospy.sleep(2)
                 TalkingMotion("if you want you can get yourself a drink there").perform()
                 rospy.sleep(2)
-                TalkingMotion("thank you for your time").perform()
+
+            TalkingMotion("thank you for your time").perform()
 
 
 
