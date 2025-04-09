@@ -52,8 +52,9 @@ class NLP_Helper:
 
         # look for human and position higher
         DetectAction(technique='human_receptionist').resolve().perform()
-        TalkingMotion("Hello please come closer").perform()
-        rospy.sleep(1)
+        TalkingMotion("please come closer").perform()
+        rospy.sleep(1.5)
+        TalkingMotion("thank you").perform()
         MoveJointsMotion(["arm_flex_joint"], [-0.1]).perform()
         MoveJointsMotion(["torso_lift_joint"], [0.15]).perform()
 
@@ -65,8 +66,8 @@ class NLP_Helper:
         rospy.sleep(1.1)
         TalkingMotion("What is your name?").perform()
         rospy.sleep(1.1)
-        TalkingMotion("please use the sentence my name is").perform()
-        rospy.sleep(1.5)
+        # TalkingMotion("please use the sentence my name is").perform()
+        # rospy.sleep(1.5)
         TalkingMotion("answer me when my display changes").perform()
         rospy.sleep(2.3)
 
@@ -187,13 +188,15 @@ class NLP_Helper:
 
             # wait for nlp answer
             start_time = time.time()
-            while not self.callback:
+            while not self.callback and trys < 3:
                 rospy.sleep(1)
 
                 if int(time.time() - start_time) == timeout:
                     rospy.logwarn("guest needs to repeat")
                     self.image_switch_publisher.pub_now(ImageEnum.JREPEAT.value)
+                    trys += 1
                 if int(time.time() - start_time) == timeout2:
+                    trys += 1
                     print("listen again")
                     self.nlp_pub.publish("start listening")
                     start_time = time.time()

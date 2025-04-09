@@ -60,7 +60,7 @@ beverage_pose = Pose(position=[2.2, 4, 0], orientation=[0, 0, 0.9, 0.3])
 kitchen_pose = Pose(position=[3.5, -2.5, 0], orientation=[0, 0, 1, 0])
 
 
-available_drinks_ba = ["water", "cola", "juice", "apple juice", "soda", "lemonade", "Ice Tea"]
+available_drinks_ba = ["water", "cola", "juice", "apple juice"]
 
 
 def drive_to_drinks(drink: str):
@@ -116,7 +116,7 @@ def demo(step: int):
                 MoveJointsMotion(["head_tilt_joint"], [0.1]).perform()
                 LookAtAction([look_person_drinks]).resolve().perform()
 
-                DetectAction(technique='human_receptionist', state="stop").resolve().perform()
+                DetectAction(technique='human_receptionist', state="start").resolve().perform()
                 HeadFollowMotion(state="start").perform()
 
                 TalkingMotion("here you can get yourself a drink").perform()
@@ -128,7 +128,7 @@ def demo(step: int):
                 # guide to drinking area
                 NavigateAction([kitchen_pose]).resolve().perform()
                 MoveJointsMotion(["head_tilt_joint"], [0.1]).perform()
-                DetectAction(technique='human_receptionist', state="stop").resolve().perform()
+                DetectAction(technique='human_receptionist', state="start").resolve().perform()
                 HeadFollowMotion(state="start").perform()
                 TalkingMotion("this it the kitchen").perform()
                 rospy.sleep(1)
@@ -190,7 +190,7 @@ def demo(step: int):
             if drinks:
                 pose_guest = PointStamped()
                 pose_guest.header.frame_id = "map"
-                pose_guest.point.x = 3
+                pose_guest.point.x = 2.4
                 pose_guest.point.y = -2
                 pose_guest.point.z = 1.2
                 PointingMotion(pose_guest).perform()
@@ -200,8 +200,11 @@ def demo(step: int):
                 rospy.sleep(2)
 
             if kitchen:
+                look_end = Pose([2.4, 2.1, 0.8])
+                LookAtAction([look_end]).resolve().perform()
                 TalkingMotion("behind me is a table with beverages").perform()
                 rospy.sleep(2)
+                LookAtAction([look_couch]).resolve().perform()
                 TalkingMotion("if you want you can get yourself a drink there").perform()
                 rospy.sleep(2)
 
