@@ -60,7 +60,7 @@ beverage_pose = Pose(position=[2.2, 4, 0], orientation=[0, 0, 0.9, 0.3])
 kitchen_pose = Pose(position=[3.5, -2.5, 0], orientation=[0, 0, 1, 0])
 
 
-available_drinks_ba = ["water", "cola", "juice", "apple juice"]
+available_drinks_ba = ["water", "cola", "juice", "apple juice", "milk"]
 
 
 def drive_to_drinks(drink: str):
@@ -68,7 +68,6 @@ def drive_to_drinks(drink: str):
     global drinks
     for i in range(len(available_drinks_ba)):
         if drink == available_drinks_ba[i]:
-            print("yaahy")
             return True
 
     return False
@@ -86,13 +85,18 @@ def demo(step: int):
         image_switch_publisher.pub_now(ImageEnum.HI.value)
         MoveJointsMotion(["head_tilt_joint"], [0.0]).perform()
         ParkArmsAction([Arms.LEFT]).resolve().perform()
+        MoveJointsMotion(["arm_flex_joint"], [-0.25]).perform()
         MoveJointsMotion(["torso_lift_joint"], [0.0]).perform()
 
         if step <= 1:
             # greet first guest
             nlp.welcome_guest(guest1)
+            image_switch_publisher.pub_now(ImageEnum.HI.value)
+
             rospy.sleep(1)
             nlp.get_fav_drink(guest1)
+            image_switch_publisher.pub_now(ImageEnum.HI.value)
+
             TalkingMotion("my favorite drink is oil").perform()
 
             if drive_to_drinks(guest1.fav_drink):
@@ -122,6 +126,8 @@ def demo(step: int):
                 TalkingMotion("here you can get yourself a drink").perform()
                 rospy.sleep(1.5)
                 TalkingMotion(f"we have {guest1.fav_drink} here").perform()
+                rospy.sleep(2)
+                TalkingMotion("please come closer again").perform()
                 # MoveJointsMotion(["torso_lift_joint"], [0.1]).perform()
 
             if kitchen:
@@ -133,6 +139,8 @@ def demo(step: int):
                 TalkingMotion("this it the kitchen").perform()
                 rospy.sleep(1)
                 TalkingMotion("here you can get yourself a snack").perform()
+                rospy.sleep(2)
+                TalkingMotion("please come closer again").perform()
                 # MoveJointsMotion(["torso_lift_joint"], [0.1]).perform()
 
         if step <= 4:
@@ -143,6 +151,7 @@ def demo(step: int):
             TalkingMotion("what do you do in your free time?").perform()
             rospy.sleep(1.5)
             nlp.store_and_answer_hobby(guest1)
+            image_switch_publisher.pub_now(ImageEnum.HI.value)
 
         if step <= 5:
             # lead to living room
@@ -209,10 +218,6 @@ def demo(step: int):
                 rospy.sleep(2)
 
             TalkingMotion("thank you for your time").perform()
-
-
-
-
 
 
 demo(0)

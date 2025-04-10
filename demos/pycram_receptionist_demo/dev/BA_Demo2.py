@@ -226,6 +226,6 @@ def drive_back_move_base():
     NavigateAction([nav_pose_2]).resolve().perform()
     TalkingMotion("almost there").perform()
     NavigateAction([nav_pose_3]).resolve().perform()
-
+    TalkingMotion("tASK COMPLEDET").perform()
 
 demo(0)
