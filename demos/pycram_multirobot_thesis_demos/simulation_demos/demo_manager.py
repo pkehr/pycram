@@ -7,8 +7,8 @@ from pycram.datastructures.enums import ROBOTS
 
 robot_one = [('Select', None), ('PR2', ROBOTS.PR2), ('Tiago', ROBOTS.TIAGO), ('Armar6', ROBOTS.ARMAR6)]
 robot_two = [('Select', None), ('PR2', ROBOTS.PR2), ('Tiago', ROBOTS.TIAGO), ('Armar6', ROBOTS.ARMAR6)]
-demos = [('Select', None), ('Apartment', DEMOS.APARTMENT), ('Kitchen', DEMOS.KITCHEN), ('Triple', DEMOS.TRIPLE),
-         ('Simple', DEMOS.SIMPLE)]
+demos = [('Select', None), ('Apartment', DEMOS.TRANSPORTING_APARTMENT), ('Kitchen', DEMOS.TRANSPORTING_KITCHEN), ('Triple', DEMOS.N_ROBOTS),
+         ('Simple', DEMOS.N_ROBOTS)]
 
 first_selected_robot = None
 second_selected_robot = None

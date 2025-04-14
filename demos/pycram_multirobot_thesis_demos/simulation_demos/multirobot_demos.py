@@ -19,13 +19,13 @@ def multirobot_demo(robots: List[ROBOTS], demo=DEMOS.APARTMENT, mode=WorldMode.G
     world = BulletWorld(mode)
     viz = VizMarkerPublisher() if mode == WorldMode.DIRECT else None
 
-    if demo == DEMOS.SIMPLE:
+    if demo == DEMOS.N_ROBOTS:
         move_and_park(robots=robots, launch_robots=launch_robots)
-    elif demo == DEMOS.APARTMENT:
+    elif demo == DEMOS.TRANSPORTING_APARTMENT:
         transporting_apartment(robots=robots, launch_robots=launch_robots)
-    elif demo == DEMOS.KITCHEN:
+    elif demo == DEMOS.TRANSPORTING_KITCHEN:
         transporting_kitchen(robots=robots, launch_robots=launch_robots)
-    elif demo == DEMOS.TRIPLE:
+    elif demo == DEMOS.N_ROBOTS:
         triple_robots(robots=robots, launch_robots=launch_robots)
     elif demo == DEMOS.THREADED_TEST:
         multithreaded_testing(robots=robots, launch_robots=launch_robots)
@@ -59,7 +59,7 @@ if __name__ == '__main__':
         #ROBOTS.ICUB
     ]
 
-    demo = DEMOS.SIMPLE
+    demo = DEMOS.N_ROBOTS
     mode = WorldMode.GUI
 
     multirobot_demo(robots=robots, demo=demo, mode=mode)
