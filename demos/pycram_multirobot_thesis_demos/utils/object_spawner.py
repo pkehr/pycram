@@ -1,4 +1,4 @@
-from demos.utils.enums import ENVIRONMENTS
+from demos.pycram_multirobot_thesis_demos.utils.enums import ENVIRONMENTS
 from pycram.datastructures.enums import ObjectType, ROBOTS
 from pycram.datastructures.pose import Pose
 from pycram.world_concepts.world_object import Object

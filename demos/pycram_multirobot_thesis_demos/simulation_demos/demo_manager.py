@@ -2,13 +2,13 @@ from IPython.core.display_functions import display
 import ipywidgets as widgets
 from ipywidgets import Output, Button, HBox
 
-from demos.utils.enums import DEMOS
+from demos.pycram_multirobot_thesis_demos.utils.enums import SIMULATED_DEMOS
 from pycram.datastructures.enums import ROBOTS
 
 robot_one = [('Select', None), ('PR2', ROBOTS.PR2), ('Tiago', ROBOTS.TIAGO), ('Armar6', ROBOTS.ARMAR6)]
 robot_two = [('Select', None), ('PR2', ROBOTS.PR2), ('Tiago', ROBOTS.TIAGO), ('Armar6', ROBOTS.ARMAR6)]
-demos = [('Select', None), ('Apartment', DEMOS.TRANSPORTING_APARTMENT), ('Kitchen', DEMOS.TRANSPORTING_KITCHEN), ('Triple', DEMOS.N_ROBOTS),
-         ('Simple', DEMOS.N_ROBOTS)]
+demos = [('Select', None), ('Apartment', SIMULATED_DEMOS.TRANSPORTING_APARTMENT), ('Kitchen', SIMULATED_DEMOS.TRANSPORTING_KITCHEN), ('Triple', SIMULATED_DEMOS.N_ROBOTS),
+         ('Simple', SIMULATED_DEMOS.N_ROBOTS)]
 
 first_selected_robot = None
 second_selected_robot = None

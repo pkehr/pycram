@@ -8,10 +8,16 @@ class ENVIRONMENTS(Enum):
     SUTURO = auto()
 
 
-class DEMOS(Enum):
+class SIMULATED_DEMOS(Enum):
     BASIC_ACTIONS = auto()
     TRANSPORTING_APARTMENT = auto()
     TRANSPORTING_KITCHEN = auto()
     N_ROBOTS = auto()
     THREADED_TEST = auto()
     PARTY = auto()
+
+
+class REAL_DEMOS(Enum):
+    HSRB_TURTLE = auto()
+    HSRB_TURTLE_THREADED = auto()
+    HSRB_SINGLE = auto()

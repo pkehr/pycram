@@ -3,7 +3,7 @@ from ipywidgets import HTML
 
 from demos.pycram_multirobot_thesis_demos.simulation_demos.scenarios.basic_actions.basic_actions import move_and_park
 from demos.pycram_multirobot_thesis_demos.simulation_demos.scenarios.transporting.transporting_apartment import transporting_apartment
-from demos.utils.enums import DEMOS, ROBOTS
+from demos.pycram_multirobot_thesis_demos.utils.enums import SIMULATED_DEMOS, ROBOTS
 from pycram.datastructures.enums import WorldMode
 
 from pycram.ros.viz_marker_publisher import VizMarkerPublisher
@@ -11,15 +11,15 @@ from pycram.worlds.bullet_world import BulletWorld
 
 
 def multirobot_demo(robot_one: ROBOTS = ROBOTS.PR2, robot_two: ROBOTS = ROBOTS.TIAGO):
-    demo = DEMOS.PR2_TIAGO_KITCHEN
+    demo = SIMULATED_DEMOS.PR2_TIAGO_KITCHEN
     mode = WorldMode.GUI
 
     world = BulletWorld(mode)
     viz = VizMarkerPublisher() if mode == WorldMode.DIRECT else None
 
-    if demo == DEMOS.PR2_TIAGO_SIMPLE:
+    if demo == SIMULATED_DEMOS.PR2_TIAGO_SIMPLE:
         move_and_park(robot_one=robot_one, robot_two=robot_two)
-    elif demo == DEMOS.PR2_TIAGO_KITCHEN:
+    elif demo == SIMULATED_DEMOS.PR2_TIAGO_KITCHEN:
         transporting_apartment(robot_one=robot_one, robot_two=robot_two)
 
 

@@ -2,7 +2,7 @@ from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.actions
 from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.nav_poses import NavOptions
 from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.objects import ObjectOptions
 from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.spawn import spawn_robot, setup_demo_objects
-from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.utils import get_robot_mode
+from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.utils import get_robot_mode
 from pycram.datastructures.enums import ROBOTS, ExecutionType
 from pycram.datastructures.enums import WorldMode
 from pycram.designators.action_designator import *
@@ -17,7 +17,7 @@ from pycram.worlds.bullet_world import BulletWorld
 # TODO: Inspect real robot and simulation demo
 
 
-def demo(execution_type: ExecutionType, world_mode=WorldMode.DIRECT):
+def hsrb_turtle_demo(execution_type: ExecutionType, world_mode=WorldMode.DIRECT):
     world = BulletWorld(world_mode)
 
     # Spawn HSRB
@@ -227,4 +227,4 @@ if __name__ == "__main__":
     execution_type = ExecutionType.SEMI_REAL
     world_mode = WorldMode.DIRECT
 
-    demo(execution_type=execution_type, world_mode=world_mode)
+    hsrb_turtle_demo(execution_type=execution_type, world_mode=world_mode)

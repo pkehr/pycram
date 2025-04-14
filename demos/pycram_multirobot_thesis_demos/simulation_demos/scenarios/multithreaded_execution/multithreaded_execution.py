@@ -3,8 +3,8 @@ from typing import List
 import rospy
 
 from demos.pycram_multirobot_thesis_demos.simulation_demos.setup.actions import actions
-from demos.utils.launcher import launch_all_robots
-from demos.utils.object_spawner import create_robot
+from demos.pycram_multirobot_thesis_demos.utils.launcher import launch_all_robots
+from demos.pycram_multirobot_thesis_demos.utils.object_spawner import create_robot
 from pycram.datastructures.enums import Arms, ROBOTS
 from pycram.datastructures.pose import Pose
 from pycram.multirobot.multi_threaded_robots import MultiThreadedRobot

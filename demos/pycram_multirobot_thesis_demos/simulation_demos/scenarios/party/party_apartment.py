@@ -1,6 +1,6 @@
-from demos.utils.enums import ENVIRONMENTS
-from demos.utils.launcher import launch_all_robots
-from demos.utils.object_spawner import create_robot, set_environment
+from demos.pycram_multirobot_thesis_demos.utils.enums import ENVIRONMENTS
+from demos.pycram_multirobot_thesis_demos.utils.launcher import launch_all_robots
+from demos.pycram_multirobot_thesis_demos.utils.object_spawner import create_robot, set_environment
 from pycram.datastructures.enums import ROBOTS
 from pycram.designators.action_designator import *
 from pycram.multirobot.multi_threaded_robots import MultiThreadedRobot

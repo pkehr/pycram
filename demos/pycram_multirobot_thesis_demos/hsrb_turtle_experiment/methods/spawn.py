@@ -1,5 +1,5 @@
-from demos.pycram_multirobot_thesis_demos.pycram_multirobot_real_demo import NavPoses
-from demos.pycram_multirobot_thesis_demos.pycram_multirobot_real_demo import ObjectManager
+from nav_poses import NavPoses
+from objects import ObjectManager
 from pycram.datastructures.dataclasses import Color
 from pycram.datastructures.enums import ObjectType, ROBOTS, ExecutionType
 

@@ -1,6 +1,6 @@
 from enum import Enum, auto
 
-from demos.pycram_multirobot_thesis_demos.pycram_multirobot_real_demo import rotated_quaternion
+from utils import rotated_quaternion
 from pycram.datastructures.enums import ObjectType
 from pycram.datastructures.pose import Pose
 from pycram.designator import ObjectDesignatorDescription
