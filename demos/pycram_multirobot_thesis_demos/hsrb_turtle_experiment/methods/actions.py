@@ -1,18 +1,18 @@
 from typing import List, Optional
 
-from demos.pycram_multirobot_real_demo.utils import rotated_quaternion
+from demos.pycram_multirobot_thesis_demos.pycram_multirobot_real_demo import rotated_quaternion
 from pycram.datastructures.enums import Grasp, Arms
 from pycram.datastructures.pose import Pose
 from pycram.designators.action_designator import ParkArmsAction, PickUpAction, NavigateAction, PlaceAction
 
 
-def hsrb_transport_object(object_desig, nav_poses: Optional[List] = None, placing_pose: Optional[Pose] = None):
+def hsrb_transport_object(object_desig, nav_poses: Optional[List] = None, placing_pose: Optional[Pose] = None, grasp_type = Grasp.RIGHT):
     # table_obj = DetectAction(technique='all').resolve().perform()
 
     ParkArmsAction(arms=[Arms.LEFT]).resolve().perform()
 
     PickUpAction(object_designator_description=object_desig, arms=[Arms.LEFT],
-                 grasps=[Grasp.FRONT]).resolve().perform()
+                 grasps=[grasp_type]).resolve().perform()
 
     ParkArmsAction(arms=[Arms.LEFT]).resolve().perform()
 
@@ -20,7 +20,7 @@ def hsrb_transport_object(object_desig, nav_poses: Optional[List] = None, placin
         for pose in nav_poses:
             NavigateAction(target_locations=[pose]).resolve().perform()
 
-    PlaceAction(object_desig, [placing_pose], [Grasp.FRONT], [Arms.LEFT], [False]).resolve().perform()
+    PlaceAction(object_desig, [placing_pose], [grasp_type], [Arms.LEFT], [False]).resolve().perform()
 
     ParkArmsAction(arms=[Arms.LEFT]).resolve().perform()
 

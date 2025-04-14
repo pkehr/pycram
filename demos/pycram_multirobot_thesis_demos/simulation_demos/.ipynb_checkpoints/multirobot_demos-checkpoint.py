@@ -1,8 +1,8 @@
 from IPython.core.display_functions import display
 from ipywidgets import HTML
 
-from demos.pycram_multirobot_demo.scenarios.move_and_park import move_and_park
-from demos.pycram_multirobot_demo.scenarios.transporting_apartment import transporting_apartment
+from demos.pycram_multirobot_thesis_demos.simulation_demos.scenarios.basic_actions.basic_actions import move_and_park
+from demos.pycram_multirobot_thesis_demos.simulation_demos.scenarios.transporting.transporting_apartment import transporting_apartment
 from demos.utils.enums import DEMOS, ROBOTS
 from pycram.datastructures.enums import WorldMode
 

@@ -1,8 +1,8 @@
-from demos.pycram_multirobot_real_demo.methods.actions import hsrb_transport_object, drive_with_multiple_points
-from demos.pycram_multirobot_real_demo.methods.nav_poses import NavOptions
-from demos.pycram_multirobot_real_demo.methods.objects import ObjectOptions
-from demos.pycram_multirobot_real_demo.methods.spawn import spawn_robot, setup_demo_objects
-from demos.pycram_multirobot_real_demo.utils import get_robot_mode
+from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.actions import hsrb_transport_object, drive_with_multiple_points
+from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.nav_poses import NavOptions
+from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.objects import ObjectOptions
+from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.spawn import spawn_robot, setup_demo_objects
+from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.utils import get_robot_mode
 from pycram.datastructures.enums import ROBOTS, ExecutionType
 from pycram.datastructures.enums import WorldMode
 from pycram.designators.action_designator import *
@@ -16,7 +16,6 @@ from pycram.worlds.bullet_world import BulletWorld
 
 # TODO: Inspect real robot and simulation demo
 
-# TODO: Inspect Giskard ForceTorque Error
 
 def demo(execution_type: ExecutionType, world_mode=WorldMode.DIRECT):
     world = BulletWorld(world_mode)
@@ -49,14 +48,14 @@ def demo(execution_type: ExecutionType, world_mode=WorldMode.DIRECT):
     navigate_start_hsrb = True
     navigate_table_one_hsrb = True
 
-    transport_milk = False
-    transport_coffee = False
-    transport_chips = False
+    transport_milk = 0
+    transport_coffee = 1
+    transport_chips = 0
 
     navigate_table_two_turtle = False
-    navigate_table_two_hsrb = True
+    navigate_table_two_hsrb = 0
 
-    giskard.clear()
+    #giskard.clear()
     giskard.sync_worlds()
 
     print("starting_demo")
@@ -112,7 +111,7 @@ def demo(execution_type: ExecutionType, world_mode=WorldMode.DIRECT):
         milk_placing_pose = objects.placing_poses[ObjectOptions.MILK]
 
         with robot_mode(robot_hsrb):
-            hsrb_transport_object(object_desig=milk_desig, placing_pose=milk_placing_pose)
+            hsrb_transport_object(object_desig=milk_desig, placing_pose=milk_placing_pose, grasp_type=Grasp.RIGHT)
             NavigateAction(target_locations=[table_one_nav_pose]).resolve().perform()
         rospy.loginfo("Object 1 transported on turtlebot")
 
@@ -225,7 +224,7 @@ def demo(execution_type: ExecutionType, world_mode=WorldMode.DIRECT):
 
 
 if __name__ == "__main__":
-    execution_type = ExecutionType.REAL
+    execution_type = ExecutionType.SEMI_REAL
     world_mode = WorldMode.DIRECT
 
     demo(execution_type=execution_type, world_mode=world_mode)

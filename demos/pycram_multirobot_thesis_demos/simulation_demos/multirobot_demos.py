@@ -3,12 +3,12 @@ from typing import List
 from IPython.core.display_functions import display
 from ipywidgets import HTML
 
-from demos.pycram_multirobot_demo.scenarios.move_and_park import move_and_park
-from demos.pycram_multirobot_demo.scenarios.multithread_testing import multithreaded_testing
-from demos.pycram_multirobot_demo.scenarios.party_apartment import party_apartment
-from demos.pycram_multirobot_demo.scenarios.transporting_apartment import transporting_apartment
-from demos.pycram_multirobot_demo.scenarios.transporting_kitchen import transporting_kitchen
-from demos.pycram_multirobot_demo.scenarios.triple_robot import triple_robots
+from demos.pycram_multirobot_thesis_demos.simulation_demos.scenarios.basic_actions.basic_actions import move_and_park
+from demos.pycram_multirobot_thesis_demos.simulation_demos.scenarios.multithreaded_execution.multithreaded_execution import multithreaded_testing
+from demos.pycram_multirobot_thesis_demos.simulation_demos.scenarios.party.party_apartment import party_apartment
+from demos.pycram_multirobot_thesis_demos.simulation_demos.scenarios.transporting.transporting_apartment import transporting_apartment
+from demos.pycram_multirobot_thesis_demos.simulation_demos.scenarios.transporting.transporting_kitchen import transporting_kitchen
+from demos.pycram_multirobot_thesis_demos.simulation_demos.scenarios.load_n_robots.load_n_robots import triple_robots
 from demos.utils.enums import DEMOS
 from pycram.datastructures.enums import WorldMode, ROBOTS
 from pycram.ros_utils.viz_marker_publisher import VizMarkerPublisher
@@ -59,7 +59,7 @@ if __name__ == '__main__':
         #ROBOTS.ICUB
     ]
 
-    demo = DEMOS.TRIPLE
+    demo = DEMOS.SIMPLE
     mode = WorldMode.GUI
 
     multirobot_demo(robots=robots, demo=demo, mode=mode)

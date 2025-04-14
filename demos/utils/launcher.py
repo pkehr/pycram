@@ -5,7 +5,7 @@ import roslaunch
 import rospy
 import rospkg
 
-from demos.utils.enums import ROBOTS
+from pycram.datastructures.enums import ROBOTS
 
 
 def launch_robot(robot: ROBOTS, use_namespace=False):

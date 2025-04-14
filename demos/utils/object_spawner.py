@@ -1,7 +1,7 @@
-from pycram.datastructures.enums import ObjectType
+from demos.utils.enums import ENVIRONMENTS
+from pycram.datastructures.enums import ObjectType, ROBOTS
 from pycram.datastructures.pose import Pose
 from pycram.world_concepts.world_object import Object
-from .enums import ROBOTS, ENVIRONMENTS
 
 
 def create_robot(robot: ROBOTS, pose=None):

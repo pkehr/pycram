@@ -2,9 +2,9 @@ from typing import List
 
 import rospy
 
-from demos.pycram_multirobot_demo.setup.actions import actions
+from demos.pycram_multirobot_thesis_demos.simulation_demos.setup.actions import actions
+from demos.utils.launcher import launch_all_robots
 from demos.utils.enums import ENVIRONMENTS
-from demos.utils.launcher import launch_robot, launch_all_robots
 from demos.utils.object_spawner import set_environment, create_robot
 from pycram.datastructures.dataclasses import Color
 from pycram.datastructures.enums import ObjectType, Arms, Grasp, ROBOTS
@@ -15,9 +15,9 @@ from pycram.process_module import simulated_robot
 from pycram.world_concepts.world_object import Object
 
 
-def transporting_kitchen(robots: List[ROBOTS], launch_robots=True):
+def transporting_apartment(robots: List[ROBOTS], launch_robots=True):
     if launch_robots:
-        launched_robots = launch_all_robots(robots=robots)
+        launched_robots = launch_all_robots(robots)
 
     robot_one = robots[0]
     robot_two = robots[1]
@@ -26,7 +26,7 @@ def transporting_kitchen(robots: List[ROBOTS], launch_robots=True):
     pose_tiago = Pose([4, 3, 0])
 
     # Environment
-    current_environment = set_environment(ENVIRONMENTS.KITCHEN)
+    current_environment = set_environment(ENVIRONMENTS.APARTMENT_SMALL)
     milk = Object("milk", ObjectType.MILK, "milk.stl", pose=Pose([0.5, 3, 1.02], orientation=[0, 0, 1, 0]),
                   color=Color(1, 0, 0, 1))
     milk_BO = BelieveObject(names=["milk"])
@@ -72,10 +72,14 @@ def transporting_kitchen(robots: List[ROBOTS], launch_robots=True):
         milk = Object("milk", ObjectType.MILK, "milk.stl", pose=Pose([2.75, 3, 1.02], orientation=[0, 0, 1, 0]),
                       color=Color(1, 0, 0, 1))
 
-        milk = Object("milk", ObjectType.MILK, "milk.stl", pose=Pose([3.3, 3.30, 0.62], orientation=[0, 0, 1, 0]),
-                      color=Color(1, 0, 0, 1))
+        PickUpAction(object_designator_description=milk_BO,
+                     arms=[Arms.LEFT],
+                     grasps=[Grasp.FRONT]).resolve().perform()
 
-        second_robot.attach(milk)
+        #milk = Object("milk", ObjectType.MILK, "milk.stl", pose=Pose([3.3, 3.30, 0.62], orientation=[0, 0, 1, 0]),
+        #              color=Color(1, 0, 0, 1))
+
+        #second_robot.attach(milk)
 
         rospy.sleep(2)
 

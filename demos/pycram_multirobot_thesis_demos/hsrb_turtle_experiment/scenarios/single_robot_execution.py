@@ -1,6 +1,6 @@
-from demos.pycram_multirobot_real_demo.methods.actions import hsrb_transport_object, drive_with_multiple_points
-from demos.pycram_multirobot_real_demo.methods.spawn import spawn_robot, setup_demo_objects
-from demos.pycram_multirobot_real_demo.utils import get_robot_mode
+from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.actions import hsrb_transport_object, drive_with_multiple_points
+from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.spawn import spawn_robot, setup_demo_objects
+from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.utils import get_robot_mode
 from pycram.datastructures.enums import ROBOTS, ExecutionType
 from pycram.datastructures.enums import WorldMode
 from pycram.designators.action_designator import *

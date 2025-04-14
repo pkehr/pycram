@@ -9,9 +9,9 @@ class ENVIRONMENTS(Enum):
 
 
 class DEMOS(Enum):
-    SIMPLE = auto()
-    APARTMENT = auto()
-    KITCHEN = auto()
-    TRIPLE = auto()
+    BASIC_ACTIONS = auto()
+    TRANSPORTING_APARTMENT = auto()
+    TRANSPORTING_KITCHEN = auto()
+    N_ROBOTS = auto()
     THREADED_TEST = auto()
     PARTY = auto()

@@ -1,6 +1,6 @@
 from enum import Enum, auto
 
-from demos.pycram_multirobot_real_demo.utils import rotated_quaternion
+from demos.pycram_multirobot_thesis_demos.pycram_multirobot_real_demo import rotated_quaternion
 from pycram.datastructures.enums import ObjectType
 from pycram.datastructures.pose import Pose
 from pycram.designator import ObjectDesignatorDescription
@@ -22,7 +22,7 @@ class ObjectManager:
         self.set_objects()
 
     def set_objects(self):
-        milk_position = [2.61, 4.8, 0.85]
+        milk_position = [2.03, 4.8, 0.85]
         milk_pickup_orientation = rotated_quaternion(angle=90)
 
         milk_place_position = [1.87, 5.24, 0.45]
@@ -32,7 +32,7 @@ class ObjectManager:
                            starting_position=milk_position, starting_orientation=milk_pickup_orientation,
                            placing_position=milk_place_position, placing_orientation=milk_place_orientation)
 
-        coffee_position = [2.21, 4.8, 0.85]
+        coffee_position = [2.19, 4.8, 0.85]
         coffee_pickup_orientation = rotated_quaternion(angle=90)
 
         coffee_place_position = [1.87, 5.24, 0.45]
