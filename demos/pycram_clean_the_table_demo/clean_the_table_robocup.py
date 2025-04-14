@@ -47,6 +47,11 @@ RobotStateUpdater("/tf", "/giskard_joint_states")
 
 apart_desig = BelieveObject(names=["kitchen"])
 
+table = "left"
+# TODO: change orientation
+pose = Pose([8.35, 0.1, 0.0], [0.0, 0.0, 0.29, 0.959])
+if table == "right":
+    pose = Pose([8.35, 0.1, 0.0], [0.0, 0.0, -0.29, 0.956])
 
 class NavigatePose(Enum):
     MAIN_DOOR = Pose([1.25, 0.148, 0], [0, 0, 0, 1])
@@ -54,7 +59,7 @@ class NavigatePose(Enum):
     DISHWASHER_CLOSED = Pose([7.2, -0.78, 0], [0, 0, -1, 1])
     DISHWASHER_LEFT = Pose([8.2, -1.15, 0], [0, 0, -1, 0])
     DISHWASHER_FRONT = Pose([7.23, -0.22, 0], [0, 0, -0.7, 0.7])
-    KITCHEN_TABLE = Pose([8.35, -0.1, 0.0], [0.0, 0.0, -0.29, 0.956])
+    KITCHEN_TABLE = pose
     TRASH_CAN = Pose([6.5, -0.6, 0], [0, 0, -1, 0])
 
 
@@ -62,11 +67,11 @@ class PlacingXPose(Enum):
     """
     Differentiate the x pose for placing
     """
-    CUTLERY = 7.11
-    SPOON = 7.11
-    FORK = 7.11
-    PLASTICKNIFE = 7.11
-    KNIFE = 7.11
+    CUTLERY = 7.22
+    SPOON = 7.22
+    FORK = 7.22
+    PLASTICKNIFE = 7.22
+    KNIFE = 7.22
     METALBOWL = 7.42
     METALMUG = 7.3
     METALPLATE = 7.3
@@ -76,14 +81,14 @@ class PlacingYPose(Enum):
     """
     Differentiate the y pose for placing
     """
-    CUTLERY = -1
-    SPOON = -1
-    FORK = -1
-    PLASTICKNIFE = -1
-    KNIFE = -1
+    CUTLERY = -1.12
+    SPOON = -1.12
+    FORK = -1.12
+    PLASTICKNIFE = -1.12
+    KNIFE = -1.12
     METALBOWL = -1.35
     METALMUG = -1.35
-    METALPLATE = -1.2
+    METALPLATE = -1.45
 
 
 class PlacingZPose(Enum):
@@ -91,7 +96,13 @@ class PlacingZPose(Enum):
     Differentiate the z pose for placing
     """
     METALPLATE = 0.6
-    OTHER = 0.52
+    OTHER = 0.5
+
+
+def table_pose(table: str):
+    if table == "left":
+        return Pose()
+
 
 
 def pickup_object(object: Object):
@@ -114,15 +125,17 @@ def pickup_object(object: Object):
 
         MoveGripperMotion(GripperState.CLOSE, Arms.LEFT).perform()
     else:
-        if object.obj_type in CUTLERY:  # and object.pose.position.y > table_pose + 0.125:
-            object.pose.position.z = 0.68
+        if object.obj_type in CUTLERY:
+            object.pose.position.z = 0.69
         # change object x pose if the grasping pose is too far in the table
         # object.pose.position.y -= 0.1
         if object.obj_type == "Metalbowl":
-            object.pose.position.z = 0.69
+            object.pose.position.z = 0.7
         TalkingMotion("Picking up from: " + (str(grasp)[6:]).lower()).perform()
         if grasp == Grasp.TOP:
             MoveTorsoAction([0.8]).resolve().perform()
+        else:
+            MoveTorsoAction([0.4]).resolve().perform()
         try_pick_up_robocup(robot, object, grasp)
 
     ParkArmsAction([Arms.LEFT]).resolve().perform()
@@ -149,7 +162,7 @@ def place_object(object: Object):
     y_pos = x_y_z_pos[1]
     z_pos = x_y_z_pos[2]
 
-    if x_pos >= 7.2:
+    if x_pos >= 7.3:
         NavigateAction([NavigatePose.DISHWASHER_LEFT.value]).resolve().perform()
     else:
         NavigateAction([NavigatePose.DISHWASHER_FRONT.value]).resolve().perform()
@@ -168,10 +181,10 @@ def pickup_and_place(objects_list: list):
     NavigateAction([NavigatePose.KITCHEN_TABLE.value]).resolve().perform()
     for value in range(len(objects_list)):
         pickup_object(objects_list[value])
+        # turn around
+        NavigateAction([Pose([robot.get_pose().pose.position.x, robot.get_pose().pose.position.y, 0],
+                             [0, 0, -1, 0])]).resolve().perform()
         if objects_list[value].obj_type in DRINKS:
-            # turn around
-            NavigateAction([Pose([robot.get_pose().pose.position.x, robot.get_pose().pose.position.y, 0],
-                                 [0, 0, -1, 0])]).resolve().perform()
             # Navigate to trash can pose
             NavigateAction([NavigatePose.TRASH_CAN.value]).resolve().perform()
             throw_object(objects_list[value])
@@ -186,7 +199,7 @@ def pickup_and_place(objects_list: list):
 
 
 def throw_object(obj: Object):
-    obj_desig = try_detect_with_tilting(-0.3)
+    obj_desig = try_detect_with_tilting(-0.8)
     real_trash_can = get_object(obj_desig, "Trashbin")
     PlaceAction(obj, [Pose([real_trash_can.pose.position.x, real_trash_can.pose.position.y, 0.6])], [Grasp.FRONT],
                 [Arms.LEFT], [False]).resolve().perform()
@@ -217,7 +230,10 @@ def navigate_and_detect(location_name: NavigatePose):
     :return: tupel of State and dictionary of found objects in the FOV
     """
 
-    NavigateAction(NavigatePose.KITCHEN_TABLE.value).resolve().perform()
+    TalkingMotion("driving").perform()
+    NavigateAction([NavigatePose.KITCHEN_TABLE.value]).resolve().perform()
+    TalkingMotion("Can you remove the chairs from the table?").perform()
+    rospy.sleep(3)
     TalkingMotion("look at my screen please").perform()
     MoveTorsoAction([0.12]).resolve().perform()
     image_switch_publisher.pub_now(ImageEnum.SEARCH.value)
@@ -228,8 +244,8 @@ def navigate_and_detect(location_name: NavigatePose):
     # object_desig1 = try_detect(Pose([9.1, -0.55, 0.683], NavigatePose.KITCHEN_TABLE.value.pose.orientation))
     objects_list = get_objects(object_desig1)
     image_switch_publisher.pub_now(ImageEnum.PERCEPTION_RESULT.value)
-    rospy.sleep(0.5)
-    image_switch_publisher.pub_now(ImageEnum.HI.value)
+    # rospy.sleep(0.5)
+    # image_switch_publisher.pub_now(ImageEnum.HI.value)
 
     # which objects has been perceived
     if len(objects_list) == 0:
@@ -272,22 +288,32 @@ with (real_robot):
     navigation.pub_fake_pose(start_pose)
     giskard.turning_left_and_back(45)
 
-    ParkArmsAction(arms=[Arms.LEFT]).resolve().perform()
-    TalkingMotion("Can you please open the dishwasher?").perform()
+    # ParkArmsAction(arms=[Arms.LEFT]).resolve().perform()
     TalkingMotion("driving").perform()
     NavigateAction([NavigatePose.FRONT_DOOR_TO_KITCHEN.value]).resolve().perform()
     NavigateAction([NavigatePose.DISHWASHER_CLOSED.value]).resolve().perform()
 
-    # open dishwasher door
-    MoveJointsMotion(["wrist_roll_joint"], [-1.5]).perform()
-    giskard.dishwasher_test(handle_name, 'sink_area_dish_washer_door_joint', door_name)
-
     annotator = get_used_annotator_list(Demos.CLEAN_THE_TABLE)
     isp = ImageSendPublisher(sub_topic=annotator[0])
-    TalkingMotion("Please pull out the lower rack").perform()
 
-    ParkArmsAction([Arms.LEFT]).resolve().perform()
-    MoveGripperMotion(GripperState.OPEN, Arms.LEFT).perform()
+    opened = False
+    if not opened:
+        TalkingMotion("look at my screen please").perform()
+        rospy.sleep(4)
+        image_switch_publisher.pub_now(ImageEnum.DISHWASHER_OPENING.value)
+        TalkingMotion("Can you open the dishwasher slightly? as shown on my screen.").perform()
+        TalkingMotion("I will try to open the dishwasher now.").perform()
+        rospy.sleep(4)
+
+        # open dishwasher door
+        # MoveJointsMotion(["wrist_roll_joint"], [-1.5]).perform()
+        giskard.dishwasher_test(handle_name, 'sink_area_dish_washer_door_joint', door_name)
+        ParkArmsAction([Arms.LEFT]).resolve().perform()
+        MoveGripperMotion(GripperState.OPEN, Arms.LEFT).perform()
+        image_switch_publisher.pub_now(ImageEnum.HI.value)
+        TalkingMotion("Please pull out the lower rack").perform()
+    else:
+        TalkingMotion("Can you open the dishwasher and pull out the lower rack?").perform()
 
     # detect objects
     object_desig_list = navigate_and_detect(NavigatePose.KITCHEN_TABLE)

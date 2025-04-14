@@ -92,7 +92,7 @@ def detect_point_to_seat(robot, no_sofa: Optional[bool] = False):
                     # move pose more to the left for clear pointing pose
                     pose_in_robot_frame.pose.position.y += 0.6
 
-                elif pose_in_robot_frame.pose.position.y < -0.09:
+                elif pose_in_robot_frame.pose.position.y < -0.3:
                     TalkingMotion("please take a seat to the right from me").perform()
                     # move pose more to the right for clear pointing pose
                     pose_in_robot_frame.pose.position.y -= 0.5
