@@ -6,7 +6,10 @@ from pycram.datastructures.pose import Pose
 from pycram.designators.action_designator import ParkArmsAction, PickUpAction, NavigateAction, PlaceAction
 
 
-def hsrb_transport_object(object_desig, nav_poses: Optional[List] = None, placing_pose: Optional[Pose] = None, grasp_type = Grasp.RIGHT):
+def hsrb_transport_object(object_desig,
+                          nav_poses: Optional[List] = None,
+                          placing_pose: Optional[Pose] = None,
+                          grasp_type=Grasp.RIGHT):
     # table_obj = DetectAction(technique='all').resolve().perform()
 
     ParkArmsAction(arms=[Arms.LEFT]).resolve().perform()
@@ -25,7 +28,7 @@ def hsrb_transport_object(object_desig, nav_poses: Optional[List] = None, placin
     ParkArmsAction(arms=[Arms.LEFT]).resolve().perform()
 
 
-def turtle_turn(angle=0):
+def turtle_turn(angle: int = 0):
     # Create pose with rotaded Quaternion in turtle frame
     new_pose = Pose(position=[0, 0, 0], orientation=rotated_quaternion(angle))
 
@@ -42,6 +45,6 @@ def turtle_turn_left():
     turtle_turn(angle=-90)
 
 
-def drive_with_multiple_points(poses):
+def drive_with_multiple_points(poses: List[Pose]):
     for pose in poses:
         NavigateAction(target_locations=[pose]).resolve().perform()

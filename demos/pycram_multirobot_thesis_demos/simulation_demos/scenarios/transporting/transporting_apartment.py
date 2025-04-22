@@ -15,7 +15,7 @@ from pycram.process_module import simulated_robot
 from pycram.world_concepts.world_object import Object
 
 
-def transporting_apartment(robots: List[ROBOTS], launch_robots=True):
+def transporting_apartment(robots: List[ROBOTS], launch_robots: bool = True):
     if launch_robots:
         launched_robots = launch_all_robots(robots)
 
@@ -76,10 +76,10 @@ def transporting_apartment(robots: List[ROBOTS], launch_robots=True):
                      arms=[Arms.LEFT],
                      grasps=[Grasp.FRONT]).resolve().perform()
 
-        #milk = Object("milk", ObjectType.MILK, "milk.stl", pose=Pose([3.3, 3.30, 0.62], orientation=[0, 0, 1, 0]),
+        # milk = Object("milk", ObjectType.MILK, "milk.stl", pose=Pose([3.3, 3.30, 0.62], orientation=[0, 0, 1, 0]),
         #              color=Color(1, 0, 0, 1))
 
-        #second_robot.attach(milk)
+        # second_robot.attach(milk)
 
         rospy.sleep(2)
 

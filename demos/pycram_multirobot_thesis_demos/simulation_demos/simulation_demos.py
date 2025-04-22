@@ -15,7 +15,9 @@ from pycram.ros_utils.viz_marker_publisher import VizMarkerPublisher
 from pycram.worlds.bullet_world import BulletWorld
 
 
-def multirobot_demo(robots: List[ROBOTS], demo=SIMULATED_DEMOS.TRANSPORTING_APARTMENT, mode=WorldMode.GUI,
+def multirobot_demo(robots: List[ROBOTS],
+                    demo: SIMULATED_DEMOS = SIMULATED_DEMOS.TRANSPORTING_APARTMENT,
+                    mode: WorldMode = WorldMode.GUI,
                     launch_robots=False):
     world = BulletWorld(mode)
     viz = VizMarkerPublisher() if mode == WorldMode.DIRECT else None
@@ -34,7 +36,10 @@ def multirobot_demo(robots: List[ROBOTS], demo=SIMULATED_DEMOS.TRANSPORTING_APAR
         party_apartment(robots=robots, launch_robots=launch_robots)
 
 
-def multirobot_demo_binder(robots, environment, mode=WorldMode.DIRECT, launch_robots=False):
+def multirobot_demo_binder(robots: List[ROBOTS],
+                           environment: SIMULATED_DEMOS,
+                           mode: WorldMode = WorldMode.DIRECT,
+                           launch_robots: bool = False):
     display(HTML('<img src="https://i.gifer.com/XVo6.gif" alt="Hourglass animation" width="50">'))
     multirobot_demo(robots=robots, demo=environment, mode=mode, launch_robots=launch_robots)
 

@@ -11,7 +11,7 @@ from pycram.world_concepts.world_object import Object
 extension = ObjectDescription.get_file_extension()
 
 
-def spawn_robot(robot: ROBOTS, name: str, execution_type=ExecutionType.REAL):
+def spawn_robot(robot: ROBOTS, name: str, execution_type: ExecutionType = ExecutionType.REAL):
     robot_object = Object(name, ObjectType.ROBOT, f"{name}{extension}")
     robot_desig = ObjectDesignatorDescription(names=[name]).resolve()
     robot_color = Color(R=0.6, G=0.6, B=0.6, A=1)

@@ -10,7 +10,7 @@ from pycram.datastructures.pose import Pose
 from pycram.process_module import simulated_robot
 
 
-def move_and_park(robots: List[ROBOTS], launch_robots=True):
+def move_and_park(robots: List[ROBOTS], launch_robots: bool = True):
     if launch_robots:
         launch_all_robots(robots=robots)
 

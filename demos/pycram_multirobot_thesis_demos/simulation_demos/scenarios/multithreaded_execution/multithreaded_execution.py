@@ -10,6 +10,7 @@ from pycram.datastructures.pose import Pose
 from pycram.multirobot.multi_threaded_robots import MultiThreadedRobot
 from pycram.process_module import simulated_robot
 
+
 def robot_one_actions(first_torso_value, second_torso_value, robot, iterations=10):
     with simulated_robot(robot):
         i = 0
@@ -39,8 +40,7 @@ def robot_two_actions(first_torso_value, second_torso_value, robot, iterations=1
             i += 1
 
 
-
-def multithreaded_testing(robots: List[ROBOTS], launch_robots=True):
+def multithreaded_testing(robots: List[ROBOTS], launch_robots: bool = True):
     if launch_robots:
         launched_robots = launch_all_robots(robots=robots)
 

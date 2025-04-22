@@ -1,4 +1,5 @@
-from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.actions import hsrb_transport_object, drive_with_multiple_points
+from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.actions import hsrb_transport_object, \
+    drive_with_multiple_points
 from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.spawn import spawn_robot, setup_demo_objects
 from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.utils import get_robot_mode
 from pycram.datastructures.enums import ROBOTS, ExecutionType
@@ -11,9 +12,10 @@ from pycram.utilities.robocup_utils import TextToSpeechPublisher, ImageSwitchPub
 from pycram.world_concepts.world_object import Object
 from pycram.worlds.bullet_world import BulletWorld
 
+
 # TODO: Inspect real robot and simulation demo
 
-def single_robot_demo(execution_type: ExecutionType, world_mode=WorldMode.DIRECT):
+def single_robot_demo(execution_type: ExecutionType, world_mode: WorldMode = WorldMode.DIRECT):
     world = BulletWorld(world_mode)
     robot_hsrb, hsrb_desig, hsrb_move = spawn_robot(ROBOTS.HSRB, name='hsrb', execution_type=execution_type)
 

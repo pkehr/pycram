@@ -1,4 +1,5 @@
-from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.actions import hsrb_transport_object, drive_with_multiple_points
+from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.actions import hsrb_transport_object, \
+    drive_with_multiple_points
 from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.nav_poses import NavOptions
 from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.objects import ObjectOptions
 from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.spawn import spawn_robot, setup_demo_objects
@@ -17,7 +18,7 @@ from pycram.worlds.bullet_world import BulletWorld
 # TODO: Inspect real robot and simulation demo
 
 
-def hsrb_turtle_threaded_demo(execution_type: ExecutionType, world_mode=WorldMode.DIRECT):
+def hsrb_turtle_threaded_demo(execution_type: ExecutionType, world_mode: WorldMode = WorldMode.DIRECT):
     world = BulletWorld(world_mode)
 
     # Spawn HSRB
@@ -55,7 +56,7 @@ def hsrb_turtle_threaded_demo(execution_type: ExecutionType, world_mode=WorldMod
     navigate_table_two_turtle = False
     navigate_table_two_hsrb = 0
 
-    #giskard.clear()
+    # giskard.clear()
     giskard.sync_worlds()
 
     print("starting_demo")

@@ -55,7 +55,7 @@ def robot_four_actions(robot, iterations=1):
             i = i + 1
 
 
-def party_apartment(robots: List[ROBOTS], launch_robots=True):
+def party_apartment(robots: List[ROBOTS], launch_robots: bool = True):
     if launch_robots:
         launched_robots = launch_all_robots(robots=robots)
 

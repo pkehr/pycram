@@ -1,4 +1,5 @@
 from enum import Enum, auto
+from typing import List
 
 from utils import rotated_quaternion
 from pycram.datastructures.enums import ObjectType
@@ -52,8 +53,14 @@ class ObjectManager:
                            starting_position=chips_position, starting_orientation=chips_pickup_orientation,
                            placing_position=chips_place_position, placing_orientation=chips_place_orientation)
 
-    def create_object(self, name, object_option, object_type, starting_position, starting_orientation, placing_position,
-                      placing_orientation, path="milk.stl"):
+    def create_object(self, name: str,
+                      object_option: ObjectOptions,
+                      object_type: ObjectType,
+                      starting_position: List[float],
+                      starting_orientation: List[float],
+                      placing_position: List[float],
+                      placing_orientation: List[float],
+                      path: str = "milk.stl"):
         obj_starting_pose = Pose(position=starting_position, orientation=starting_orientation)
         obj_object = Object(name, object_type, path=path, pose=obj_starting_pose)
 
