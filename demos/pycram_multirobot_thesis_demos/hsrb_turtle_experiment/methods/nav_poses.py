@@ -1,6 +1,6 @@
 from enum import Enum, auto
 
-from utils import rotated_quaternion
+from .utils import rotated_quaternion
 from pycram.datastructures.pose import Pose
 
 
