@@ -1,6 +1,9 @@
 import time
 import threading
 import atexit
+from typing import Optional
+
+import rospy
 
 from ..datastructures.pose import Pose
 from ..datastructures.world import World
@@ -15,7 +18,8 @@ class TFBroadcaster:
     """
     Broadcaster that publishes TF frames for every object in the World.
     """
-    def __init__(self, projection_namespace=ExecutionType.SIMULATED, odom_frame="odom", interval=0.1):
+
+    def __init__(self, projection_namespace: Optional[ExecutionType] = None, odom_frame="odom", interval=0.1):
         """
         The broadcaster prefixes all published TF messages with a projection namespace to distinguish between the TF
         frames from the simulation and the one from the real robot.
@@ -55,11 +59,11 @@ class TFBroadcaster:
         """
         for obj in self.world.objects:
             pose = obj.get_pose()
-            pose.header.stamp = Time.now()
+            pose.header.stamp = rospy.Time.now()
             self._publish_pose(obj.tf_frame, pose)
             for link in obj.link_name_to_id.keys():
                 link_pose = obj.get_link_pose(link)
-                link_pose.header.stamp = Time.now()
+                link_pose.header.stamp = rospy.Time.now()
                 self._publish_pose(obj.get_link_tf_frame(link), link_pose)
 
     def _update_static_odom(self) -> None:
@@ -81,8 +85,10 @@ class TFBroadcaster:
         frame_id = pose.frame
         if frame_id != child_frame_id:
             tf_stamped = pose.to_transform(child_frame_id)
-            tf_stamped.frame = self.projection_namespace.name + "/" + tf_stamped.frame
-            tf_stamped.child_frame_id = self.projection_namespace.name + "/" + tf_stamped.child_frame_id
+            if self.projection_namespace is not None:
+                tf_stamped.frame = self.projection_namespace.name + "/" + tf_stamped.frame
+                tf_stamped.child_frame_id = self.projection_namespace.name + "/" + tf_stamped.child_frame_id
+
             tf2_msg = TFMessage()
             tf2_msg.transforms.append(tf_stamped)
             if static:

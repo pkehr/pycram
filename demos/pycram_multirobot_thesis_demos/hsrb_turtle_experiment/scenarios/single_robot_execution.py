@@ -8,6 +8,7 @@ from pycram.datastructures.enums import ROBOTS, ExecutionType
 from pycram.datastructures.enums import WorldMode
 from pycram.designators.action_designator import *
 from pycram.designators.object_designator import *
+from pycram.ros_utils.tf_broadcaster import TFBroadcaster
 
 from pycram.utilities.robocup_utils import TextToSpeechPublisher, ImageSwitchPublisher, \
     HSRBMoveGripperReal
@@ -34,23 +35,29 @@ def single_robot_demo(execution_type: ExecutionType, world_mode: WorldMode = Wor
         talk = TextToSpeechPublisher()
         image_switch_publisher = ImageSwitchPublisher()
 
+    tfb = TFBroadcaster()
+
     # Setup demo objects
     nav_poses, objects = setup_demo_objects()
 
     def transport_object(object_option: ObjectOptions):
         object_desig = objects.desigs[object_option]
         object_placing_pose = objects.placing_pose_on_table[object_option]
+        table_two_nav_pose = nav_poses.hsrb_poses[NavOptions.TABLE_TWO]
 
         with robot_mode(robot_hsrb):
-            hsrb_transport_object(object_desig=object_desig, placing_pose=object_placing_pose, grasp_type=Grasp.RIGHT)
+
+            hsrb_transport_object(object_desig=object_desig, nav_poses=[table_two_nav_pose], placing_pose=object_placing_pose, grasp_type=Grasp.RIGHT)
         rospy.loginfo(f"{str(object_option)} transported to Table 2")
 
     navigate_start_hsrb = True
     navigate_table_one_hsrb = True
 
-    transport_milk = False
-    transport_coffee = False
-    transport_chips = False
+    transport_milk = True
+    transport_coffee = True
+    transport_chips = True
+
+    tfb.update()
 
     print("starting_demo")
 

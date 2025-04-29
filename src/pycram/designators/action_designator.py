@@ -5,12 +5,14 @@ import abc
 import inspect
 import itertools
 import math
+from copy import deepcopy
 from dataclasses import dataclass, field
 
 import numpy as np
 import rospy
 import sqlalchemy
-from geometry_msgs.msg import PointStamped, WrenchStamped
+import tf2_ros
+from geometry_msgs.msg import PointStamped, WrenchStamped, PoseStamped
 from giskardpy.data_types.exceptions import ObjectForceTorqueThresholdException
 from owlready2 import Thing
 from sqlalchemy.orm import Session
@@ -1026,6 +1028,10 @@ class PickUpActionPerformable(ActionAbstract):
     def perform(self) -> None:
         pre_pick_place_config = {'arm_flex_joint': 0.0, 'arm_roll_joint': 0, 'wrist_flex_joint': -1.5,
                                  'wrist_roll_joint': 0.0}
+
+        tf_buffer = tf2_ros.Buffer()
+        listener = tf2_ros.TransformListener(tf_buffer)
+
         MoveJointsMotion(list(pre_pick_place_config.keys()), list(pre_pick_place_config.values())).perform()
         # Initialize the local transformer and robot reference
         lt = LocalTransformer()
@@ -1037,16 +1043,8 @@ class PickUpActionPerformable(ActionAbstract):
         oTm = object.get_pose()
         execute = True
 
-        # Adjust object pose for top-grasping, if applicable
-        if self.grasp == Grasp.TOP:
-            print("Metalbowl from top")
-            # Handle special cases for certain object types (e.g., Cutlery, Metalbowl)
-            # Note: This includes hardcoded adjustments and should ideally be generalized
-            # if self.object_designator.type == "Cutlery":
-            # todo: this z is the popcorn-table height, we need to define location to get that z otherwise it
-            #  is hardcoded
-            # oTm.pose.position.z = 0.71
-            oTm.pose.position.z += 0.035
+        # TODO: Create prepose
+        # Transform into base_link, subtract a bit from x position
 
         # Determine the grasp orientation and transform the pose to the base link frame
 
