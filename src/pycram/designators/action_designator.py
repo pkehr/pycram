@@ -1125,8 +1125,11 @@ class PickUpActionPerformable(ActionAbstract):
         liftingTm = push_baseTm
         liftingTm.pose.position.z += 0.03
         World.current_world.add_vis_axis(liftingTm)
+
+        use_fts = False
+
         if execute:
-            if self.object_designator.obj_type in ["Spoon", "Fork", "Knife", "Plasticknife", "Cutlery"]:
+            if self.object_designator.obj_type in ["Spoon", "Fork", "Knife", "Plasticknife", "Cutlery"] or not use_fts:
                 MoveTCPMotion(liftingTm, self.arm, allow_gripper_collision=False, used_robot=self.used_robot).perform()
             else:
                 if self.object_designator.obj_type != "Metalbowl":
