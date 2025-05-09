@@ -70,7 +70,7 @@ class NavPoses:
         second_nav_orientation = rotated_quaternion(angle=-90)
         second_nav_pose = Pose(position=second_nav_position, orientation=second_nav_orientation)
 
-        third_nav_position = [3.5, 2.3, 0.0]
+        third_nav_position = [4.2, 2.3, 0.0]
         third_nav_orientation = rotated_quaternion(angle=90)
         third_nav_pose = Pose(position=third_nav_position, orientation=third_nav_orientation)
 
@@ -100,7 +100,7 @@ class NavPoses:
         turtle_third_nav_orientation_rotated = rotated_quaternion(angle=90)
         turtle_third_nav_pose_rotated = Pose(position=third_nav_position, orientation=turtle_third_nav_orientation_rotated)
 
-        self.hsrb_poses[NavOptions.FROM_ONE_TO_TWO_SUBPOINTS] = [self.turtle_poses[NavOptions.TABLE_ONE], turtle_table_one_rotated_pose,
+        self.turtle_poses[NavOptions.FROM_ONE_TO_TWO_SUBPOINTS] = [self.turtle_poses[NavOptions.TABLE_ONE], turtle_table_one_rotated_pose,
                                                                  turtle_second_nav_pose, turtle_second_nav_pose_rotated,
                                                                  turtle_third_nav_pose, turtle_third_nav_pose_rotated,
                                                                  self.turtle_poses[NavOptions.TABLE_TWO]]

@@ -5,6 +5,9 @@ from pycram.datastructures.enums import Grasp, Arms
 from pycram.datastructures.pose import Pose
 from pycram.designators.action_designator import ParkArmsAction, PickUpAction, NavigateAction, PlaceAction
 
+def navigate_to_many_points(nav_poses: List[Pose]):
+    for pose in nav_poses:
+        NavigateAction(target_locations=[pose]).resolve().perform()
 
 def hsrb_transport_object(object_desig,
                           nav_poses: Optional[List] = None,
@@ -20,8 +23,7 @@ def hsrb_transport_object(object_desig,
     ParkArmsAction(arms=[Arms.LEFT]).resolve().perform()
 
     if nav_poses is not None:
-        for pose in nav_poses:
-            NavigateAction(target_locations=[pose]).resolve().perform()
+        navigate_to_many_points(nav_poses)
 
     PlaceAction(object_desig, [placing_pose], [grasp_type], [Arms.LEFT], [False]).resolve().perform()
 

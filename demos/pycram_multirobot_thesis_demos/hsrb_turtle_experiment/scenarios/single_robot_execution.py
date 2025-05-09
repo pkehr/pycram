@@ -1,4 +1,5 @@
-from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.actions import hsrb_transport_object
+from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.actions import hsrb_transport_object, \
+    navigate_to_many_points
 from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.nav_poses import NavOptions
 from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.objects import ObjectOptions
 from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.spawn import spawn_robot, setup_demo_objects
@@ -38,13 +39,22 @@ def single_robot_demo(execution_type: ExecutionType, world_mode: WorldMode = Wor
     # Setup demo objects
     nav_poses, objects = setup_demo_objects()
 
+    if execution_type == ExecutionType.REAL:
+        table_one_nav_pose = [nav_poses.hsrb_poses[NavOptions.TABLE_ONE]]
+        table_two_nav_pose = [nav_poses.hsrb_poses[NavOptions.TABLE_TWO]]
+    elif execution_type == ExecutionType.SEMI_REAL:
+        table_one_nav_pose = list(reversed(nav_poses.hsrb_poses[NavOptions.FROM_ONE_TO_TWO_SUBPOINTS]))
+        table_two_nav_pose = nav_poses.hsrb_poses[NavOptions.FROM_ONE_TO_TWO_SUBPOINTS]
+    else:
+        raise Exception('Execution type not handled for navigation to table two')
+
+
     def transport_object(object_option: ObjectOptions):
         object_desig = objects.desigs[object_option]
         object_placing_pose = objects.placing_pose_on_table[object_option]
-        table_two_nav_pose = nav_poses.hsrb_poses[NavOptions.TABLE_TWO]
 
         with robot_mode(robot_hsrb):
-            hsrb_transport_object(object_desig=object_desig, nav_poses=[table_two_nav_pose],
+            hsrb_transport_object(object_desig=object_desig, nav_poses=table_two_nav_pose,
                                   placing_pose=object_placing_pose, grasp_type=Grasp.FRONT)
         rospy.loginfo(f"{str(object_option)} transported to Table 2")
 
@@ -57,6 +67,7 @@ def single_robot_demo(execution_type: ExecutionType, world_mode: WorldMode = Wor
     import pycram.external_interfaces.giskard as gk
 
     # TODO: Check if this breaks real world execution
+    gk.clear()
     gk.sync_worlds()
 
     #tfb.update()
@@ -83,10 +94,8 @@ def single_robot_demo(execution_type: ExecutionType, world_mode: WorldMode = Wor
     To:         Table#1 
     '''
     if navigate_table_one_hsrb:
-        table_one_nav_pose = nav_poses.hsrb_poses[NavOptions.TABLE_ONE]
-
         with robot_mode(robot_hsrb):
-            NavigateAction(target_locations=[table_one_nav_pose]).resolve().perform()
+            NavigateAction(target_locations=[nav_poses.hsrb_poses[NavOptions.TABLE_ONE]]).resolve().perform()
         rospy.loginfo("HSRB is at the first table")
 
     '''
@@ -104,9 +113,8 @@ def single_robot_demo(execution_type: ExecutionType, world_mode: WorldMode = Wor
     From:       Table#1
     '''
     if transport_milk:
-        table_one_nav_pose = nav_poses.hsrb_poses[NavOptions.TABLE_ONE]
         with robot_mode(robot_hsrb):
-            NavigateAction(target_locations=[table_one_nav_pose]).resolve().perform()
+            navigate_to_many_points(nav_poses=table_one_nav_pose)
 
     '''
     Transport
@@ -123,10 +131,8 @@ def single_robot_demo(execution_type: ExecutionType, world_mode: WorldMode = Wor
     From:       Table#1
     '''
     if transport_coffee:
-        table_one_nav_pose = nav_poses.hsrb_poses[NavOptions.TABLE_ONE]
-
         with robot_mode(robot_hsrb):
-            NavigateAction(target_locations=[table_one_nav_pose]).resolve().perform()
+            navigate_to_many_points(nav_poses=table_one_nav_pose)
 
     '''
     Pickup
