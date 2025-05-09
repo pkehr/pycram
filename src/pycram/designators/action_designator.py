@@ -1053,12 +1053,13 @@ class PickUpActionPerformable(ActionAbstract):
 
         oTb.pose.position.x += 0.01
         # Set pose to the grasp rotation
-        oTb.orientation = grasp_rotation
+        new_orientation = multiply_quaternions([oTb.orientation.x, oTb.orientation.y, oTb.orientation.z, oTb.orientation.w], grasp_rotation)
+        oTb.orientation = new_orientation
         # Transform the pose to the map frame
         oTmG = lt.transform_pose(oTb, "map")
 
         pre_pose_oTb = oTb
-        pre_pose_oTb.pose.position.x -= 0.1
+        pre_pose_oTb.pose.position.y -= 0.1
         pre_pose_oTmG = lt.transform_pose(pre_pose_oTb, "map")
 
         # Open the gripper before picking up the object
@@ -1222,7 +1223,9 @@ class PlaceActionPerformable(ActionAbstract):
 
         oTb = lt.transform_pose(oTm, robot.get_link_tf_frame("base_link"))
         # Set pose to the grasp rotation
-        oTb.orientation = grasp_rotation
+        new_orientation = multiply_quaternions(
+            [oTb.orientation.x, oTb.orientation.y, oTb.orientation.z, oTb.orientation.w], grasp_rotation)
+        oTb.orientation = new_orientation
         # Transform the pose to the map frame
         oTmG = lt.transform_pose(oTb, "map")
 

@@ -47,7 +47,7 @@ def single_robot_demo(execution_type: ExecutionType, world_mode: WorldMode = Wor
 
         with robot_mode(robot_hsrb):
 
-            hsrb_transport_object(object_desig=object_desig, nav_poses=[table_two_nav_pose], placing_pose=object_placing_pose, grasp_type=Grasp.RIGHT)
+            hsrb_transport_object(object_desig=object_desig, nav_poses=[table_two_nav_pose], placing_pose=object_placing_pose, grasp_type=Grasp.FRONT)
         rospy.loginfo(f"{str(object_option)} transported to Table 2")
 
     navigate_start_hsrb = True
