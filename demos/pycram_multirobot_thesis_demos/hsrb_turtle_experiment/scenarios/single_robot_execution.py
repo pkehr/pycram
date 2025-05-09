@@ -1,5 +1,4 @@
-from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.actions import hsrb_transport_object, \
-    drive_with_multiple_points
+from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.actions import hsrb_transport_object
 from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.nav_poses import NavOptions
 from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.objects import ObjectOptions
 from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.spawn import spawn_robot, setup_demo_objects
@@ -12,7 +11,6 @@ from pycram.ros_utils.tf_broadcaster import TFBroadcaster
 
 from pycram.utilities.robocup_utils import TextToSpeechPublisher, ImageSwitchPublisher, \
     HSRBMoveGripperReal
-from pycram.world_concepts.world_object import Object
 from pycram.worlds.bullet_world import BulletWorld
 
 
@@ -23,8 +21,8 @@ def single_robot_demo(execution_type: ExecutionType, world_mode: WorldMode = Wor
     robot_hsrb, hsrb_desig, hsrb_move = spawn_robot(ROBOTS.HSRB, name='hsrb', execution_type=execution_type)
 
     # Environment
-    kitchen = Object("kitchen", ObjectType.ENVIRONMENT, "suturo_lab_2.urdf")
-    kitchen_desig = ObjectDesignatorDescription(names=["kitchen"])
+    # kitchen = Object("kitchen", ObjectType.ENVIRONMENT, "suturo_lab_2.urdf")
+    # kitchen_desig = ObjectDesignatorDescription(names=["kitchen"])
 
     gripper, talk, image_switch_publisher = None, None, None
 
@@ -46,8 +44,8 @@ def single_robot_demo(execution_type: ExecutionType, world_mode: WorldMode = Wor
         table_two_nav_pose = nav_poses.hsrb_poses[NavOptions.TABLE_TWO]
 
         with robot_mode(robot_hsrb):
-
-            hsrb_transport_object(object_desig=object_desig, nav_poses=[table_two_nav_pose], placing_pose=object_placing_pose, grasp_type=Grasp.FRONT)
+            hsrb_transport_object(object_desig=object_desig, nav_poses=[table_two_nav_pose],
+                                  placing_pose=object_placing_pose, grasp_type=Grasp.FRONT)
         rospy.loginfo(f"{str(object_option)} transported to Table 2")
 
     navigate_start_hsrb = True
@@ -56,6 +54,9 @@ def single_robot_demo(execution_type: ExecutionType, world_mode: WorldMode = Wor
     transport_milk = True
     transport_coffee = True
     transport_chips = True
+    import pycram.external_interfaces.giskard as gk
+
+    gk.sync_worlds()
 
     tfb.update()
 
