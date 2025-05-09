@@ -680,6 +680,7 @@ class HSRBNavigationSemiReal(ProcessModule):
 
     def _execute(self, designator: MoveMotion) -> Any:
         logdebug(f"Sending goal to giskard to Move the robot")
+        giskard.avoid_all_collisions()
         giskard.achieve_cartesian_goal(designator.target, 'base_link', 'map')
 
 
@@ -709,6 +710,19 @@ class HSRBTalkSemiReal(ProcessModule):
 
         # Play the modified audio
         play(faster_audio)
+
+
+class HSRBMoveGripperSemiReal(ProcessModule):
+    """
+     Opens or closes the gripper of the real HSRB with the help of giskard.
+     """
+
+    def _execute(self, designator: MoveGripperMotion) -> Any:
+        if designator.motion == GripperState.OPEN:
+            giskard.set_gripper_state("open")
+        elif designator.motion == GripperState.CLOSE:
+            giskard.set_gripper_state("close")
+
 
 class HSRBPourReal(ProcessModule):
     """
@@ -906,7 +920,7 @@ class HSRBManager(ProcessModuleManager):
         elif ProcessModuleManager.execution_type == ExecutionType.REAL:
             return HSRBMoveGripperReal(self._move_gripper_lock)
         elif ProcessModuleManager.execution_type == ExecutionType.SEMI_REAL:
-            return HSRBMoveGripperReal(self._move_gripper_lock)
+            return HSRBMoveGripperSemiReal(self._move_gripper_lock)
 
     def grasp_dishwasher_handle(self):
         if ProcessModuleManager.execution_type == ExecutionType.REAL:

@@ -33,7 +33,7 @@ def single_robot_demo(execution_type: ExecutionType, world_mode: WorldMode = Wor
         talk = TextToSpeechPublisher()
         image_switch_publisher = ImageSwitchPublisher()
 
-    tfb = TFBroadcaster()
+    #tfb = TFBroadcaster()
 
     # Setup demo objects
     nav_poses, objects = setup_demo_objects()
@@ -56,9 +56,10 @@ def single_robot_demo(execution_type: ExecutionType, world_mode: WorldMode = Wor
     transport_chips = True
     import pycram.external_interfaces.giskard as gk
 
+    # TODO: Check if this breaks real world execution
     gk.sync_worlds()
 
-    tfb.update()
+    #tfb.update()
 
     print("starting_demo")
 

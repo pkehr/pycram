@@ -14,6 +14,7 @@ import sqlalchemy
 import tf2_ros
 from geometry_msgs.msg import PointStamped, WrenchStamped, PoseStamped
 from giskardpy.data_types.exceptions import ObjectForceTorqueThresholdException
+from pycram.external_interfaces import giskard as gk
 from owlready2 import Thing
 from sqlalchemy.orm import Session
 from tf import transformations
@@ -25,7 +26,7 @@ from .motion_designator import MoveJointsMotion, MoveGripperMotion, MoveArmJoint
     MoveTCPForceTorqueMotion, GraspingDishwasherHandleMotion, HalfOpeningDishwasherMotion, MoveArmAroundMotion, \
     FullOpeningDishwasherMotion, MoveArmDownForceTorqueMotion
 from .object_designator import ObjectDesignatorDescription, BelieveObject, ObjectPart
-from ..datastructures.enums import Arms, Grasp, GripperState, GiskardStateFTS
+from ..datastructures.enums import Arms, Grasp, GripperState, GiskardStateFTS, ExecutionType
 from ..datastructures.pose import Pose
 from ..datastructures.world import World
 from ..designator import ActionDesignatorDescription
@@ -47,6 +48,7 @@ from ..orm.action_designator import (ParkArmsAction as ORMParkArmsAction, Naviga
                                      FaceAtAction as ORMFaceAtAction)
 from ..orm.base import Pose as ORMPose
 from ..orm.object_designator import Object as ORMObject
+from ..process_module import semi_real_robot
 from ..ros.logging import logwarn
 from ..ros_utils.force_torque_sensor import ForceTorqueSensor
 from ..tasktree import with_tree
@@ -1010,6 +1012,8 @@ class PickUpActionPerformable(ActionAbstract):
     The grasp that should be used. For example, 'left' or 'right'
     """
 
+    execution_type: Optional[ExecutionType] = ExecutionType.REAL
+
     object_at_execution: Optional[ObjectDesignatorDescription.Object] = field(init=False)
     """
     The object at the time this Action got created. It is used to be a static, information holding entity. It is
@@ -1048,6 +1052,11 @@ class PickUpActionPerformable(ActionAbstract):
 
         # Determine the grasp orientation and transform the pose to the base link frame
 
+        # Open the gripper before picking up the object
+        rospy.logwarn("Opening Gripper")
+        MoveGripperMotion(motion=GripperState.OPEN, gripper=self.arm, used_robot=self.used_robot).perform()
+
+
         grasp_rotation = robot_description.grasps[self.grasp]
         oTb = lt.transform_pose(oTm, robot.get_link_tf_frame("base_link"))
 
@@ -1061,11 +1070,6 @@ class PickUpActionPerformable(ActionAbstract):
         pre_pose_oTb = oTb
         pre_pose_oTb.pose.position.y -= 0.1
         pre_pose_oTmG = lt.transform_pose(pre_pose_oTb, "map")
-
-        # Open the gripper before picking up the object
-        rospy.logwarn("Opening Gripper")
-        MoveGripperMotion(motion=GripperState.OPEN, gripper=self.arm, used_robot=self.used_robot).perform()
-
         # Move to the pre-grasp position and visualize the action
         rospy.logwarn("Picking up now")
         World.current_world.add_vis_axis(oTmG)
@@ -1079,17 +1083,25 @@ class PickUpActionPerformable(ActionAbstract):
         tool_frame = robot_description.get_arm_tool_frame(self.arm)
         special_knowledge_offset = lt.transform_pose(oTmG, robot.get_link_tf_frame(tool_frame))
 
-        # todo: this is for hsrb only at the moment we will need a function that returns us special knowledge
-        #  depending on robot
-        if robot.name == "hsrb":
-            if self.grasp == Grasp.TOP:
-                if self.object_designator.obj_type in ["Spoon", "Fork", "Knife", "Plasticknife"]:
-                    special_knowledge_offset.pose.position.y -= 0.07
-                if self.object_designator.obj_type == "Metalbowl":
-                    special_knowledge_offset.pose.position.y -= 0.065
-                    special_knowledge_offset.pose.position.x += 0.045
+        self.close_gripper(robot, tool_frame, object_desig=object)
 
-        push_base = special_knowledge_offset
+        self.apply_offset(robot=robot, special_knowledge_offset=special_knowledge_offset, lt=lt, execute=execute)
+
+        self.lifting(execute=execute, push_base=special_knowledge_offset, robot=robot, lt=lt)
+
+    # TODO find a way to use object_at_execution instead of object_designator in the automatic orm mapping in ActionAbstract
+    def to_sql(self) -> Action:
+        return ORMPickUpAction(arm=self.arm, grasp=self.grasp)
+
+    def insert(self, session: Session, **kwargs) -> Action:
+        action = super(ActionAbstract, self).insert(session)
+        action.object = self.object_at_execution.insert(session)
+
+        session.add(action)
+        return action
+
+    def lifting(self, execute: bool, push_base, robot, lt):
+        rospy.logwarn("Lifting now")
         # todo: this is for hsrb only at the moment we will need a function that returns us special knowledge
         #  depending on robot if we dont generlize this we will have a big list in the end of all robots
         if robot.name == "hsrb":
@@ -1100,27 +1112,7 @@ class PickUpActionPerformable(ActionAbstract):
                 #     z = 0.035
             push_base.pose.position.z += z
         push_baseTm = lt.transform_pose(push_base, "map")
-        special_knowledge_offsetTm = lt.transform_pose(special_knowledge_offset, "map")
 
-        # Grasping from the top inherently requires calculating an offset, whereas front grasping involves
-        # slightly pushing the object forward.
-        rospy.logwarn("Offset now")
-        # m = ManualMarkerPublisher()
-        # m.create_marker("pose_pickup", special_knowledge_offsetTm)
-        World.current_world.add_vis_axis(special_knowledge_offsetTm)
-        if execute:
-            MoveTCPMotion(special_knowledge_offsetTm, self.arm, allow_gripper_collision=False, used_robot=self.used_robot).perform()
-
-        rospy.logwarn("Pushing now")
-        World.current_world.add_vis_axis(push_baseTm)
-        if execute:
-            MoveTCPMotion(push_baseTm, self.arm, allow_gripper_collision=False, used_robot=self.used_robot).perform()
-
-        # Finalize the pick-up by closing the gripper and lifting the object
-        rospy.logwarn("Close Gripper")
-        MoveGripperMotion(motion=GripperState.CLOSE, gripper=self.arm, allow_gripper_collision=True, used_robot=self.used_robot).perform()
-
-        rospy.logwarn("Lifting now")
         liftingTm = push_baseTm
         liftingTm.pose.position.z += 0.03
         World.current_world.add_vis_axis(liftingTm)
@@ -1140,19 +1132,37 @@ class PickUpActionPerformable(ActionAbstract):
                                              allow_gripper_collision=False, used_robot=self.used_robot).perform()
                 except ObjectForceTorqueThresholdException:
                     raise ManipulationFTSCheckNoObject(f"Could not pickup object after checking force-torque values")
-        tool_frame = robot_description.get_arm_tool_frame(arm=self.arm)
+
+    def close_gripper(self, robot, tool_frame, object_desig):
+        # Finalize the pick-up by closing the gripper and lifting the object
+        rospy.logwarn("Close Gripper")
+        MoveGripperMotion(motion=GripperState.CLOSE, gripper=self.arm, allow_gripper_collision=True, used_robot=self.used_robot).perform()
+        gk.achieve_attached(object_desig)
         robot.attach(child_object=self.object_designator.world_object, parent_link=tool_frame)
+        gk.sync_worlds()
 
-    # TODO find a way to use object_at_execution instead of object_designator in the automatic orm mapping in ActionAbstract
-    def to_sql(self) -> Action:
-        return ORMPickUpAction(arm=self.arm, grasp=self.grasp)
+    def apply_offset(self, robot, special_knowledge_offset, lt, execute: bool):
+        # todo: this is for hsrb only at the moment we will need a function that returns us special knowledge
+        #  depending on robot
+        if robot.name == "hsrb":
+            if self.grasp == Grasp.TOP:
+                if self.object_designator.obj_type in ["Spoon", "Fork", "Knife", "Plasticknife"]:
+                    special_knowledge_offset.pose.position.y -= 0.07
+                if self.object_designator.obj_type == "Metalbowl":
+                    special_knowledge_offset.pose.position.y -= 0.065
+                    special_knowledge_offset.pose.position.x += 0.045
 
-    def insert(self, session: Session, **kwargs) -> Action:
-        action = super(ActionAbstract, self).insert(session)
-        action.object = self.object_at_execution.insert(session)
+        special_knowledge_offsetTm = lt.transform_pose(special_knowledge_offset, "map")
 
-        session.add(action)
-        return action
+        # Grasping from the top inherently requires calculating an offset, whereas front grasping involves
+        # slightly pushing the object forward.
+        rospy.logwarn("Offset now")
+        # m = ManualMarkerPublisher()
+        # m.create_marker("pose_pickup", special_knowledge_offsetTm)
+        World.current_world.add_vis_axis(special_knowledge_offsetTm)
+        if execute:
+            MoveTCPMotion(special_knowledge_offsetTm, self.arm, allow_gripper_collision=False,
+                          used_robot=self.used_robot).perform()
 
 
 @dataclass
@@ -1230,7 +1240,7 @@ class PlaceActionPerformable(ActionAbstract):
         oTmG = lt.transform_pose(oTb, "map")
 
         pre_pose_oTb = oTb
-        pre_pose_oTb.pose.position.x -= 0.1
+        #pre_pose_oTb.pose.position.x -= 0.1
         pre_pose_oTmG = lt.transform_pose(pre_pose_oTb, "map")
 
         rospy.logwarn("Placing now")
@@ -1265,32 +1275,23 @@ class PlaceActionPerformable(ActionAbstract):
             if execute:
                 MoveTCPMotion(push_baseTm, self.arm).perform()
 
-            # if self.object_designator.obj_type == "Metalplate":
-            #     # rTb = Pose([0,-0.1,0], [0,0,0,1],"base_link")
-            #     rospy.logwarn("sidepush monitoring")
-            #     TalkingMotion("sidepush.").perform()
-            #     side_push = Pose(
-            #         [push_baseTm.pose.position.x, push_baseTm.pose.position.y + 0.08, push_baseTm.pose.position.z],
-            #         [push_baseTm.orientation.x, push_baseTm.orientation.y, push_baseTm.orientation.z,
-            #          push_baseTm.orientation.w])
-            #     try:
-            #         plan = MoveTCPMotion(side_push, self.arm) >> Monitor(monitor_func)
-            #         plan.perform()
-            #     except SensorMonitoringCondition:
-            #         rospy.logwarn("Open Gripper")
-            #         MoveGripperMotion(motion=GripperState.OPEN, gripper=self.arm).perform()
-
         # Finalize the placing by opening the gripper and lifting the arm
-        rospy.logwarn("Open Gripper")
-        MoveGripperMotion(motion=GripperState.OPEN, gripper=self.arm, used_robot=self.used_robot).perform()
-        if self.object_designator.obj_type != "Metalplate":
-            robot.detach(self.object_designator.world_object)
+        self.open_gripper(robot)
+
         rospy.logwarn("Lifting now")
         liftingTm = oTmG
         liftingTm.pose.position.z += 0.08
         World.current_world.add_vis_axis(liftingTm)
         if execute:
             MoveTCPMotion(liftingTm, self.arm, used_robot=self.used_robot).perform()
+
+    def open_gripper(self, robot):
+        rospy.logwarn("Open Gripper")
+        MoveGripperMotion(motion=GripperState.OPEN, gripper=self.arm, used_robot=self.used_robot).perform()
+        gk.achieve_detached(self.object_designator)
+
+        if self.object_designator.obj_type != "Metalplate":
+            robot.detach(self.object_designator.world_object)
 
 @dataclass
 class NavigateActionPerformable(ActionAbstract):
