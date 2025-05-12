@@ -1,22 +1,19 @@
 from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.actions import hsrb_transport_object, \
-    drive_with_multiple_points
+    navigate_to_many_points
 from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.nav_poses import NavOptions
 from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.objects import ObjectOptions
 from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.spawn import spawn_robot, setup_demo_objects
-from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.utils import get_robot_mode
-from pycram.datastructures.enums import ROBOTS, ExecutionType
+from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.utils import get_robot_mode, set_real_publisher
+from pycram.datastructures.enums import ROBOTS
 from pycram.datastructures.enums import WorldMode
 from pycram.designators.action_designator import *
 from pycram.designators.object_designator import *
 
-from pycram.utilities.robocup_utils import TextToSpeechPublisher, ImageSwitchPublisher, \
-    HSRBMoveGripperReal
 from pycram.world_concepts.world_object import Object
 from pycram.worlds.bullet_world import BulletWorld
 
 
 # TODO: Inspect real robot and simulation demo
-
 
 def hsrb_turtle_demo(execution_type: ExecutionType, world_mode: WorldMode = WorldMode.DIRECT):
     world = BulletWorld(world_mode)
@@ -31,16 +28,11 @@ def hsrb_turtle_demo(execution_type: ExecutionType, world_mode: WorldMode = Worl
     kitchen = Object("kitchen", ObjectType.ENVIRONMENT, "suturo_lab_2.urdf")
     kitchen_desig = ObjectDesignatorDescription(names=["kitchen"])
 
-    gripper, talk, image_switch_publisher = None, None, None
-
     robot_mode = get_robot_mode(execution_type)
 
     RobotManager.set_giskard_robot(robot_hsrb.name)
 
-    if execution_type == ExecutionType.REAL:
-        gripper = HSRBMoveGripperReal()
-        talk = TextToSpeechPublisher()
-        image_switch_publisher = ImageSwitchPublisher()
+    gripper, talk, image_switch_publisher = set_real_publisher(execution_type)
 
     # Setup demo objects
     nav_poses, objects = setup_demo_objects()
@@ -94,10 +86,8 @@ def hsrb_turtle_demo(execution_type: ExecutionType, world_mode: WorldMode = Worl
     To:         Table#1 
     '''
     if navigate_table_one_hsrb:
-        table_one_nav_pose = nav_poses.hsrb_poses[NavOptions.TABLE_ONE]
-
         with robot_mode(robot_hsrb):
-            NavigateAction(target_locations=[table_one_nav_pose]).resolve().perform()
+            NavigateAction(target_locations=[nav_poses.hsrb_poses[NavOptions.TABLE_ONE]]).resolve().perform()
         rospy.loginfo("HSRB is at the first table")
 
     '''
@@ -142,8 +132,8 @@ def hsrb_turtle_demo(execution_type: ExecutionType, world_mode: WorldMode = Worl
         turtle_table_one_to_table_two = nav_poses.turtle_poses[NavOptions.FROM_ONE_TO_TWO_SUBPOINTS]
 
         with robot_mode(robot_turtle):
-            # TODO: This hast to be more points, as navigation tries to run against the wall otherwise
-            drive_with_multiple_points(poses=turtle_table_one_to_table_two)
+            # TODO: This has to be more points, as navigation tries to run against the wall otherwise
+            navigate_to_many_points(nav_poses=turtle_table_one_to_table_two)
             rospy.loginfo("Turtlebot at Table 2")
 
     '''
@@ -171,7 +161,7 @@ def hsrb_turtle_demo(execution_type: ExecutionType, world_mode: WorldMode = Worl
         hsrb_table_one_to_table_two = nav_poses.hsrb_poses[NavOptions.FROM_ONE_TO_TWO_DIRECT]
 
         with robot_mode(robot_hsrb):
-            drive_with_multiple_points(poses=hsrb_table_one_to_table_two)
+            navigate_to_many_points(nav_poses=hsrb_table_one_to_table_two)
             rospy.loginfo("Moved to Table 2")
 
     '''

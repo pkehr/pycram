@@ -3,6 +3,7 @@ from typing import List
 
 from pycram.datastructures.enums import ExecutionType
 from pycram.process_module import simulated_robot, semi_real_robot, real_robot
+from pycram.utilities.robocup_utils import HSRBMoveGripperReal, TextToSpeechPublisher, ImageSwitchPublisher
 
 
 def convert_to_radians(angle: int) -> float:
@@ -26,3 +27,13 @@ def get_robot_mode(execution_type: ExecutionType):
         return real_robot
     else:
         raise ValueError('Invalid execution type')
+
+def set_real_publisher(execution_type: ExecutionType):
+    gripper, talk, image_switch_publisher = None, None, None
+
+    if execution_type == ExecutionType.REAL:
+        gripper = HSRBMoveGripperReal()
+        talk = TextToSpeechPublisher()
+        image_switch_publisher = ImageSwitchPublisher()
+
+    return gripper, talk, image_switch_publisher

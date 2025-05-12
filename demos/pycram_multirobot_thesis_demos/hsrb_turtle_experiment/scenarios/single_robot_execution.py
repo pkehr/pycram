@@ -1,16 +1,14 @@
-from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.actions import hsrb_transport_object, \
-    navigate_to_many_points, transport_object
+from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.actions import navigate_to_many_points, \
+    transport_object
 from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.nav_poses import NavOptions
 from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.objects import ObjectOptions
 from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.spawn import spawn_robot, setup_demo_objects
-from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.utils import get_robot_mode
+from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.utils import get_robot_mode, set_real_publisher
 from pycram.datastructures.enums import ROBOTS
 from pycram.datastructures.enums import WorldMode
 from pycram.designators.action_designator import *
 from pycram.designators.object_designator import *
 
-from pycram.utilities.robocup_utils import TextToSpeechPublisher, ImageSwitchPublisher, \
-    HSRBMoveGripperReal
 from pycram.worlds.bullet_world import BulletWorld
 import pycram.external_interfaces.giskard as gk
 
@@ -25,14 +23,9 @@ def single_robot_demo(execution_type: ExecutionType, world_mode: WorldMode = Wor
     # kitchen = Object("kitchen", ObjectType.ENVIRONMENT, "suturo_lab_2.urdf")
     # kitchen_desig = ObjectDesignatorDescription(names=["kitchen"])
 
-    gripper, talk, image_switch_publisher = None, None, None
-
     robot_mode = get_robot_mode(execution_type)
 
-    if execution_type == ExecutionType.REAL:
-        gripper = HSRBMoveGripperReal()
-        talk = TextToSpeechPublisher()
-        image_switch_publisher = ImageSwitchPublisher()
+    gripper, talk, image_switch_publisher = set_real_publisher(execution_type)
 
     # tfb = TFBroadcaster()
 
