@@ -48,7 +48,7 @@ class ObjectManager:
         coffee_place_orientation_on_turtle = rotated_quaternion(angle=180)
 
         # TODO: Adjust placing pose for table
-        coffee_place_position_on_table = [3.6, 4.65, 0.9]
+        coffee_place_position_on_table = [3.6, 4.7, 0.9]
         coffee_place_orientation_on_table = rotated_quaternion(angle=180)
 
         self.create_object("coffee", ObjectOptions.COFFEE, ObjectType.MILK,
@@ -65,7 +65,7 @@ class ObjectManager:
         chips_place_orientation_on_turtle = rotated_quaternion(angle=-90)
 
         # TODO: Adjust placing pose for table
-        chips_place_position_on_table = [3.6, 4.8, 0.9]
+        chips_place_position_on_table = [3.6, 4.9, 0.9]
         chips_place_orientation_on_table = rotated_quaternion(angle=180)
 
         self.create_object("chips", ObjectOptions.CHIPS, ObjectType.MILK,

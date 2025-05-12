@@ -40,7 +40,7 @@ class NavPoses:
         table_one_hsrb_orientation = rotated_quaternion(angle=90)
         table_one_hsrb_pose = Pose(position=table_one_hsrb_position, orientation=table_one_hsrb_orientation)
 
-        table_two_hsrb_position = [4.2, 4.5, 0.0]
+        table_two_hsrb_position = [4.6, 4.7, 0.0]
         table_two_hsrb_orientation = rotated_quaternion(angle=180)
         table_two_hsrb_pose = Pose(position=table_two_hsrb_position, orientation=table_two_hsrb_orientation)
 
