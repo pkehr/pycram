@@ -6,7 +6,7 @@ from .objects import ObjectOptions
 from .utils import rotated_quaternion
 from pycram.datastructures.enums import Grasp, Arms
 from pycram.datastructures.pose import Pose
-from pycram.designators.action_designator import ParkArmsAction, PickUpAction, NavigateAction, PlaceAction
+from pycram.designators.action_designator import *
 
 def navigate_to_many_points(nav_poses: List[Pose]):
     for pose in nav_poses:
@@ -40,6 +40,8 @@ def hsrb_transport_object(object_desig,
     PlaceAction(object_desig, [placing_pose], [grasp_type], [Arms.LEFT], [False]).resolve().perform()
 
     ParkArmsAction(arms=[Arms.LEFT]).resolve().perform()
+
+    MoveTorsoAction(positions=[0.0]).resolve().perform()
 
 
 def turtle_turn(angle: int = 0):
