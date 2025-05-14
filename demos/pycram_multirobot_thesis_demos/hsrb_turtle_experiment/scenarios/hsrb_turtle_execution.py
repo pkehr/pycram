@@ -52,6 +52,8 @@ def hsrb_turtle_demo(execution_type: ExecutionType, world_mode: WorldMode = Worl
     giskard.sync_worlds()
 
     print("starting_demo")
+    with robot_mode(robot_hsrb):
+        TalkingMotion("Starting multi-robot demo").perform()
 
     '''
     Navigate
@@ -210,6 +212,9 @@ def hsrb_turtle_demo(execution_type: ExecutionType, world_mode: WorldMode = Worl
             hsrb_transport_object(object_desig=coffee_desig, placing_pose=coffee_placing_pose)
             ParkArmsAction(arms=[Arms.LEFT]).resolve().perform()
         rospy.loginfo("Object 2 transported on turtlebot")
+
+    with robot_mode(robot_hsrb):
+        TalkingMotion("Done!").perform()
 
     rospy.loginfo("Multi robot execution: Done")
 

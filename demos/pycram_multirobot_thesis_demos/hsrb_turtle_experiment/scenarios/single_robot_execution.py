@@ -55,6 +55,8 @@ def single_robot_demo(execution_type: ExecutionType, world_mode: WorldMode = Wor
     # tfb.update()
 
     print("starting_demo")
+    with robot_mode(robot_hsrb):
+        TalkingMotion("Starting demo").perform()
 
     '''
     Navigate
@@ -137,11 +139,14 @@ def single_robot_demo(execution_type: ExecutionType, world_mode: WorldMode = Wor
                          robot=robot_hsrb,
                          execution_mode=robot_mode)
 
+    with robot_mode(robot_hsrb):
+        TalkingMotion("Done!").perform()
+
     rospy.loginfo("Single robot execution: Done")
 
 
 if __name__ == "__main__":
-    execution_type = ExecutionType.SEMI_REAL
+    execution_type = ExecutionType.REAL
     world_mode = WorldMode.DIRECT
 
     single_robot_demo(execution_type=execution_type, world_mode=world_mode)
