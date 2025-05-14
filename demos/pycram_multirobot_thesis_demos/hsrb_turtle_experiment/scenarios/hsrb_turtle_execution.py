@@ -37,16 +37,16 @@ def hsrb_turtle_demo(execution_type: ExecutionType, world_mode: WorldMode = Worl
     # Setup demo objects
     nav_poses, objects = setup_demo_objects()
 
-    navigate_start_turtle = False
+    navigate_start_turtle = True
     navigate_start_hsrb = True
     navigate_table_one_hsrb = True
 
-    transport_milk = 0
-    transport_coffee = 1
-    transport_chips = 0
+    transport_milk = True
+    transport_coffee = True
+    transport_chips = True
 
-    navigate_table_two_turtle = False
-    navigate_table_two_hsrb = 0
+    navigate_table_two_turtle = True
+    navigate_table_two_hsrb = True
 
     # giskard.clear()
     giskard.sync_worlds()
@@ -101,7 +101,7 @@ def hsrb_turtle_demo(execution_type: ExecutionType, world_mode: WorldMode = Worl
     if transport_milk:
         table_one_nav_pose = nav_poses.hsrb_poses[NavOptions.TABLE_ONE]
         milk_desig = objects.desigs[ObjectOptions.MILK]
-        milk_placing_pose = objects.placing_poses[ObjectOptions.MILK]
+        milk_placing_pose = objects.placing_pose_on_turtle[ObjectOptions.MILK]
 
         with robot_mode(robot_hsrb):
             hsrb_transport_object(object_desig=milk_desig, placing_pose=milk_placing_pose, grasp_type=Grasp.RIGHT)
@@ -117,7 +117,7 @@ def hsrb_turtle_demo(execution_type: ExecutionType, world_mode: WorldMode = Worl
     if transport_coffee:
         table_one_nav_pose = nav_poses.hsrb_poses[NavOptions.TABLE_ONE]
         coffee_desig = objects.desigs[ObjectOptions.COFFEE]
-        coffee_placing_pose = objects.placing_poses[ObjectOptions.COFFEE]
+        coffee_placing_pose = objects.placing_pose_on_turtle[ObjectOptions.COFFEE]
 
         with robot_mode(robot_hsrb):
             hsrb_transport_object(object_desig=coffee_desig, placing_pose=coffee_placing_pose)
@@ -220,7 +220,7 @@ def hsrb_turtle_demo(execution_type: ExecutionType, world_mode: WorldMode = Worl
 
 
 if __name__ == "__main__":
-    execution_type = ExecutionType.SEMI_REAL
+    execution_type = ExecutionType.REAL
     world_mode = WorldMode.DIRECT
 
     hsrb_turtle_demo(execution_type=execution_type, world_mode=world_mode)
