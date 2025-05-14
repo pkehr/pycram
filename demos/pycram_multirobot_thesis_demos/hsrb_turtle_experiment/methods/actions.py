@@ -34,6 +34,8 @@ def hsrb_transport_object(object_desig,
 
     ParkArmsAction(arms=[Arms.LEFT]).resolve().perform()
 
+    MoveTorsoAction(positions=[0.0]).resolve().perform()
+
     if nav_poses is not None:
         navigate_to_many_points(nav_poses)
 

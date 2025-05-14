@@ -1263,7 +1263,7 @@ class PlaceActionPerformable(ActionAbstract):
             tool_frame = robot_description.get_arm_tool_frame(self.arm)
             push_base = lt.transform_pose(oTmG, robot.get_link_tf_frame(tool_frame))
             if robot.name == "hsrb":
-                z = 0.03
+                z = -0.03
                 if self.grasp == Grasp.TOP:
                     z = 0.07
                 push_base.pose.position.z += z
