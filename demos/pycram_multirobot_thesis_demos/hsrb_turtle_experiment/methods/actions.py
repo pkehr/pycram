@@ -8,25 +8,28 @@ from pycram.datastructures.enums import Grasp, Arms
 from pycram.datastructures.pose import Pose
 from pycram.designators.action_designator import *
 
+
 def navigate_to_many_points(nav_poses: List[Pose]):
     for pose in nav_poses:
         NavigateAction(target_locations=[pose]).resolve().perform()
 
-def transport_object(object_option: ObjectOptions, object_dicts, nav_poses, execution_mode, robot):
+
+def transport_object(object_option: ObjectOptions, object_dicts, execution_mode, robot, nav_poses=None,
+                     place_on_turtle=False):
     object_desig = object_dicts.desigs[object_option]
-    object_placing_pose = object_dicts.placing_pose_on_table[object_option]
+    object_placing_pose = object_dicts.placing_pose_on_turtle[object_option] if place_on_turtle else \
+        object_desig.placing_pose_on_table[object_option]
 
     with execution_mode(robot):
         hsrb_transport_object(object_desig=object_desig, nav_poses=nav_poses,
                               placing_pose=object_placing_pose, grasp_type=Grasp.FRONT)
     rospy.loginfo(f"{str(object_option)} transported to Table 2")
 
+
 def hsrb_transport_object(object_desig,
                           nav_poses: Optional[List] = None,
                           placing_pose: Optional[Pose] = None,
                           grasp_type=Grasp.RIGHT):
-    # table_obj = DetectAction(technique='all').resolve().perform()
-
     ParkArmsAction(arms=[Arms.LEFT]).resolve().perform()
 
     PickUpAction(object_designator_description=object_desig, arms=[Arms.LEFT],

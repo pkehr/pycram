@@ -1,3 +1,5 @@
+from typing import Tuple
+
 from .nav_poses import NavPoses
 from .objects import ObjectManager
 from pycram.datastructures.dataclasses import Color
@@ -26,7 +28,7 @@ def spawn_robot(robot: ROBOTS, name: str, execution_type: ExecutionType = Execut
     return robot_object, robot_desig, robot_move
 
 
-def setup_demo_objects():
+def setup_demo_objects() -> Tuple[NavPoses, ObjectManager]:
     # Nav poses
     nav_poses = NavPoses()
 
