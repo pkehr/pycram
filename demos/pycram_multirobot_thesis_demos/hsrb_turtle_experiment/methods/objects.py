@@ -27,7 +27,7 @@ class ObjectManager:
         milk_position = [2.03, 4.8, 0.83]
         milk_pickup_orientation = rotated_quaternion(angle=90)
 
-        milk_place_position_on_turtle = [1.87, 5.24, 0.45]
+        milk_place_position_on_turtle = [1.55, 4.3, 0.45]
         milk_place_orientation_on_turtle = rotated_quaternion(angle=180)
 
         # TODO: Adjust placing pose for table
@@ -44,7 +44,7 @@ class ObjectManager:
         coffee_position = [2.19, 4.8, 0.83]
         coffee_pickup_orientation = rotated_quaternion(angle=90)
 
-        coffee_place_position_on_turtle = [1.87, 5.24, 0.45]
+        coffee_place_position_on_turtle = [1.55, 4.15, 0.45]
         coffee_place_orientation_on_turtle = rotated_quaternion(angle=180)
 
         # TODO: Adjust placing pose for table
