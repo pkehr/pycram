@@ -58,6 +58,7 @@ def hsrb_turtle_demo(execution_type: ExecutionType, world_mode: WorldMode = Worl
     navigate_table_two_turtle = True
     navigate_table_two_hsrb = True
 
+    turtle_tip_link = ""
     giskard.clear()
     giskard.sync_worlds()
 
@@ -117,6 +118,7 @@ def hsrb_turtle_demo(execution_type: ExecutionType, world_mode: WorldMode = Worl
                          nav_poses=table_one_nav_pose_hsrb,
                          execution_mode=robot_mode,
                          place_on_turtle=True)
+        giskard.achieve_attached(objects.desigs[ObjectOptions.MILK], tip_link=turtle_tip_link)
 
         with robot_mode(robot_hsrb):
             NavigateAction(target_locations=table_one_nav_pose_hsrb).resolve().perform()
@@ -134,6 +136,7 @@ def hsrb_turtle_demo(execution_type: ExecutionType, world_mode: WorldMode = Worl
                          robot=robot_hsrb,
                          execution_mode=robot_mode,
                          place_on_turtle=True)
+        giskard.achieve_attached(objects.desigs[ObjectOptions.COFFEE], tip_link=turtle_tip_link)
 
         with robot_mode(robot_hsrb):
             NavigateAction(target_locations=table_one_nav_pose_hsrb).resolve().perform()
