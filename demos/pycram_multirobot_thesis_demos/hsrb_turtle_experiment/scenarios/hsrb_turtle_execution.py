@@ -1,9 +1,10 @@
 from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.actions import hsrb_transport_object, \
-    navigate_to_many_points, transport_object
+    navigate_to_many_points, transport_object, turtle_turn
 from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.nav_poses import NavOptions
 from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.objects import ObjectOptions
 from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.spawn import spawn_robot, setup_demo_objects
-from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.utils import get_robot_mode, set_real_publisher
+from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.utils import get_robot_mode, \
+    set_real_publisher, rotated_quaternion
 from pycram.datastructures.enums import ROBOTS
 from pycram.datastructures.enums import WorldMode
 from pycram.designators.action_designator import *
@@ -57,12 +58,12 @@ def hsrb_turtle_demo(execution_type: ExecutionType, world_mode: WorldMode = Worl
     navigate_table_two_turtle = True
     navigate_table_two_hsrb = True
 
-    # giskard.clear()
+    giskard.clear()
     giskard.sync_worlds()
 
     print("starting_demo")
-    with robot_mode(robot_hsrb):
-        TalkingMotion("Starting multi-robot demo").perform()
+    #with robot_mode(robot_hsrb):
+    #    TalkingMotion("Starting multi-robot demo").perform()
 
     '''
     Navigate
@@ -85,9 +86,11 @@ def hsrb_turtle_demo(execution_type: ExecutionType, world_mode: WorldMode = Worl
     '''
     if navigate_start_turtle:
         starting_pose_turtle = nav_poses.turtle_poses[NavOptions.STARTING]
+        starting_pose_turtle_rotated = Pose(position=starting_pose_turtle.position, orientation=rotated_quaternion((-90)))
 
         with robot_mode(robot_turtle):
             NavigateAction(target_locations=[starting_pose_turtle]).resolve().perform()
+            NavigateAction(target_locations=[starting_pose_turtle_rotated]).resolve().perform()
         rospy.loginfo("Turtle is at starting position")
 
     '''
@@ -111,6 +114,7 @@ def hsrb_turtle_demo(execution_type: ExecutionType, world_mode: WorldMode = Worl
         transport_object(ObjectOptions.MILK,
                          object_dicts=objects,
                          robot=robot_hsrb,
+                         nav_poses=table_one_nav_pose_hsrb,
                          execution_mode=robot_mode,
                          place_on_turtle=True)
 
