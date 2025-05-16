@@ -1,3 +1,4 @@
+from copy import deepcopy
 from enum import Enum, auto
 
 from pycram.datastructures.enums import ExecutionType
@@ -112,6 +113,7 @@ class NavPoses:
 
     def get_table_nav_poses(self, execution_type):
         table_one_nav_pose_hsrb = [self.hsrb_poses[NavOptions.TABLE_ONE]]
+        table_one_nav_pose_hsrb_rotated = [Pose(position=self.hsrb_poses[NavOptions.TABLE_ONE].position, orientation=rotated_quaternion(angle=180))]
 
         if execution_type == ExecutionType.REAL:
             table_two_nav_pose_hsrb = [self.hsrb_poses[NavOptions.TABLE_TWO]]
@@ -122,4 +124,4 @@ class NavPoses:
         else:
             raise Exception('Execution type not handled for navigation to table two')
 
-        return table_one_nav_pose_hsrb, table_two_nav_pose_hsrb, table_two_to_one_nav_pose
+        return table_one_nav_pose_hsrb, table_one_nav_pose_hsrb_rotated, table_two_nav_pose_hsrb, table_two_to_one_nav_pose

@@ -28,8 +28,8 @@ def hsrb_turtle_demo(execution_type: ExecutionType, world_mode: WorldMode = Worl
     #robot_turtle, robot_desig_turtle, turtle_move = spawn_robot(ROBOTS.TURTLE, name='turtlebot')
 
     # Environment
-    kitchen = Object("kitchen", ObjectType.ENVIRONMENT, "suturo_lab_2.urdf")
-    kitchen_desig = ObjectDesignatorDescription(names=["kitchen"])
+    #kitchen = Object("kitchen", ObjectType.ENVIRONMENT, "suturo_lab_2.urdf")
+    #kitchen_desig = ObjectDesignatorDescription(names=["kitchen"])
 
     robot_mode = get_robot_mode(execution_type)
 
@@ -40,7 +40,7 @@ def hsrb_turtle_demo(execution_type: ExecutionType, world_mode: WorldMode = Worl
     # Setup demo objects
     nav_poses, objects = setup_demo_objects()
 
-    table_one_nav_pose_hsrb, table_two_nav_pose_hsrb, table_two_to_one_nav_pose = nav_poses.get_table_nav_poses(execution_type)
+    table_one_nav_pose_hsrb, table_one_nav_pose_hsrb_rotated, table_two_nav_pose_hsrb, table_two_to_one_nav_pose = nav_poses.get_table_nav_poses(execution_type)
 
     demo_scenario: ScenarioSelection = ScenarioSelection()
     demo_scenario.set_demo_scenario(use_turtle=False)
@@ -102,10 +102,10 @@ def hsrb_turtle_demo(execution_type: ExecutionType, world_mode: WorldMode = Worl
         transport_object(ObjectOptions.MILK,
                          object_dicts=objects,
                          robot=robot_hsrb,
-                         nav_poses=table_one_nav_pose_hsrb,
+                         nav_poses=table_one_nav_pose_hsrb_rotated,
                          execution_mode=robot_mode,
                          place_on_turtle=True)
-        giskard.achieve_attached(objects.desigs[ObjectOptions.MILK], tip_link=turtle_tip_link)
+        gk.achieve_attached(objects.desigs[ObjectOptions.MILK], tip_link=turtle_tip_link)
 
         with robot_mode(robot_hsrb):
             NavigateAction(target_locations=table_one_nav_pose_hsrb).resolve().perform()
@@ -121,9 +121,10 @@ def hsrb_turtle_demo(execution_type: ExecutionType, world_mode: WorldMode = Worl
         transport_object(ObjectOptions.COFFEE,
                          object_dicts=objects,
                          robot=robot_hsrb,
+                         nav_poses=table_one_nav_pose_hsrb_rotated,
                          execution_mode=robot_mode,
                          place_on_turtle=True)
-        giskard.achieve_attached(objects.desigs[ObjectOptions.COFFEE], tip_link=turtle_tip_link)
+        gk.achieve_attached(objects.desigs[ObjectOptions.COFFEE], tip_link=turtle_tip_link)
 
         with robot_mode(robot_hsrb):
             NavigateAction(target_locations=table_one_nav_pose_hsrb).resolve().perform()

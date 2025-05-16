@@ -33,7 +33,7 @@ def single_robot_demo(execution_type: ExecutionType, world_mode: WorldMode = Wor
     # Setup demo objects
     nav_poses, objects = setup_demo_objects()
 
-    table_one_nav_pose, table_two_nav_pose, table_two_to_one_nav_pose = nav_poses.get_table_nav_poses(
+    table_one_nav_pose, _, table_two_nav_pose, table_two_to_one_nav_pose = nav_poses.get_table_nav_poses(
         execution_type)
 
     demo_scenario: ScenarioSelection = ScenarioSelection()
