@@ -1,5 +1,6 @@
 from enum import Enum, auto
 
+from pycram.datastructures.enums import ExecutionType
 from .utils import rotated_quaternion
 from pycram.datastructures.pose import Pose
 
@@ -108,3 +109,17 @@ class NavPoses:
         self.turtle_poses[NavOptions.FROM_ONE_TO_TWO_SUBPOINTS] = [turtle_second_nav_pose, turtle_second_nav_pose_rotated,
                                                                    turtle_third_nav_pose, turtle_third_nav_pose_rotated,
                                                                    self.turtle_poses[NavOptions.TABLE_TWO]]
+
+    def get_table_nav_poses(self, execution_type):
+        table_one_nav_pose_hsrb = [self.hsrb_poses[NavOptions.TABLE_ONE]]
+
+        if execution_type == ExecutionType.REAL:
+            table_two_nav_pose_hsrb = [self.hsrb_poses[NavOptions.TABLE_TWO]]
+            table_two_to_one_nav_pose = [self.hsrb_poses[NavOptions.TABLE_ONE]]
+        elif execution_type == ExecutionType.SEMI_REAL:
+            table_two_nav_pose_hsrb = self.hsrb_poses[NavOptions.FROM_ONE_TO_TWO_SUBPOINTS]
+            table_two_to_one_nav_pose = list(reversed(self.hsrb_poses[NavOptions.FROM_ONE_TO_TWO_SUBPOINTS]))
+        else:
+            raise Exception('Execution type not handled for navigation to table two')
+
+        return table_one_nav_pose_hsrb, table_two_nav_pose_hsrb, table_two_to_one_nav_pose

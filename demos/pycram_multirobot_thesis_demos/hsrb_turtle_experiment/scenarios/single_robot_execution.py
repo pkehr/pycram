@@ -2,6 +2,7 @@ from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.actions
     transport_object
 from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.nav_poses import NavOptions
 from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.objects import ObjectOptions
+from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.scenario_selection import ScenarioSelection
 from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.spawn import spawn_robot, setup_demo_objects
 from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.utils import get_robot_mode, set_real_publisher
 from pycram.datastructures.enums import ROBOTS
@@ -32,21 +33,11 @@ def single_robot_demo(execution_type: ExecutionType, world_mode: WorldMode = Wor
     # Setup demo objects
     nav_poses, objects = setup_demo_objects()
 
-    if execution_type == ExecutionType.REAL:
-        table_one_nav_pose = [nav_poses.hsrb_poses[NavOptions.TABLE_ONE]]
-        table_two_nav_pose = [nav_poses.hsrb_poses[NavOptions.TABLE_TWO]]
-    elif execution_type == ExecutionType.SEMI_REAL:
-        table_one_nav_pose = list(reversed(nav_poses.hsrb_poses[NavOptions.FROM_ONE_TO_TWO_SUBPOINTS]))
-        table_two_nav_pose = nav_poses.hsrb_poses[NavOptions.FROM_ONE_TO_TWO_SUBPOINTS]
-    else:
-        raise Exception('Execution type not handled for navigation to table two')
+    table_one_nav_pose, table_two_nav_pose, table_two_to_one_nav_pose = nav_poses.get_table_nav_poses(
+        execution_type)
 
-    navigate_start_hsrb = True
-    navigate_table_one_hsrb = True
-
-    transport_milk = True
-    transport_coffee = True
-    transport_chips = True
+    demo_scenario: ScenarioSelection = ScenarioSelection()
+    demo_scenario.set_demo_scenario(use_turtle=True)
 
     # TODO: Check if this breaks real world execution
     gk.clear()
@@ -55,8 +46,8 @@ def single_robot_demo(execution_type: ExecutionType, world_mode: WorldMode = Wor
     # tfb.update()
 
     print("starting_demo")
-    with robot_mode(robot_hsrb):
-        TalkingMotion("Starting demo").perform()
+    #with robot_mode(robot_hsrb):
+    #    TalkingMotion("Starting demo").perform()
 
     '''
     Navigate
@@ -64,7 +55,7 @@ def single_robot_demo(execution_type: ExecutionType, world_mode: WorldMode = Wor
     From:       Anywhere
     To:         starting_pose 
     '''
-    if navigate_start_hsrb:
+    if demo_scenario.navigate_start_hsrb:
         starting_pose_hsrb = nav_poses.hsrb_poses[NavOptions.STARTING]
 
         with robot_mode(robot_hsrb):
@@ -77,9 +68,9 @@ def single_robot_demo(execution_type: ExecutionType, world_mode: WorldMode = Wor
     From:       starting_pose
     To:         Table#1 
     '''
-    if navigate_table_one_hsrb:
+    if demo_scenario.navigate_table_one_hsrb:
         with robot_mode(robot_hsrb):
-            NavigateAction(target_locations=[nav_poses.hsrb_poses[NavOptions.TABLE_ONE]]).resolve().perform()
+            NavigateAction(target_locations=table_one_nav_pose).resolve().perform()
         rospy.loginfo("HSRB is at the first table")
 
     '''
@@ -88,7 +79,7 @@ def single_robot_demo(execution_type: ExecutionType, world_mode: WorldMode = Wor
     From:       Table#1
     To:         Table#2
     '''
-    if transport_milk:
+    if demo_scenario.transport_milk:
         transport_object(ObjectOptions.MILK,
                          object_dicts=objects,
                          nav_poses=table_two_nav_pose,
@@ -100,9 +91,9 @@ def single_robot_demo(execution_type: ExecutionType, world_mode: WorldMode = Wor
     From:       Table#2
     From:       Table#1
     '''
-    if transport_milk:
+    if demo_scenario.transport_milk:
         with robot_mode(robot_hsrb):
-            navigate_to_many_points(nav_poses=table_one_nav_pose)
+            navigate_to_many_points(nav_poses=table_two_to_one_nav_pose)
 
     '''
     Transport
@@ -110,7 +101,7 @@ def single_robot_demo(execution_type: ExecutionType, world_mode: WorldMode = Wor
     From:       Table#1
     To:         Table#2
     '''
-    if transport_coffee:
+    if demo_scenario.transport_coffee:
         transport_object(ObjectOptions.COFFEE,
                          object_dicts=objects,
                          nav_poses=table_two_nav_pose,
@@ -122,9 +113,9 @@ def single_robot_demo(execution_type: ExecutionType, world_mode: WorldMode = Wor
     From:       Table#2
     From:       Table#1
     '''
-    if transport_coffee:
+    if demo_scenario.transport_coffee:
         with robot_mode(robot_hsrb):
-            navigate_to_many_points(nav_poses=table_one_nav_pose)
+            navigate_to_many_points(nav_poses=table_two_to_one_nav_pose)
 
     '''
     Pickup
@@ -132,7 +123,7 @@ def single_robot_demo(execution_type: ExecutionType, world_mode: WorldMode = Wor
     From:       Table#1
     Robot:      HSRB 
     '''
-    if transport_chips:
+    if demo_scenario.transport_chips:
         transport_object(ObjectOptions.CHIPS,
                          object_dicts=objects,
                          nav_poses=table_two_nav_pose,
@@ -146,7 +137,7 @@ def single_robot_demo(execution_type: ExecutionType, world_mode: WorldMode = Wor
 
 
 if __name__ == "__main__":
-    execution_type = ExecutionType.REAL
+    execution_type = ExecutionType.SEMI_REAL
     world_mode = WorldMode.DIRECT
 
     single_robot_demo(execution_type=execution_type, world_mode=world_mode)

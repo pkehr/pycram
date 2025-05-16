@@ -2,6 +2,7 @@ from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.actions
     navigate_to_many_points, transport_object, turtle_turn
 from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.nav_poses import NavOptions
 from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.objects import ObjectOptions
+from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.scenario_selection import ScenarioSelection
 from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.spawn import spawn_robot, setup_demo_objects
 from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.utils import get_robot_mode, \
     set_real_publisher, rotated_quaternion
@@ -12,6 +13,7 @@ from pycram.designators.object_designator import *
 
 from pycram.world_concepts.world_object import Object
 from pycram.worlds.bullet_world import BulletWorld
+import pycram.external_interfaces.giskard as gk
 
 
 # TODO: Inspect real robot and simulation demo
@@ -23,7 +25,7 @@ def hsrb_turtle_demo(execution_type: ExecutionType, world_mode: WorldMode = Worl
     robot_hsrb, hsrb_desig, hsrb_move = spawn_robot(ROBOTS.HSRB, name='hsrb', execution_type=execution_type)
 
     # Spawn Turtle
-    robot_turtle, robot_desig_turtle, turtle_move = spawn_robot(ROBOTS.TURTLE, name='turtlebot')
+    #robot_turtle, robot_desig_turtle, turtle_move = spawn_robot(ROBOTS.TURTLE, name='turtlebot')
 
     # Environment
     kitchen = Object("kitchen", ObjectType.ENVIRONMENT, "suturo_lab_2.urdf")
@@ -38,29 +40,14 @@ def hsrb_turtle_demo(execution_type: ExecutionType, world_mode: WorldMode = Worl
     # Setup demo objects
     nav_poses, objects = setup_demo_objects()
 
-    if execution_type == ExecutionType.REAL:
-        table_one_nav_pose_hsrb = [nav_poses.hsrb_poses[NavOptions.TABLE_ONE]]
-        table_two_nav_pose_hsrb = [nav_poses.hsrb_poses[NavOptions.TABLE_TWO]]
-    elif execution_type == ExecutionType.SEMI_REAL:
-        table_one_nav_pose_hsrb = list(reversed(nav_poses.hsrb_poses[NavOptions.FROM_ONE_TO_TWO_SUBPOINTS]))
-        table_two_nav_pose_hsrb = nav_poses.hsrb_poses[NavOptions.FROM_ONE_TO_TWO_SUBPOINTS]
-    else:
-        raise Exception('Execution type not handled for navigation to table two')
+    table_one_nav_pose_hsrb, table_two_nav_pose_hsrb, table_two_to_one_nav_pose = nav_poses.get_table_nav_poses(execution_type)
 
-    navigate_start_turtle = True
-    navigate_start_hsrb = True
-    navigate_table_one_hsrb = True
-
-    transport_milk = True
-    transport_coffee = True
-    transport_chips = True
-
-    navigate_table_two_turtle = True
-    navigate_table_two_hsrb = True
+    demo_scenario: ScenarioSelection = ScenarioSelection()
+    demo_scenario.set_demo_scenario(use_turtle=False)
 
     turtle_tip_link = ""
-    giskard.clear()
-    giskard.sync_worlds()
+    gk.clear()
+    gk.sync_worlds()
 
     print("starting_demo")
     #with robot_mode(robot_hsrb):
@@ -72,7 +59,7 @@ def hsrb_turtle_demo(execution_type: ExecutionType, world_mode: WorldMode = Worl
     From:       Anywhere
     To:         starting_pose 
     '''
-    if navigate_start_hsrb:
+    if demo_scenario.navigate_start_hsrb:
         starting_pose_hsrb = nav_poses.hsrb_poses[NavOptions.STARTING]
 
         with robot_mode(robot_hsrb):
@@ -85,7 +72,7 @@ def hsrb_turtle_demo(execution_type: ExecutionType, world_mode: WorldMode = Worl
     From:       Anywhere
     To:         starting_pose (Table 1)
     '''
-    if navigate_start_turtle:
+    if demo_scenario.navigate_start_turtle:
         starting_pose_turtle = nav_poses.turtle_poses[NavOptions.STARTING]
         starting_pose_turtle_rotated = Pose(position=starting_pose_turtle.position, orientation=rotated_quaternion((-90)))
 
@@ -100,7 +87,7 @@ def hsrb_turtle_demo(execution_type: ExecutionType, world_mode: WorldMode = Worl
     From:       starting_pose
     To:         Table#1 
     '''
-    if navigate_table_one_hsrb:
+    if demo_scenario.navigate_table_one_hsrb:
         with robot_mode(robot_hsrb):
             NavigateAction(target_locations=table_one_nav_pose_hsrb).resolve().perform()
         rospy.loginfo("HSRB is at the first table")
@@ -111,7 +98,7 @@ def hsrb_turtle_demo(execution_type: ExecutionType, world_mode: WorldMode = Worl
     From:       Table#1
     To:         Turtlebot 
     '''
-    if transport_milk:
+    if demo_scenario.transport_milk:
         transport_object(ObjectOptions.MILK,
                          object_dicts=objects,
                          robot=robot_hsrb,
@@ -130,7 +117,7 @@ def hsrb_turtle_demo(execution_type: ExecutionType, world_mode: WorldMode = Worl
     From:       Table#1
     To:         Turtlebot 
     '''
-    if transport_coffee:
+    if demo_scenario.transport_coffee:
         transport_object(ObjectOptions.COFFEE,
                          object_dicts=objects,
                          robot=robot_hsrb,
@@ -148,7 +135,7 @@ def hsrb_turtle_demo(execution_type: ExecutionType, world_mode: WorldMode = Worl
     From:       Table#1
     To:         Table#2 
     '''
-    if navigate_table_two_turtle:
+    if demo_scenario.navigate_table_two_turtle:
         turtle_table_one_to_table_two = nav_poses.turtle_poses[NavOptions.FROM_ONE_TO_TWO_SUBPOINTS]
 
         with robot_mode(robot_turtle):
@@ -162,7 +149,7 @@ def hsrb_turtle_demo(execution_type: ExecutionType, world_mode: WorldMode = Worl
     From:       Table#1
     Robot:      HSRB 
     '''
-    if transport_chips:
+    if demo_scenario.transport_chips:
         transport_object(ObjectOptions.CHIPS,
                          object_dicts=objects,
                          nav_poses=table_two_nav_pose_hsrb,
@@ -176,7 +163,7 @@ def hsrb_turtle_demo(execution_type: ExecutionType, world_mode: WorldMode = Worl
     From:       Turtlebot
     To:         Table#2 
     '''
-    if transport_milk:
+    if demo_scenario.transport_milk:
         milk_desig = objects.desigs[ObjectOptions.MILK]
         milk_placing_pose = objects.placing_pose_on_table[ObjectOptions.MILK]
 
@@ -192,7 +179,7 @@ def hsrb_turtle_demo(execution_type: ExecutionType, world_mode: WorldMode = Worl
     From:       Turtlebot
     To:         Table#2 
     '''
-    if transport_coffee:
+    if demo_scenario.transport_coffee:
         coffee_desig = objects.desigs[ObjectOptions.COFFEE]
         coffee_placing_pose = objects.placing_pose_on_table[ObjectOptions.COFFEE]
 
@@ -208,7 +195,7 @@ def hsrb_turtle_demo(execution_type: ExecutionType, world_mode: WorldMode = Worl
 
 
 if __name__ == "__main__":
-    execution_type = ExecutionType.REAL
+    execution_type = ExecutionType.SEMI_REAL
     world_mode = WorldMode.DIRECT
 
     hsrb_turtle_demo(execution_type=execution_type, world_mode=world_mode)
