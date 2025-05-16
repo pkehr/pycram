@@ -1,3 +1,5 @@
+from giskard_msgs.msg import LinkName
+
 from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.actions import hsrb_transport_object, \
     navigate_to_many_points, transport_object, turtle_turn
 from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.nav_poses import NavOptions
@@ -18,6 +20,8 @@ import pycram.external_interfaces.giskard as gk
 
 # TODO: Inspect real robot and simulation demo
 
+# TODO: Turtlebots größe richtig machen, weil giskard sonst collision hat
+
 def hsrb_turtle_demo(execution_type: ExecutionType, world_mode: WorldMode = WorldMode.DIRECT):
     world = BulletWorld(world_mode)
 
@@ -25,7 +29,7 @@ def hsrb_turtle_demo(execution_type: ExecutionType, world_mode: WorldMode = Worl
     robot_hsrb, hsrb_desig, hsrb_move = spawn_robot(ROBOTS.HSRB, name='hsrb', execution_type=execution_type)
 
     # Spawn Turtle
-    #robot_turtle, robot_desig_turtle, turtle_move = spawn_robot(ROBOTS.TURTLE, name='turtlebot')
+    robot_turtle, robot_desig_turtle, turtle_move = spawn_robot(ROBOTS.TURTLE, name='turtlebot')
 
     # Environment
     #kitchen = Object("kitchen", ObjectType.ENVIRONMENT, "suturo_lab_2.urdf")
@@ -43,9 +47,9 @@ def hsrb_turtle_demo(execution_type: ExecutionType, world_mode: WorldMode = Worl
     table_one_nav_pose_hsrb, table_one_nav_pose_hsrb_rotated, table_two_nav_pose_hsrb, table_two_to_one_nav_pose = nav_poses.get_table_nav_poses(execution_type)
 
     demo_scenario: ScenarioSelection = ScenarioSelection()
-    demo_scenario.set_demo_scenario(use_turtle=False)
+    demo_scenario.set_demo_scenario(use_turtle=True)
 
-    turtle_tip_link = ""
+    turtle_tip_link = LinkName('base_footprint', 'turtle')
     gk.clear()
     gk.sync_worlds()
 
@@ -196,7 +200,7 @@ def hsrb_turtle_demo(execution_type: ExecutionType, world_mode: WorldMode = Worl
 
 
 if __name__ == "__main__":
-    execution_type = ExecutionType.SEMI_REAL
+    execution_type = ExecutionType.REAL
     world_mode = WorldMode.DIRECT
 
     hsrb_turtle_demo(execution_type=execution_type, world_mode=world_mode)
