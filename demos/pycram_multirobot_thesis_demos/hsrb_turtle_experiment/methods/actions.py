@@ -18,7 +18,7 @@ def transport_object(object_option: ObjectOptions, object_dicts, execution_mode,
                      place_on_turtle=False):
     object_desig = object_dicts.desigs[object_option]
     object_placing_pose = object_dicts.placing_pose_on_turtle[object_option] if place_on_turtle else \
-        object_desig.placing_pose_on_table[object_option]
+        object_dicts.placing_pose_on_table[object_option]
 
     with execution_mode(robot):
         hsrb_transport_object(object_desig=object_desig, nav_poses=nav_poses,
