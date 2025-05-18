@@ -11,6 +11,7 @@ from ..external_interfaces.navigate import PoseNavigator
 from ..multirobot import RobotManager
 from ..process_module import ProcessModule, ProcessModuleManager
 from ..external_interfaces.ik import request_ik
+from ..ros.logging import logdebug
 from ..utils import _apply_ik
 from ..local_transformer import LocalTransformer
 from ..designators.object_designator import ObjectDesignatorDescription
@@ -25,6 +26,16 @@ from ..datastructures.enums import JointType, ObjectType, Arms, ExecutionType, R
 from ..external_interfaces import giskard
 from ..external_interfaces.robokudo import *
 
+
+class TurtlebotNavigationSemiReal(ProcessModule):
+    """
+    Process module for the semi-real Turtle that sends a cartesian goal to giskard to move the robot base
+    """
+
+    def _execute(self, designator: MoveMotion) -> Any:
+        logdebug(f"Sending goal to giskard to Move the robot")
+        giskard.avoid_all_collisions()
+        giskard.achieve_cartesian_goal(designator.target, 'base_footprint_turtle', 'map')
 
 
 class TurtlebotNavigationReal(ProcessModule):
@@ -72,3 +83,5 @@ class TurtlebotManager(ProcessModuleManager):
             return TurtlebotNavigation(self._navigate_lock)
         elif ProcessModuleManager.execution_type == ExecutionType.REAL:
             return TurtlebotNavigationReal(self._navigate_lock)
+        elif ProcessModuleManager.execution_type == ExecutionType.SEMI_REAL:
+            return TurtlebotNavigationSemiReal(self._navigate_lock)

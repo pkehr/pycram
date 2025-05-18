@@ -22,6 +22,8 @@ import pycram.external_interfaces.giskard as gk
 
 # TODO: Turtlebots größe richtig machen, weil giskard sonst collision hat
 
+# TODO: Teleport HSR in semi real mode
+
 def hsrb_turtle_demo(execution_type: ExecutionType, world_mode: WorldMode = WorldMode.DIRECT):
     world = BulletWorld(world_mode)
 
@@ -49,7 +51,7 @@ def hsrb_turtle_demo(execution_type: ExecutionType, world_mode: WorldMode = Worl
     demo_scenario: ScenarioSelection = ScenarioSelection()
     demo_scenario.set_demo_scenario(use_turtle=True)
 
-    turtle_tip_link = LinkName('base_footprint', 'turtle')
+    turtle_tip_link = LinkName('base_footprint_turtle', 'turtle')
     gk.clear()
     gk.sync_worlds()
 
