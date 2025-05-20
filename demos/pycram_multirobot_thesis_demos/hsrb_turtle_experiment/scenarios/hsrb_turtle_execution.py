@@ -1,7 +1,7 @@
 from giskard_msgs.msg import LinkName
 
-from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.actions import hsrb_transport_object, \
-    navigate_to_many_points, transport_object, turtle_turn
+from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.actions import navigate_to_many_points, \
+    transport_object
 from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.nav_poses import NavOptions
 from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.objects import ObjectOptions
 from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.scenario_selection import ScenarioSelection
@@ -22,8 +22,6 @@ import pycram.external_interfaces.giskard as gk
 
 # TODO: Turtlebots größe richtig machen, weil giskard sonst collision hat
 
-# TODO: Teleport HSR in semi real mode
-
 def hsrb_turtle_demo(execution_type: ExecutionType, world_mode: WorldMode = WorldMode.DIRECT):
     world = BulletWorld(world_mode)
 
@@ -34,8 +32,8 @@ def hsrb_turtle_demo(execution_type: ExecutionType, world_mode: WorldMode = Worl
     robot_turtle, robot_desig_turtle, turtle_move = spawn_robot(ROBOTS.TURTLE, name='turtlebot')
 
     # Environment
-    #kitchen = Object("kitchen", ObjectType.ENVIRONMENT, "suturo_lab_2.urdf")
-    #kitchen_desig = ObjectDesignatorDescription(names=["kitchen"])
+    # kitchen = Object("kitchen", ObjectType.ENVIRONMENT, "suturo_lab_2.urdf")
+    # kitchen_desig = ObjectDesignatorDescription(names=["kitchen"])
 
     robot_mode = get_robot_mode(execution_type)
 
@@ -46,8 +44,10 @@ def hsrb_turtle_demo(execution_type: ExecutionType, world_mode: WorldMode = Worl
     # Setup demo objects
     nav_poses, objects = setup_demo_objects()
 
-    table_one_nav_pose_hsrb, table_one_nav_pose_hsrb_rotated, table_two_nav_pose_hsrb, table_two_to_one_nav_pose = nav_poses.get_table_nav_poses(execution_type)
+    table_one_nav_pose_hsrb, table_one_nav_pose_hsrb_rotated, table_two_nav_pose_hsrb, table_two_to_one_nav_pose = nav_poses.get_table_nav_poses(
+        execution_type)
     table_two_hsrb_to_turtle = Pose(position=[4.05, 3.63, 0.0], orientation=rotated_quaternion(angle=180))
+    table_two_hsrb_pose = [nav_poses.hsrb_poses[NavOptions.TABLE_TWO]]
 
     demo_scenario: ScenarioSelection = ScenarioSelection()
     demo_scenario.set_demo_scenario(use_turtle=True)
@@ -57,7 +57,7 @@ def hsrb_turtle_demo(execution_type: ExecutionType, world_mode: WorldMode = Worl
     gk.sync_worlds()
 
     print("starting_demo")
-    #with robot_mode(robot_hsrb):
+    # with robot_mode(robot_hsrb):
     #    TalkingMotion("Starting multi-robot demo").perform()
 
     '''
@@ -81,7 +81,8 @@ def hsrb_turtle_demo(execution_type: ExecutionType, world_mode: WorldMode = Worl
     '''
     if demo_scenario.navigate_start_turtle:
         starting_pose_turtle = nav_poses.turtle_poses[NavOptions.STARTING]
-        starting_pose_turtle_rotated = Pose(position=starting_pose_turtle.position, orientation=rotated_quaternion((-90)))
+        starting_pose_turtle_rotated = Pose(position=starting_pose_turtle.position,
+                                            orientation=rotated_quaternion((-90)))
 
         with robot_mode(robot_turtle):
             NavigateAction(target_locations=[starting_pose_turtle]).resolve().perform()
@@ -172,17 +173,18 @@ def hsrb_turtle_demo(execution_type: ExecutionType, world_mode: WorldMode = Worl
     To:         Table#2 
     '''
     if demo_scenario.transport_milk:
-        milk_desig = objects.desigs[ObjectOptions.MILK]
         milk_obj = objects.objects[ObjectOptions.MILK]
-        milk_placing_pose = objects.placing_pose_on_table[ObjectOptions.MILK]
 
-        sync_object_from_giskard(milk_obj, gk)
+        sync_object_from_giskard(milk_obj, gk, adjusted_rotation=rotated_quaternion(180))
 
         with robot_mode(robot_hsrb):
             NavigateAction(target_locations=[table_two_hsrb_to_turtle]).resolve().perform()
 
-            hsrb_transport_object(object_desig=milk_desig, placing_pose=milk_placing_pose, grasp_type=Grasp.BACK)
-            ParkArmsAction(arms=[Arms.LEFT]).resolve().perform()
+            transport_object(ObjectOptions.MILK,
+                             object_dicts=objects,
+                             nav_poses=table_two_hsrb_pose,
+                             robot=robot_hsrb,
+                             execution_mode=robot_mode)
 
         rospy.loginfo("Object 1 transported to Table 2")
 
@@ -193,12 +195,18 @@ def hsrb_turtle_demo(execution_type: ExecutionType, world_mode: WorldMode = Worl
     To:         Table#2 
     '''
     if demo_scenario.transport_coffee:
-        coffee_desig = objects.desigs[ObjectOptions.COFFEE]
-        coffee_placing_pose = objects.placing_pose_on_table[ObjectOptions.COFFEE]
+        coffee_obj = objects.objects[ObjectOptions.COFFEE]
+
+        sync_object_from_giskard(coffee_obj, gk, adjusted_rotation=rotated_quaternion(180))
 
         with robot_mode(robot_hsrb):
-            hsrb_transport_object(object_desig=coffee_desig, placing_pose=coffee_placing_pose)
-            ParkArmsAction(arms=[Arms.LEFT]).resolve().perform()
+            NavigateAction(target_locations=[table_two_hsrb_to_turtle]).resolve().perform()
+
+            transport_object(ObjectOptions.COFFEE,
+                             object_dicts=objects,
+                             nav_poses=table_two_hsrb_pose,
+                             robot=robot_hsrb,
+                             execution_mode=robot_mode)
         rospy.loginfo("Object 2 transported on turtlebot")
 
     with robot_mode(robot_hsrb):

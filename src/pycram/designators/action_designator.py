@@ -1068,7 +1068,8 @@ class PickUpActionPerformable(ActionAbstract):
         oTmG = lt.transform_pose(oTb, "map")
 
         pre_pose_oTb = oTb
-        pre_pose_oTb.pose.position.y -= 0.1
+        #pre_pose_oTb.pose.position.y -= 0.1
+        pre_pose_oTb.pose.position.x -= 0.1
         pre_pose_oTmG = lt.transform_pose(pre_pose_oTb, "map")
         # Move to the pre-grasp position and visualize the action
         rospy.logwarn("Picking up now")

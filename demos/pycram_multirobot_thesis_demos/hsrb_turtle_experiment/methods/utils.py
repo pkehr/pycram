@@ -1,7 +1,7 @@
 import math
 from typing import List
 
-from geometry_msgs.msg import PoseStamped
+from geometry_msgs.msg import PoseStamped, Quaternion
 
 from pycram.datastructures.enums import ExecutionType
 from pycram.datastructures.pose import Pose
@@ -32,6 +32,7 @@ def get_robot_mode(execution_type: ExecutionType):
     else:
         raise ValueError('Invalid execution type')
 
+
 def set_real_publisher(execution_type: ExecutionType):
     gripper, talk, image_switch_publisher = None, None, None
 
@@ -42,8 +43,12 @@ def set_real_publisher(execution_type: ExecutionType):
 
     return gripper, talk, image_switch_publisher
 
-def sync_object_from_giskard(obj: Object, gk_wrapper):
+
+def sync_object_from_giskard(obj: Object, gk_wrapper, adjusted_rotation=None):
     obj_pose: PoseStamped = gk_wrapper.giskard_wrapper.world.get_group_info(obj.name).root_link_pose
 
-    obj.set_pose(Pose.from_pose_stamped(obj_pose))
+    if adjusted_rotation is not None:
+        obj_pose.pose.orientation = Quaternion(x=adjusted_rotation[0], y=adjusted_rotation[1], z=adjusted_rotation[2],
+                                               w=adjusted_rotation[3])
 
+    obj.set_pose(Pose.from_pose_stamped(obj_pose))
