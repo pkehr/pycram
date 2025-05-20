@@ -15,21 +15,21 @@ def navigate_to_many_points(nav_poses: List[Pose]):
 
 
 def transport_object(object_option: ObjectOptions, object_dicts, execution_mode, robot, nav_poses=None,
-                     place_on_turtle=False):
+                     place_on_turtle=False, grasp_type: Grasp = Grasp.FRONT):
     object_desig = object_dicts.desigs[object_option]
     object_placing_pose = object_dicts.placing_pose_on_turtle[object_option] if place_on_turtle else \
         object_dicts.placing_pose_on_table[object_option]
 
     with execution_mode(robot):
         hsrb_transport_object(object_desig=object_desig, nav_poses=nav_poses,
-                              placing_pose=object_placing_pose, grasp_type=Grasp.FRONT)
+                              placing_pose=object_placing_pose, grasp_type=grasp_type)
     rospy.loginfo(f"{str(object_option)} transported to Table 2")
 
 
 def hsrb_transport_object(object_desig,
                           nav_poses: Optional[List] = None,
                           placing_pose: Optional[Pose] = None,
-                          grasp_type=Grasp.RIGHT):
+                          grasp_type: Grasp = Grasp.FRONT):
     ParkArmsAction(arms=[Arms.LEFT]).resolve().perform()
 
     PickUpAction(object_designator_description=object_desig, arms=[Arms.LEFT],

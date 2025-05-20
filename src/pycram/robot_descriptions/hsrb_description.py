@@ -56,7 +56,8 @@ hsrb_description.add_grasp_orientations(
     {Grasp.FRONT: [-1, 0, -1, 0],
      Grasp.LEFT: [-0.5, 0.5, -0.5, -0.5],
      Grasp.RIGHT: [-0.5, -0.5, -0.5, 0.5],
-     Grasp.TOP: [-1, 0, 0, 0]})
+     Grasp.TOP: [-1, 0, 0, 0],
+     Grasp.BACK: [0, 1, 0, 1]})
 
 hsrb_description.add_kinematic_chain_description(neck)
 

@@ -7,7 +7,7 @@ from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.objects
 from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.scenario_selection import ScenarioSelection
 from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.spawn import spawn_robot, setup_demo_objects
 from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.utils import get_robot_mode, \
-    set_real_publisher, rotated_quaternion
+    set_real_publisher, rotated_quaternion, sync_object_from_giskard
 from pycram.datastructures.enums import ROBOTS
 from pycram.datastructures.enums import WorldMode
 from pycram.designators.action_designator import *
@@ -47,6 +47,7 @@ def hsrb_turtle_demo(execution_type: ExecutionType, world_mode: WorldMode = Worl
     nav_poses, objects = setup_demo_objects()
 
     table_one_nav_pose_hsrb, table_one_nav_pose_hsrb_rotated, table_two_nav_pose_hsrb, table_two_to_one_nav_pose = nav_poses.get_table_nav_poses(execution_type)
+    table_two_hsrb_to_turtle = Pose(position=[4.05, 3.63, 0.0], orientation=rotated_quaternion(angle=180))
 
     demo_scenario: ScenarioSelection = ScenarioSelection()
     demo_scenario.set_demo_scenario(use_turtle=True)
@@ -172,10 +173,15 @@ def hsrb_turtle_demo(execution_type: ExecutionType, world_mode: WorldMode = Worl
     '''
     if demo_scenario.transport_milk:
         milk_desig = objects.desigs[ObjectOptions.MILK]
+        milk_obj = objects.objects[ObjectOptions.MILK]
         milk_placing_pose = objects.placing_pose_on_table[ObjectOptions.MILK]
 
+        sync_object_from_giskard(milk_obj, gk)
+
         with robot_mode(robot_hsrb):
-            hsrb_transport_object(object_desig=milk_desig, placing_pose=milk_placing_pose)
+            NavigateAction(target_locations=[table_two_hsrb_to_turtle]).resolve().perform()
+
+            hsrb_transport_object(object_desig=milk_desig, placing_pose=milk_placing_pose, grasp_type=Grasp.BACK)
             ParkArmsAction(arms=[Arms.LEFT]).resolve().perform()
 
         rospy.loginfo("Object 1 transported to Table 2")
@@ -202,7 +208,7 @@ def hsrb_turtle_demo(execution_type: ExecutionType, world_mode: WorldMode = Worl
 
 
 if __name__ == "__main__":
-    execution_type = ExecutionType.REAL
+    execution_type = ExecutionType.SEMI_REAL
     world_mode = WorldMode.DIRECT
 
     hsrb_turtle_demo(execution_type=execution_type, world_mode=world_mode)

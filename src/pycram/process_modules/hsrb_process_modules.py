@@ -682,6 +682,8 @@ class HSRBNavigationSemiReal(ProcessModule):
         logdebug(f"Sending goal to giskard to Move the robot")
         giskard.avoid_all_collisions()
         giskard.achieve_cartesian_goal(designator.target, 'base_link', 'map')
+        robot = RobotManager.get_active_robot(designator.used_robot)
+        robot.set_pose(designator.target)
 
 
 class HSRBTalkSemiReal(ProcessModule):
