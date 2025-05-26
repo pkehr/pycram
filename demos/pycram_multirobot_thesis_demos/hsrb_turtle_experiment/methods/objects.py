@@ -31,7 +31,7 @@ class ObjectManager:
         milk_place_orientation_on_turtle = rotated_quaternion(angle=180)
 
         # TODO: Adjust placing pose for table
-        milk_place_position_on_table = [3.6, 4.5, 0.9]
+        milk_place_position_on_table = [3.6, 4.5, 0.89]
         milk_place_orientation_on_table = rotated_quaternion(angle=180)
 
         self.create_object("milk", ObjectOptions.MILK, ObjectType.MILK,
@@ -48,15 +48,16 @@ class ObjectManager:
         coffee_place_orientation_on_turtle = rotated_quaternion(angle=180)
 
         # TODO: Adjust placing pose for table
-        coffee_place_position_on_table = [3.6, 4.7, 0.9]
+        coffee_place_position_on_table = [3.6, 4.7, 0.89]
         coffee_place_orientation_on_table = rotated_quaternion(angle=180)
 
-        self.create_object("coffee", ObjectOptions.COFFEE, ObjectType.MILK,
+        self.create_object("coffee", ObjectOptions.COFFEE, ObjectType.JEROEN_CUP,
                            starting_position=coffee_position, starting_orientation=coffee_pickup_orientation,
                            placing_position_on_turtle=coffee_place_position_on_turtle,
                            placing_orientation_on_turtle=coffee_place_orientation_on_turtle,
                            placing_position_on_table=coffee_place_position_on_table,
-                           placing_orientation_on_table=coffee_place_orientation_on_table)
+                           placing_orientation_on_table=coffee_place_orientation_on_table,
+                           path="jeroen_cup.stl")
 
         chips_position = [2.45, 4.8, 0.83]
         chips_pickup_orientation = rotated_quaternion(angle=90)
@@ -65,10 +66,10 @@ class ObjectManager:
         chips_place_orientation_on_turtle = rotated_quaternion(angle=-90)
 
         # TODO: Adjust placing pose for table
-        chips_place_position_on_table = [3.6, 4.9, 0.9]
+        chips_place_position_on_table = [3.6, 4.9, 0.89]
         chips_place_orientation_on_table = rotated_quaternion(angle=180)
 
-        self.create_object("chips", ObjectOptions.CHIPS, ObjectType.MILK,
+        self.create_object("chips", ObjectOptions.CHIPS, ObjectType.PRINGLES,
                            starting_position=chips_position, starting_orientation=chips_pickup_orientation,
                            placing_position_on_turtle=chips_place_position_on_turtle,
                            placing_orientation_on_turtle=chips_place_orientation_on_turtle,
@@ -88,7 +89,7 @@ class ObjectManager:
         obj_starting_pose = Pose(position=starting_position, orientation=starting_orientation)
         obj_object = Object(name, object_type, path=path, pose=obj_starting_pose)
 
-        obj_desig = ObjectDesignatorDescription.Object(obj_object.name, ObjectType.MILK, obj_object)
+        obj_desig = ObjectDesignatorDescription.Object(obj_object.name, object_type, obj_object)
 
         obj_placing_pose_on_turtle = Pose(position=placing_position_on_turtle,
                                           orientation=placing_orientation_on_turtle)

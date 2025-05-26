@@ -91,7 +91,7 @@ class NavPoses:
         turtle_table_one_rotated_pose = Pose(position=turtle_table_one_nav_position,
                                              orientation=turtle_table_one_rotated_orientation)
 
-        turtle_second_nav_position = [1.84, 2.02, 0.0]
+        turtle_second_nav_position = [1.45, 2.02, 0.0]
         turtle_second_nav_orientation = rotated_quaternion(angle=-90)
         turtle_second_nav_pose = Pose(position=turtle_second_nav_position, orientation=turtle_second_nav_orientation)
 
@@ -99,7 +99,7 @@ class NavPoses:
         turtle_second_nav_pose_rotated = Pose(position=turtle_second_nav_position,
                                               orientation=turtle_second_nav_orientation_rotated)
 
-        turtle_third_nav_position = [3.51, 1.91, 0.0]
+        turtle_third_nav_position = [3.55, 2.02, 0.0]
         turtle_third_nav_orientation = rotated_quaternion(angle=0)
         turtle_third_nav_pose = Pose(position=turtle_third_nav_position, orientation=turtle_third_nav_orientation)
 

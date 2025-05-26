@@ -12,6 +12,7 @@ from pycram.designators.action_designator import *
 def navigate_to_many_points(nav_poses: List[Pose]):
     for pose in nav_poses:
         NavigateAction(target_locations=[pose]).resolve().perform()
+        rospy.sleep(5)
 
 
 def transport_object(object_option: ObjectOptions, object_dicts, execution_mode, robot, nav_poses=None,
