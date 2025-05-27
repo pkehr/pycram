@@ -1,4 +1,6 @@
+import rospy
 from giskard_msgs.msg import LinkName
+from jedi.inference.gradual.annotation import find_type_from_comment_hint_assign
 
 from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.actions import navigate_to_many_points, \
     transport_object
@@ -46,7 +48,7 @@ def hsrb_turtle_demo(execution_type: ExecutionType, world_mode: WorldMode = Worl
 
     table_one_nav_pose_hsrb, table_one_nav_pose_hsrb_rotated, table_two_nav_pose_hsrb, table_two_to_one_nav_pose = nav_poses.get_table_nav_poses(
         execution_type)
-    table_two_hsrb_to_turtle = Pose(position=[4.05, 3.63, 0.0], orientation=rotated_quaternion(angle=180))
+    table_two_hsrb_to_turtle = Pose(position=[4.55, 3.74, 0.0], orientation=rotated_quaternion(angle=180))
     table_two_hsrb_pose = [nav_poses.hsrb_poses[NavOptions.TABLE_TWO]]
 
     demo_scenario: ScenarioSelection = ScenarioSelection()
@@ -57,8 +59,8 @@ def hsrb_turtle_demo(execution_type: ExecutionType, world_mode: WorldMode = Worl
     gk.sync_worlds()
 
     print("starting_demo")
-    # with robot_mode(robot_hsrb):
-    #    TalkingMotion("Starting multi-robot demo").perform()
+    with robot_mode(robot_hsrb):
+        TalkingMotion("Starting multi-robot demo").perform()
 
     '''
     Navigate
@@ -87,6 +89,7 @@ def hsrb_turtle_demo(execution_type: ExecutionType, world_mode: WorldMode = Worl
         with robot_mode(robot_turtle):
             NavigateAction(target_locations=[starting_pose_turtle]).resolve().perform()
             NavigateAction(target_locations=[starting_pose_turtle_rotated]).resolve().perform()
+            #rospy.sleep(12)
         rospy.loginfo("Turtle is at starting position")
 
     '''
@@ -182,6 +185,7 @@ def hsrb_turtle_demo(execution_type: ExecutionType, world_mode: WorldMode = Worl
 
             transport_object(ObjectOptions.MILK,
                              object_dicts=objects,
+                             pickup_from_turtle=True,
                              nav_poses=table_two_hsrb_pose,
                              robot=robot_hsrb,
                              execution_mode=robot_mode)
@@ -204,19 +208,20 @@ def hsrb_turtle_demo(execution_type: ExecutionType, world_mode: WorldMode = Worl
 
             transport_object(ObjectOptions.COFFEE,
                              object_dicts=objects,
+                             pickup_from_turtle=True,
                              nav_poses=table_two_hsrb_pose,
                              robot=robot_hsrb,
                              execution_mode=robot_mode)
         rospy.loginfo("Object 2 transported on turtlebot")
 
-    with robot_mode(robot_hsrb):
-        TalkingMotion("Done!").perform()
+    #with robot_mode(robot_hsrb):
+    #    TalkingMotion("Done!").perform()
 
     rospy.loginfo("Multi robot execution: Done")
 
 
 if __name__ == "__main__":
-    execution_type = ExecutionType.SEMI_REAL
+    execution_type = ExecutionType.REAL
     world_mode = WorldMode.DIRECT
 
     hsrb_turtle_demo(execution_type=execution_type, world_mode=world_mode)

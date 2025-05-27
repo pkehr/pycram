@@ -12,10 +12,10 @@ from pycram.designators.action_designator import *
 def navigate_to_many_points(nav_poses: List[Pose]):
     for pose in nav_poses:
         NavigateAction(target_locations=[pose]).resolve().perform()
-        rospy.sleep(5)
+        #rospy.sleep(8)
 
 
-def transport_object(object_option: ObjectOptions, object_dicts, execution_mode, robot, nav_poses=None,
+def transport_object(object_option: ObjectOptions, object_dicts, execution_mode, robot, pickup_from_turtle=False, nav_poses=None,
                      place_on_turtle=False, grasp_type: Grasp = Grasp.FRONT):
     object_desig = object_dicts.desigs[object_option]
     object_placing_pose = object_dicts.placing_pose_on_turtle[object_option] if place_on_turtle else \
@@ -23,18 +23,19 @@ def transport_object(object_option: ObjectOptions, object_dicts, execution_mode,
 
     with execution_mode(robot):
         hsrb_transport_object(object_desig=object_desig, nav_poses=nav_poses,
-                              placing_pose=object_placing_pose, grasp_type=grasp_type)
+                              placing_pose=object_placing_pose, grasp_type=grasp_type, pickup_from_turtle=pickup_from_turtle)
     rospy.loginfo(f"{str(object_option)} transported to Table 2")
 
 
 def hsrb_transport_object(object_desig,
                           nav_poses: Optional[List] = None,
                           placing_pose: Optional[Pose] = None,
-                          grasp_type: Grasp = Grasp.FRONT):
+                          grasp_type: Grasp = Grasp.FRONT,
+                          pickup_from_turtle=False):
     ParkArmsAction(arms=[Arms.LEFT]).resolve().perform()
 
     PickUpAction(object_designator_description=object_desig, arms=[Arms.LEFT],
-                 grasps=[grasp_type]).resolve().perform()
+                 grasps=[grasp_type], pickup_from_turtle=pickup_from_turtle).resolve().perform()
 
     ParkArmsAction(arms=[Arms.LEFT]).resolve().perform()
 

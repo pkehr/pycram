@@ -100,7 +100,8 @@ class SetGripperAction(ActionDesignatorDescription):
     Set the gripper state of the robot
     """
 
-    def __init__(self, grippers: List[Arms], motions: List[GripperState], used_robot: Optional[Object] = None, resolver=None,
+    def __init__(self, grippers: List[Arms], motions: List[GripperState], used_robot: Optional[Object] = None,
+                 resolver=None,
                  ontology_concept_holders: Optional[List[Thing]] = None):
         """
         Sets the gripper state, the desired state is given with the motion. Motion can either be 'open' or 'close'.
@@ -144,7 +145,8 @@ class ReleaseAction(ActionDesignatorDescription):
     """
 
     def __init__(self, grippers: List[Arms], object_designator_description: ObjectDesignatorDescription,
-                 used_robot: Optional[Object] = None, resolver=None, ontology_concept_holders: Optional[List[Thing]] = None):
+                 used_robot: Optional[Object] = None, resolver=None,
+                 ontology_concept_holders: Optional[List[Thing]] = None):
         super().__init__(resolver, ontology_concept_holders)
         self.grippers: List[Arms] = grippers
         self.object_designator_description = object_designator_description
@@ -169,7 +171,8 @@ class GripAction(ActionDesignatorDescription):
     """
 
     def __init__(self, grippers: List[Arms], object_designator_description: ObjectDesignatorDescription,
-                 efforts: List[float], used_robot: Optional[Object] = None, resolver=None, ontology_concept_holders: Optional[List[Thing]] = None):
+                 efforts: List[float], used_robot: Optional[Object] = None, resolver=None,
+                 ontology_concept_holders: Optional[List[Thing]] = None):
         super().__init__(resolver, ontology_concept_holders)
         self.grippers: List[Arms] = grippers
         self.object_designator_description: ObjectDesignatorDescription = object_designator_description
@@ -220,7 +223,8 @@ class PickUpAction(ActionDesignatorDescription):
 
     def __init__(self,
                  object_designator_description: Union[ObjectDesignatorDescription, ObjectDesignatorDescription.Object],
-                 arms: List[Arms], grasps: List[Grasp], used_robot: Optional[Object] = None, resolver=None,
+                 arms: List[Arms], grasps: List[Grasp], pickup_from_turtle: bool = False,
+                 used_robot: Optional[Object] = None, resolver=None,
                  ontology_concept_holders: Optional[List[Thing]] = None):
         """
         Lets the robot pick up an object. The description needs an object designator describing the object that should be
@@ -237,6 +241,7 @@ class PickUpAction(ActionDesignatorDescription):
             ObjectDesignatorDescription, ObjectDesignatorDescription.Object] = object_designator_description
         self.arms: List[Arms] = arms
         self.grasps: List[Grasp] = grasps
+        self.pickup_from_turtle = pickup_from_turtle
         self.used_robot = used_robot
 
         if self.soma:
@@ -253,7 +258,7 @@ class PickUpAction(ActionDesignatorDescription):
         else:
             obj_desig = self.object_designator_description.resolve()
 
-        return PickUpActionPerformable(obj_desig, self.arms[0], self.grasps[0], used_robot=self.used_robot)
+        return PickUpActionPerformable(obj_desig, self.arms[0], self.grasps[0], used_robot=self.used_robot, pickup_from_turtle=self.pickup_from_turtle)
 
 
 class PlaceAction(ActionDesignatorDescription):
@@ -264,7 +269,8 @@ class PlaceAction(ActionDesignatorDescription):
     def __init__(self,
                  object_designator_description: Union[ObjectDesignatorDescription, ObjectDesignatorDescription.Object],
                  target_locations: List[Pose], grasps: List[Grasp],
-                 arms: List[Arms], with_force_torque: List[bool], used_robot: Optional[Object] = None, resolver=None, ontology_concept_holders: Optional[List[Thing]] = None):
+                 arms: List[Arms], with_force_torque: List[bool], used_robot: Optional[Object] = None, resolver=None,
+                 ontology_concept_holders: Optional[List[Thing]] = None):
         """
         Create an Action Description to place an object
 
@@ -407,7 +413,8 @@ class DetectAction(ActionDesignatorDescription):
     Detects an object that fits the object description and returns an object designator describing the object.
     """
 
-    def __init__(self, object_designator_description: Optional[ObjectDesignatorDescription] = None, technique: str = "all", state: Optional[str] = None,
+    def __init__(self, object_designator_description: Optional[ObjectDesignatorDescription] = None,
+                 technique: str = "all", state: Optional[str] = None,
                  used_robot: Optional[Object] = None, resolver=None,
                  ontology_concept_holders: Optional[List[Thing]] = None):
         """
@@ -438,7 +445,9 @@ class DetectAction(ActionDesignatorDescription):
         :return: A performable designator
         """
 
-        return DetectActionPerformable(technique=self.technique, state=self.state, object_designator=self.object_designator_description.resolve(), used_robot=self.used_robot)
+        return DetectActionPerformable(technique=self.technique, state=self.state,
+                                       object_designator=self.object_designator_description.resolve(),
+                                       used_robot=self.used_robot)
 
 
 class OpenDishwasherAction(ActionDesignatorDescription):
@@ -484,7 +493,8 @@ class OpenAction(ActionDesignatorDescription):
     Can currently not be used
     """
 
-    def __init__(self, object_designator_description: ObjectPart, arms: List[Arms], used_robot: Optional[Object] = None, resolver=None,
+    def __init__(self, object_designator_description: ObjectPart, arms: List[Arms], used_robot: Optional[Object] = None,
+                 resolver=None,
                  ontology_concept_holders: Optional[List[Thing]] = None):
         """
         Moves the arm of the robot to open a container.
@@ -509,7 +519,8 @@ class OpenAction(ActionDesignatorDescription):
 
         :return: A performable designator
         """
-        return OpenActionPerformable(self.object_designator_description.resolve(), self.arms[0], used_robot=self.used_robot)
+        return OpenActionPerformable(self.object_designator_description.resolve(), self.arms[0],
+                                     used_robot=self.used_robot)
 
 
 class CloseAction(ActionDesignatorDescription):
@@ -520,7 +531,8 @@ class CloseAction(ActionDesignatorDescription):
     """
 
     def __init__(self, object_designator_description: ObjectPart, arms: List[Arms],
-                 used_robot: Optional[Object] = None, resolver=None, ontology_concept_holders: Optional[List[Thing]] = None):
+                 used_robot: Optional[Object] = None, resolver=None,
+                 ontology_concept_holders: Optional[List[Thing]] = None):
         """
         Attempts to close an open container
 
@@ -544,7 +556,8 @@ class CloseAction(ActionDesignatorDescription):
 
         :return: A performable designator
         """
-        return CloseActionPerformable(self.object_designator_description.resolve(), self.arms[0], used_robot=self.used_robot)
+        return CloseActionPerformable(self.object_designator_description.resolve(), self.arms[0],
+                                      used_robot=self.used_robot)
 
 
 class GraspingAction(ActionDesignatorDescription):
@@ -553,7 +566,8 @@ class GraspingAction(ActionDesignatorDescription):
     """
 
     def __init__(self, arms: List[Arms], object_description: Union[ObjectDesignatorDescription, ObjectPart],
-                 used_robot: Optional[Object] = None, resolver: Callable = None, ontology_concept_holders: Optional[List[Thing]] = None):
+                 used_robot: Optional[Object] = None, resolver: Callable = None,
+                 ontology_concept_holders: Optional[List[Thing]] = None):
         """
         Will try to grasp the object described by the given description. Grasping is done by moving into a pre grasp
         position 10 cm before the object, opening the gripper, moving to the object and then closing the gripper.
@@ -586,7 +600,8 @@ class HeadFollowAction(ActionDesignatorDescription):
     Continuously move head to human closest to robot
     """
 
-    def __init__(self, state: Optional[str], used_robot: Optional[Object] = None, resolver=None, ontology_concept_holders: Optional[List[Thing]] = None):
+    def __init__(self, state: Optional[str], used_robot: Optional[Object] = None, resolver=None,
+                 ontology_concept_holders: Optional[List[Thing]] = None):
         """
         :param state: defines if the robot should start/stop looking at human
         :param resolver: An optional resolver that returns a performable designator from the designator description
@@ -657,7 +672,8 @@ class PouringAction(ActionDesignatorDescription):
         parameter.
         :return: A performable designator
         """
-        return PouringActionPerformable(self.target_locations[0], self.arms[0], self.directions[0], self.angels[0], used_robot=self.used_robot)
+        return PouringActionPerformable(self.target_locations[0], self.arms[0], self.directions[0], self.angels[0],
+                                        used_robot=self.used_robot)
 
 
 class MixingAction(ActionDesignatorDescription):
@@ -690,6 +706,7 @@ class MixingAction(ActionDesignatorDescription):
     The object at the time this Action got created. It is used to be a static, information holding entity. It is
     not updated when the BulletWorld object is changed.
     """
+
     def insert(self, session: sqlalchemy.orm.session.Session, **kwargs):
         """
         Insert the mixing action into the database session.
@@ -725,7 +742,8 @@ class MixingAction(ActionDesignatorDescription):
         :return: A performable designator
         """
         return MixingActionPerformable(self.object_designator_description.ground(),
-                                       self.object_tool_designator_description.ground(), self.arms[0], self.grasps[0], used_robot=self.used_robot)
+                                       self.object_tool_designator_description.ground(), self.arms[0], self.grasps[0],
+                                       used_robot=self.used_robot)
 
 
 class PlaceGivenObjectAction(ActionDesignatorDescription):
@@ -765,7 +783,8 @@ class PlaceGivenObjectAction(ActionDesignatorDescription):
 
     def __init__(self,
                  object_types: List[str], arms: List[Arms], target_locations: List[Pose], grasps: List[Grasp],
-                 with_force_torque: List[bool], on_table: Optional[bool] = True, used_robot: Optional[Object] = None, resolver=None):
+                 with_force_torque: List[bool], on_table: Optional[bool] = True, used_robot: Optional[Object] = None,
+                 resolver=None):
         """
         Lets the robot place a human given object. The description needs an object type describing the object that
         should be placed, an arm that should be used as well as the target location where the object should be placed
@@ -794,6 +813,7 @@ class PlaceGivenObjectAction(ActionDesignatorDescription):
         """
         return PlaceGivenObjectPerformable(self.object_types[0], self.arms[0], self.target_locations[0], self.grasps[0],
                                            self.with_force_torque[0], self.on_table, used_robot=self.used_robot)
+
 
 # ----------------------------------------------------------------------------
 # ---------------- Performables ----------------------------------------------
@@ -1023,6 +1043,8 @@ class PickUpActionPerformable(ActionAbstract):
 
     used_robot: Optional[Object] = None
 
+    pickup_from_turtle: bool = False
+
     def __post_init__(self):
         super(ActionAbstract, self).__post_init__()
         # Store the object's data copy at execution
@@ -1056,20 +1078,24 @@ class PickUpActionPerformable(ActionAbstract):
         rospy.logwarn("Opening Gripper")
         MoveGripperMotion(motion=GripperState.OPEN, gripper=self.arm, used_robot=self.used_robot).perform()
 
-
         grasp_rotation = robot_description.grasps[self.grasp]
         oTb = lt.transform_pose(oTm, robot.get_link_tf_frame("base_link"))
 
         oTb.pose.position.x += 0.01
         # Set pose to the grasp rotation
-        new_orientation = multiply_quaternions([oTb.orientation.x, oTb.orientation.y, oTb.orientation.z, oTb.orientation.w], grasp_rotation)
+        new_orientation = multiply_quaternions(
+            [oTb.orientation.x, oTb.orientation.y, oTb.orientation.z, oTb.orientation.w], grasp_rotation)
         oTb.orientation = new_orientation
         # Transform the pose to the map frame
         oTmG = lt.transform_pose(oTb, "map")
 
         pre_pose_oTb = oTb
-        pre_pose_oTb.pose.position.y -= 0.1 # on real robot
-        #pre_pose_oTb.pose.position.x -= 0.1 # on simulated robot
+        if self.pickup_from_turtle:
+            #pre_pose_oTb.pose.position.x -= 0.1  # on real robot
+            pass
+        else:
+            pre_pose_oTb.pose.position.y -= 0.1  # on real robot
+        # pre_pose_oTb.pose.position.x -= 0.1 # on simulated robot
         pre_pose_oTmG = lt.transform_pose(pre_pose_oTb, "map")
         # Move to the pre-grasp position and visualize the action
         rospy.logwarn("Picking up now")
@@ -1137,7 +1163,8 @@ class PickUpActionPerformable(ActionAbstract):
     def close_gripper(self, robot, tool_frame, object_desig):
         # Finalize the pick-up by closing the gripper and lifting the object
         rospy.logwarn("Close Gripper")
-        MoveGripperMotion(motion=GripperState.CLOSE, gripper=self.arm, allow_gripper_collision=True, used_robot=self.used_robot).perform()
+        MoveGripperMotion(motion=GripperState.CLOSE, gripper=self.arm, allow_gripper_collision=True,
+                          used_robot=self.used_robot).perform()
         gk.achieve_attached(object_desig)
         robot.attach(child_object=self.object_designator.world_object, parent_link=tool_frame)
         gk.sync_worlds()
@@ -1241,7 +1268,7 @@ class PlaceActionPerformable(ActionAbstract):
         oTmG = lt.transform_pose(oTb, "map")
 
         pre_pose_oTb = oTb
-        #pre_pose_oTb.pose.position.x -= 0.1
+        # pre_pose_oTb.pose.position.x -= 0.1
         pre_pose_oTmG = lt.transform_pose(pre_pose_oTb, "map")
 
         rospy.logwarn("Placing now")
@@ -1293,6 +1320,7 @@ class PlaceActionPerformable(ActionAbstract):
 
         if self.object_designator.obj_type != "Metalplate":
             robot.detach(self.object_designator.world_object)
+
 
 @dataclass
 class NavigateActionPerformable(ActionAbstract):
@@ -1364,7 +1392,8 @@ class TransportActionPerformable(ActionAbstract):
             raise ReachabilityFailure(
                 f"No location found from where the robot can reach the target location: {self.target_location}")
         NavigateActionPerformable(place_loc.pose).perform()
-        PlaceActionPerformable(self.object_designator, self.arm, self.target_location, used_robot=self.used_robot).perform()
+        PlaceActionPerformable(self.object_designator, self.arm, self.target_location,
+                               used_robot=self.used_robot).perform()
         ParkArmsActionPerformable(Arms.BOTH).perform()
 
 
@@ -1460,7 +1489,8 @@ class OpenDishwasherPerformable(ActionAbstract):
 
         # partially opening the dishwasher door
         MoveGripperMotion(GripperState.CLOSE, self.arm, used_robot=self.used_robot).perform()
-        HalfOpeningDishwasherMotion(self.handle_name, self.goal_state_half_open, self.arm, used_robot=self.used_robot).perform()
+        HalfOpeningDishwasherMotion(self.handle_name, self.goal_state_half_open, self.arm,
+                                    used_robot=self.used_robot).perform()
 
         # moves arm around the door to further push it open
         MoveGripperMotion(GripperState.OPEN, self.arm, used_robot=self.used_robot).perform()
@@ -1500,7 +1530,8 @@ class OpenActionPerformable(ActionAbstract):
         GraspingActionPerformable(self.arm, self.object_designator, used_robot=self.used_robot).perform()
         OpeningMotion(self.object_designator, self.arm, used_robot=self.used_robot).perform()
 
-        MoveGripperMotion(GripperState.OPEN, self.arm, allow_gripper_collision=True, used_robot=self.used_robot).perform()
+        MoveGripperMotion(GripperState.OPEN, self.arm, allow_gripper_collision=True,
+                          used_robot=self.used_robot).perform()
 
 
 @dataclass
@@ -1526,7 +1557,8 @@ class CloseActionPerformable(ActionAbstract):
         GraspingActionPerformable(self.arm, self.object_designator, used_robot=self.used_robot).perform()
         ClosingMotion(self.object_designator, self.arm, used_robot=self.used_robot).perform()
 
-        MoveGripperMotion(GripperState.OPEN, self.arm, allow_gripper_collision=True, used_robot=self.used_robot).perform()
+        MoveGripperMotion(GripperState.OPEN, self.arm, allow_gripper_collision=True,
+                          used_robot=self.used_robot).perform()
 
 
 @dataclass
@@ -1568,7 +1600,8 @@ class GraspingActionPerformable(ActionAbstract):
         MoveGripperMotion(GripperState.OPEN, self.arm, used_robot=self.used_robot).perform()
 
         MoveTCPMotion(object_pose, self.arm, allow_gripper_collision=True, used_robot=self.used_robot).perform()
-        MoveGripperMotion(GripperState.CLOSE, self.arm, allow_gripper_collision=True, used_robot=self.used_robot).perform()
+        MoveGripperMotion(GripperState.CLOSE, self.arm, allow_gripper_collision=True,
+                          used_robot=self.used_robot).perform()
 
 
 @dataclass
@@ -1754,7 +1787,7 @@ class PouringActionPerformable(ActionAbstract):
         oTog = lt.transform_pose(oTms, robot.get_link_tf_frame("base_link"))
         oTog.orientation = grasp_rotation
         oTog_prepose = oTog.copy()
-        oTog_prepose.set_position([oTog.position.x-0.3, oTog.position.y, oTog.position.z+0.05])
+        oTog_prepose.set_position([oTog.position.x - 0.3, oTog.position.y, oTog.position.z + 0.05])
         oTgm = lt.transform_pose(oTog, "map")
         oTgm_prepose = lt.transform_pose(oTog_prepose, "map")
         # World.current_world.add_vis_axis(oTgm)
@@ -1781,10 +1814,8 @@ class PouringActionPerformable(ActionAbstract):
             MoveTCPMotion(oTgm_prepose, self.arm, allow_gripper_collision=False, used_robot=self.used_robot).perform()
 
 
-
 @dataclass
 class MixingActionPerformable(ActionAbstract):
-
     object_designator: ObjectDesignatorDescription.Object
     """
     Object designator describing the object that should be mixed.
