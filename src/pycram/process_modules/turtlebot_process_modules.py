@@ -1,4 +1,6 @@
 from threading import Lock
+
+from move_base_msgs.msg import MoveBaseActionResult
 from typing_extensions import Any
 
 import actionlib
@@ -12,6 +14,7 @@ from ..multirobot import RobotManager
 from ..process_module import ProcessModule, ProcessModuleManager
 from ..external_interfaces.ik import request_ik
 from ..ros.logging import logdebug
+from ..ros.subscriber import create_subscriber
 from ..utils import _apply_ik
 from ..local_transformer import LocalTransformer
 from ..designators.object_designator import ObjectDesignatorDescription
@@ -44,6 +47,8 @@ class TurtlebotNavigationReal(ProcessModule):
     """
 
     def _execute(self, designator: MoveMotion) -> Any:
+        self.move_base_results: List[MoveBaseActionResult] = []
+
         move = None
         if RobotManager.multiple_robots_active():
             move = PoseNavigator(ros_namespace=ROBOTS.TURTLE)
@@ -51,6 +56,17 @@ class TurtlebotNavigationReal(ProcessModule):
             move = PoseNavigator()
 
         move.pub_now(designator.target)
+
+        move_base_result_subscriber = create_subscriber('/turtle/move_base/result', MoveBaseActionResult, lambda x: self.move_base_results.append(x))
+        print("Turtle: now waiting")
+        goal_reached = False
+        while not goal_reached:
+            for mbar in self.move_base_results:
+                if mbar.status.status == 3:
+                    goal_reached = True
+                    print("Turtle: goal reached")
+
+
 
 
 class TurtlebotNavigation(ProcessModule):
