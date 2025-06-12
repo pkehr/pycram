@@ -14,6 +14,7 @@ from pycram.datastructures.enums import ROBOTS
 from pycram.datastructures.enums import WorldMode
 from pycram.designators.action_designator import *
 from pycram.designators.object_designator import *
+from pycram.multirobot.multi_threaded_robots import MultiThreadedRobot
 
 from pycram.world_concepts.world_object import Object
 from pycram.worlds.bullet_world import BulletWorld
@@ -86,6 +87,8 @@ def hsrb_turtle_threaded_demo(execution_type: ExecutionType, world_mode: WorldMo
     gk.clear()
     gk.sync_worlds()
 
+    mtr = MultiThreadedRobot()
+
     print("starting_demo")
     #with robot_mode(robot_hsrb):
     #    TalkingMotion("Starting multi-robot demo").perform()
@@ -96,11 +99,9 @@ def hsrb_turtle_threaded_demo(execution_type: ExecutionType, world_mode: WorldMo
     From:       Anywhere
     To:         starting_pose, Table#1
     '''
-    start_hsrb_navigation(demo_scenario=demo_scenario,
-                          starting_nav_pose=nav_poses.hsrb_poses[NavOptions.STARTING],
-                          table_nav_pose=table_one_nav_pose_hsrb,
-                          robot_mode=robot_mode,
-                          robot=robot_hsrb)
+    process = mtr.start_process(start_hsrb_navigation,
+                                (demo_scenario, nav_poses.hsrb_poses[NavOptions.STARTING], table_one_nav_pose_hsrb,
+                                 robot_mode, robot_hsrb))
 
     '''
     Navigate
@@ -108,14 +109,15 @@ def hsrb_turtle_threaded_demo(execution_type: ExecutionType, world_mode: WorldMo
     From:       Anywhere
     To:         starting_pose (Table#1)
     '''
-    start_turtle_navigation(demo_scenario=demo_scenario,
-                            starting_nav_pose=nav_poses.turtle_poses[NavOptions.STARTING],
-                            robot_mode=robot_mode,
-                            robot=robot_turtle)
+    process2 = mtr.start_process(start_turtle_navigation,
+                                 (demo_scenario, nav_poses.turtle_poses[NavOptions.STARTING], robot_mode, robot_turtle))
 
     ##################################
     # Wait for both robots to finish #
     ##################################
+
+    mtr.end(process)
+    mtr.end(process2)
 
     '''
     Transport
