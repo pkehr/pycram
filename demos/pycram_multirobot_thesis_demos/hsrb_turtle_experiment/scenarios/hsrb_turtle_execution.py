@@ -1,6 +1,5 @@
 import rospy
 from giskard_msgs.msg import LinkName
-from jedi.inference.gradual.annotation import find_type_from_comment_hint_assign
 
 from demos.pycram_multirobot_thesis_demos.hsrb_turtle_experiment.methods.actions import navigate_to_many_points, \
     transport_object
@@ -19,10 +18,6 @@ from pycram.world_concepts.world_object import Object
 from pycram.worlds.bullet_world import BulletWorld
 import pycram.external_interfaces.giskard as gk
 
-
-# TODO: Inspect real robot and simulation demo
-
-# TODO: Turtlebots größe richtig machen, weil giskard sonst collision hat
 
 def hsrb_turtle_demo(execution_type: ExecutionType, world_mode: WorldMode = WorldMode.DIRECT):
     world = BulletWorld(world_mode)
@@ -89,7 +84,6 @@ def hsrb_turtle_demo(execution_type: ExecutionType, world_mode: WorldMode = Worl
         with robot_mode(robot_turtle):
             NavigateAction(target_locations=[starting_pose_turtle]).resolve().perform()
             NavigateAction(target_locations=[starting_pose_turtle_rotated]).resolve().perform()
-            #rospy.sleep(12)
         rospy.loginfo("Turtle is at starting position")
 
     '''
