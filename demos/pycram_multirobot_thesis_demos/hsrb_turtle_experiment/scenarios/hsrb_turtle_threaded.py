@@ -48,9 +48,17 @@ def table_turtle_navigation(demo_scenario: ScenarioSelection, nav_poses, robot_m
         if demo_scenario.navigate_table_two_turtle:
             turtle_table_one_to_table_two = nav_poses.turtle_poses[NavOptions.FROM_ONE_TO_TWO_SUBPOINTS]
 
-            # TODO: This has to be more points, as navigation tries to run against the wall otherwise
-            navigate_to_many_points(nav_poses=turtle_table_one_to_table_two)
+            navigate_to_many_points(nav_poses=turtle_table_one_to_table_two, used_robot=robot)
             rospy.loginfo("Turtlebot at Table 2")
+
+def transport_chips(demo_scenario: ScenarioSelection, object_dicts, nav_pose, robot_mode, robot):
+    if demo_scenario.transport_chips:
+        transport_object(ObjectOptions.CHIPS,
+                         object_dicts=object_dicts,
+                         nav_poses=nav_pose,
+                         robot=robot,
+                         execution_mode=robot_mode)
+        rospy.loginfo("Object 3 placed on Table 2")
 
 
 def hsrb_turtle_threaded_demo(execution_type: ExecutionType, world_mode: WorldMode = WorldMode.DIRECT):
@@ -163,10 +171,8 @@ def hsrb_turtle_threaded_demo(execution_type: ExecutionType, world_mode: WorldMo
     From:       Table#1
     To:         Table#2 
     '''
-    table_turtle_navigation(demo_scenario=demo_scenario,
-                            nav_poses=nav_poses,
-                            robot_mode=robot_mode,
-                            robot=robot_turtle)
+    process3 = mtr.start_process(table_turtle_navigation,
+                                 (demo_scenario, nav_poses, robot_mode, robot_turtle))
 
     '''
     Pickup
@@ -174,17 +180,15 @@ def hsrb_turtle_threaded_demo(execution_type: ExecutionType, world_mode: WorldMo
     From:       Table#1
     Robot:      HSRB 
     '''
-    if demo_scenario.transport_chips:
-        transport_object(ObjectOptions.CHIPS,
-                         object_dicts=objects,
-                         nav_poses=table_two_nav_pose_hsrb,
-                         robot=robot_hsrb,
-                         execution_mode=robot_mode)
-        rospy.loginfo("Object 3 placed on Table 2")
+    process4 = mtr.start_process(transport_chips,
+                                 (demo_scenario, objects, table_two_nav_pose_hsrb, robot_mode, robot_hsrb))
 
     ##################################
     # Wait for both robots to finish #
     ##################################
+
+    mtr.end(process3)
+    mtr.end(process4)
 
     '''
     Transport
@@ -238,7 +242,7 @@ def hsrb_turtle_threaded_demo(execution_type: ExecutionType, world_mode: WorldMo
 
 
 if __name__ == "__main__":
-    execution_type = ExecutionType.SEMI_REAL
+    execution_type = ExecutionType.REAL
     world_mode = WorldMode.DIRECT
 
     hsrb_turtle_threaded_demo(execution_type=execution_type, world_mode=world_mode)

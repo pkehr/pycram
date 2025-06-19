@@ -9,10 +9,9 @@ from pycram.datastructures.pose import Pose
 from pycram.designators.action_designator import *
 
 
-def navigate_to_many_points(nav_poses: List[Pose]):
+def navigate_to_many_points(nav_poses: List[Pose], used_robot=None):
     for pose in nav_poses:
-        NavigateAction(target_locations=[pose]).resolve().perform()
-        #rospy.sleep(8)
+        NavigateAction(target_locations=[pose], used_robot=used_robot).resolve().perform()
 
 
 def transport_object(object_option: ObjectOptions, object_dicts, execution_mode, robot, pickup_from_turtle=False, nav_poses=None,
