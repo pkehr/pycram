@@ -24,14 +24,21 @@ class ObjectManager:
         self.set_objects()
 
     def set_objects(self):
-        milk_position = [2.03, 4.8, 0.83]
+        milk_position = [2.03, 4.86, 0.83]
         milk_pickup_orientation = rotated_quaternion(angle=90)
+        # pickup position from turtle
+        #milk_position = [3.28, 3.64, 0.42]
+        #milk_pickup_orientation = rotated_quaternion(angle=90)
+
+        # Testing pickup on table 2 pose
+        # milk_position = [3.5, 3.31, 0.4]
+        # milk_pickup_orientation = rotated_quaternion(angle=180)
 
         milk_place_position_on_turtle = [1.58, 4.4, 0.47]
         milk_place_orientation_on_turtle = rotated_quaternion(angle=180)
 
         # TODO: Adjust placing pose for table
-        milk_place_position_on_table = [3.6, 4.5, 0.89]
+        milk_place_position_on_table = [3.6, 4.5, 0.86]
         milk_place_orientation_on_table = rotated_quaternion(angle=180)
 
         self.create_object("milk", ObjectOptions.MILK, ObjectType.MILK,
@@ -41,14 +48,17 @@ class ObjectManager:
                            placing_position_on_table=milk_place_position_on_table,
                            placing_orientation_on_table=milk_place_orientation_on_table)
 
-        coffee_position = [2.19, 4.8, 0.83]
+        coffee_position = [2.19, 4.86, 0.83]
         coffee_pickup_orientation = rotated_quaternion(angle=90)
+        # pickup position from turtle
+        #coffee_position = [3.28, 3.88, 0.42]
+        #coffee_pickup_orientation = rotated_quaternion(angle=90)
 
         coffee_place_position_on_turtle = [1.58, 4.25, 0.47]
         coffee_place_orientation_on_turtle = rotated_quaternion(angle=180)
 
         # TODO: Adjust placing pose for table
-        coffee_place_position_on_table = [3.6, 4.7, 0.89]
+        coffee_place_position_on_table = [3.6, 4.7, 0.86]
         coffee_place_orientation_on_table = rotated_quaternion(angle=180)
 
         self.create_object("coffee", ObjectOptions.COFFEE, ObjectType.JEROEN_CUP,
@@ -59,14 +69,17 @@ class ObjectManager:
                            placing_orientation_on_table=coffee_place_orientation_on_table,
                            path="jeroen_cup.stl")
 
-        chips_position = [2.45, 4.8, 0.83]
+        chips_position = [2.45, 4.86, 0.80]
         chips_pickup_orientation = rotated_quaternion(angle=90)
+        # easy pickup position
+        #chips_position = [4.1, 2.3, 0.83]
+        #chips_pickup_orientation = rotated_quaternion(angle=90)
 
         chips_place_position_on_turtle = [2.7, 2.7, 0.7]
         chips_place_orientation_on_turtle = rotated_quaternion(angle=-90)
 
         # TODO: Adjust placing pose for table
-        chips_place_position_on_table = [3.6, 4.9, 0.89]
+        chips_place_position_on_table = [3.6, 4.9, 0.88]
         chips_place_orientation_on_table = rotated_quaternion(angle=180)
 
         self.create_object("chips", ObjectOptions.CHIPS, ObjectType.PRINGLES,

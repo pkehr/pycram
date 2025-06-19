@@ -1089,10 +1089,9 @@ class PickUpActionPerformable(ActionAbstract):
         # Transform the pose to the map frame
         oTmG = lt.transform_pose(oTb, "map")
 
-        pre_pose_oTb = oTb
+        pre_pose_oTb = deepcopy(oTb)
         if self.pickup_from_turtle:
-            #pre_pose_oTb.pose.position.x -= 0.1  # on real robot
-            pass
+            pre_pose_oTb.pose.position.x += 0.1  # shift to right
         else:
             pre_pose_oTb.pose.position.y -= 0.1  # on real robot
         # pre_pose_oTb.pose.position.x -= 0.1 # on simulated robot
